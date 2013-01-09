@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: # vvv DEBUG vvv 
+# key: #dv
+# binding: direct-keybinding
+# expand-env: ((some-var some-value))
+# type: command
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# --
+ vvv DEBUG vvv

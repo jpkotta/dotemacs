@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ... if ... else ...
+# key: iif
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# --
+${1:true} if ${2:pred} else ${3:false}

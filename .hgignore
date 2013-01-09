@@ -1,0 +1,8 @@
+syntax: glob
+
+elpa
+staging
+repos
+persistence
+.bzr
+.git

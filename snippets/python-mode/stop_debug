@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: # ^^^ DEBUG ^^^ 
+# key: #d^
+# binding: direct-keybinding
+# expand-env: ((some-var some-value))
+# type: command
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# --
+# ^^^ DEBUG ^^^

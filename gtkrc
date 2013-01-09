@@ -1,0 +1,8 @@
+style "scrollbar"
+{
+        #fg[NORMAL] = "red"     # The arrow color.
+        #bg[NORMAL] = "yellow"  # The thumb and background around the arrow.
+        bg[ACTIVE] = "gray25"    # The trough color.
+        #bg[PRELIGHT] = "white" # The thumb color when the mouse is over it.
+}
+widget_class "*GtkVScrollbar*" style "scrollbar"

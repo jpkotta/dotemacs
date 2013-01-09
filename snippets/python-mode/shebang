@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: #!/usr/bin/env python
+# key: !
+# condition: (eq (point-min) (line-beginning-position))
+# --
+#!/usr/bin/env ${1:python}
+# -*- coding:utf-8 -*-

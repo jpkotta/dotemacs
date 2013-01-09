@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# name: from __future__ import ...
+# key: future
+# --
+from __future__ import print_function, division, unicode_literals, absolute_import

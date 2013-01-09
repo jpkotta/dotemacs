@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: wrap-debug-comment
+# key: vv
+# expand-env: ((yas/wrap-around-region t))
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# --
+# vvv ${1:DEBUG} vvv
+$0
+# ^^^ $1 ^^^
