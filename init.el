@@ -3558,7 +3558,7 @@ http://www.emacswiki.org/emacs/AlignCommands"
 
 (defun beginning-of-line-or-text (arg)
   "Move to BOL, or if already there, to the first non-whitespace character."
-  (interactive "p")
+  (interactive "^p")
   (if (bolp)
       (beginning-of-line-text arg)
     (move-beginning-of-line arg)))
@@ -3566,36 +3566,26 @@ http://www.emacswiki.org/emacs/AlignCommands"
 ;; <home> is still bound to move-beginning-of-line
 (global-set-key (kbd "C-a") 'beginning-of-line-or-text)
 
-(defun end-of-code-or-line ()
-  "Move to EOL. If already there, to EOL sans comments.
-    That is, the end of the code, ignoring any trailing comment
-    or whitespace.  Note this does not handle 2 character
-    comment starters like // or /*.  Such will not be skipped."
-  (interactive)
-  (if (not (eolp))
+(defun end-of-line-code ()
+  (interactive "^")
+  (save-match-data
+    (let* ((bolpos (line-beginning-position)))
       (end-of-line)
-    (skip-chars-backward " \t")
-    (let ((pt (point))
-          (lbp (line-beginning-position))
-          (comment-start-re (concat (if comment-start
-                                        (regexp-quote
-                                         (replace-regexp-in-string
-                                          "[[:space:]]*" "" comment-start))
-                                      "[^[:space:]][[:space:]]*$")
-                                    "\\|\\s<"))
-          (comment-stop-re "\\s>")
-          (lim))
-      (when (re-search-backward comment-start-re lbp t)
-        (setq lim (point))
-        (if (re-search-forward comment-stop-re (1- pt) t)
-            (goto-char pt)
-          (goto-char lim)               ; test here ->
-          (while (looking-back comment-start-re (1- (point)))
-            (backward-char))
-          (skip-chars-backward " \t"))))))
-(put 'end-of-code-or-line 'CUA 'move)
+      (if (comment-search-backward bolpos 'noerror)
+          (search-backward-regexp comment-start-skip bolpos 'noerror))
+      (skip-syntax-backward " " bolpos))))
+
+(defun end-of-line-or-code ()
+  "Move to EOL, or if already there, to EOL sans comments."
+  (interactive "^")
+  (let ((here (point)))
+    (end-of-line-code)
+    (if (or (= here (point))
+           (bolp))
+        (end-of-line))))
+(put 'end-of-line-or-code 'CUA 'move)
 ;; <end> is still bound to end-of-visual-line
-(global-set-key (kbd "C-e") 'end-of-code-or-line)
+(global-set-key (kbd "C-e") 'end-of-line-or-code)
 
 ;; scroll the other buffer
 (global-set-key (kbd "S-<next>") 'scroll-other-window)
