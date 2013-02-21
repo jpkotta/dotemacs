@@ -798,6 +798,8 @@ If given a prefix argument, select the previous candidate."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Flyspell
 
+;; TODO: wrap flyspell-auto-correct-word with ido
+
 (defer-until-loaded "flyspell"
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
@@ -1343,9 +1345,9 @@ Otherwise, get the diff between the revisions where the region starts
 and ends.
 Contrary to `log-view-diff-changeset', it will only show the part of the
 changeset that affected the currently considered file(s)."
-    (interactive
-     (list (if mark-active (region-beginning) (point))
-           (if mark-active (region-end) (point))))
+    (interactive (if mark-active
+                     (list (region-beginning) (region-end))
+                   (list (point) (point))))
     (let ((fr (log-view-current-tag beg))
           (to (log-view-current-tag end)))
       (when (and (string-equal fr to)
@@ -2655,13 +2657,6 @@ isn't there and triggers an error"
 ;; (let ((s "(let ((s %S)) (insert (format s s)))")) (insert (format s s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Scheme
-
-;; geiser is a nice REPL and other interaction to a scheme interpreter
-(add-to-path "geiser/elisp")
-(require 'geiser nil 'noerror) ;; this is just autoloads
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; FVWM
 (autoload 'fvwm-mode "fvwm-mode.el"
   "Major mode for Fvwm config files." t)
@@ -2737,13 +2732,10 @@ isn't there and triggers an error"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
 
-(defun jpk/conf-mode-hook ()
-  t)
-(add-hook 'conf-mode-hook 'jpk/conf-mode-hook)
-
 (dolist (re '("\\.list\\'" ;; apt sources files
-              "\\.hgrc" "\\.hgignore" ;; mercurial files
+              "\\.hgignore" "\\.?hgrc" ;; mercurial files
               "Doxyfile" ;; Doxygen
+              "\\.rules" ;; udev
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
 
@@ -3386,50 +3378,6 @@ point."
   (interactive "nSet tab width: ")
   (set-variable 'tab-width arg))
 
-;; in Emacs23, you can indent the region with a simple TAB
-(unless (fboundp 'region-active-p)
-  ;; use-region-p is not built-in in emacs22 or earlier
-  (defun region-active-p ()
-    "Return t if Transient Mark mode is enabled and the mark is active.
-
-  Most commands that act on the region if it is active and
-  Transient Mark mode is enabled, and on the text near point
-  otherwise, should use `use-region-p' instead.  That function
-  checks the value of `use-empty-active-region' as well."
-    (and transient-mark-mode mark-active))
-  (defcustom use-empty-active-region nil
-    "Whether \"region-aware\" commands should act on empty regions.
-  If nil, region-aware commands treat empty regions as inactive.
-  If non-nil, region-aware commands treat the region as active as
-  long as the mark is active, even if the region is empty.
-
-  Region-aware commands are those that act on the region if it is
-  active and Transient Mark mode is enabled, and on the text near
-  point otherwise."
-    :type 'boolean
-    :version "23.1"
-    :group 'editing-basics)
-  (defun use-region-p ()
-    "Return t if the region is active and it is appropriate to act on it.
-  This is used by commands that act specially on the region under
-  Transient Mark mode.  It returns t if and only if Transient Mark
-  mode is enabled, the mark is active, and the region is non-empty.
-  If `use-empty-active-region' is non-nil, it returns t even if the
-  region is empty.
-
-  For some commands, it may be appropriate to disregard the value
-  of `use-empty-active-region'; in that case, use `region-active-p'."
-    (and (region-active-p)
-         (or use-empty-active-region (> (region-end) (region-beginning)))))
-
-  (defadvice indent-for-tab-command (around indent-dwim activate)
-    "If the region is active, run indent-region-function instead."
-    (if (use-region-p)
-        (let ((deactivate-mark nil))
-          (funcall indent-region-function (region-beginning) (region-end)))
-      ad-do-it))
-  )
-
 ;; new buffers default to using 4 spaces for indent
 (setq-default tab-width 8)
 (setq-default indent-tabs-mode nil)
@@ -3461,6 +3409,7 @@ Positive arg means right; negative means left"
       ;;(move-beginning-of-line nil)
       (indent-rigidly beg-bol en arg)
       (push-mark beg t t))))
+
 (defun move-horizontally-dwim (beg en arg)
   "If there is an active region, move the whole region arg
 columns.  Otherwise, move the cursor line arg columns."
@@ -3468,6 +3417,7 @@ columns.  Otherwise, move the cursor line arg columns."
   (if (use-region-p)
       (move-horizontally beg en arg)
     (move-horizontally (line-beginning-position) (line-end-position) arg)))
+
 (global-set-key (kbd "C-9")
                 (lambda (beg en)
                   "move region left by one"
