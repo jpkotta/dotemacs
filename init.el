@@ -3518,21 +3518,22 @@ http://www.emacswiki.org/emacs/AlignCommands"
 
 (defun end-of-line-code ()
   (interactive "^")
-  (save-match-data
-    (let* ((bolpos (line-beginning-position)))
-      (end-of-line)
-      (if (comment-search-backward bolpos 'noerror)
-          (search-backward-regexp comment-start-skip bolpos 'noerror))
-      (skip-syntax-backward " " bolpos))))
+  (require 'newcomment)
+  (if comment-start-skip
+      (save-match-data
+        (let* ((bolpos (line-beginning-position)))
+          (end-of-line)
+          (if (comment-search-backward bolpos 'noerror)
+              (search-backward-regexp comment-start-skip bolpos 'noerror))
+          (skip-syntax-backward " " bolpos)))
+    (end-of-line)))
 
 (defun end-of-line-or-code ()
   "Move to EOL, or if already there, to EOL sans comments."
   (interactive "^")
-  (let ((here (point)))
-    (end-of-line-code)
-    (if (or (= here (point))
-           (bolp))
-        (end-of-line))))
+  (if (eolp) ;; test me here
+      (end-of-line-code)
+    (end-of-line)))
 (put 'end-of-line-or-code 'CUA 'move)
 ;; <end> is still bound to end-of-visual-line
 (global-set-key (kbd "C-e") 'end-of-line-or-code)
