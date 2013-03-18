@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# name: pdb.set_trace()
+# key: debug
+# --
+import pdb; pdb.set_trace()
