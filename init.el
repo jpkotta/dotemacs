@@ -89,6 +89,7 @@
         buffer-move
         csharp-mode
         csv-mode
+        diff-hl
         diminish
         dired+
         dired-details
@@ -1580,6 +1581,52 @@ isn't there and triggers an error"
 (add-hook 'ediff-before-setup-hook 'jpk/ediff-before-setup-hook)
 (add-hook 'ediff-quit-hook 'jpk/ediff-quit-hook)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; diff-hl
+
+(defer-until-loaded "diff-hl"
+  (define-fringe-bitmap 'diff-hl-bmp-insert
+    [#b00000000
+     #b00011000
+     #b00011000
+     #b01111110
+     #b01111110
+     #b00011000
+     #b00011000
+     #b00000000])
+
+  (define-fringe-bitmap 'diff-hl-bmp-delete
+    [#b00000000
+     #b00000000
+     #b00000000
+     #b01111110
+     #b01111110
+     #b00000000
+     #b00000000
+     #b00000000])
+
+  (define-fringe-bitmap 'diff-hl-bmp-change
+    [#b00011000
+     #b00011000
+     #b00011000
+     #b00011000
+     #b00011000
+     #b00011000
+     #b00011000
+     #b00011000])
+
+  (defun diff-hl-fringe-spec (type pos)
+    (let* ((key (cons type pos))
+           (val (gethash key diff-hl-spec-cache)))
+      (unless val
+        (let* ((face-sym (intern (concat "diff-hl-" (symbol-name type))))
+               (bmp-sym (intern (concat "diff-hl-bmp-" (symbol-name type)))))
+          (setq val (propertize " " 'display `((left-fringe ,bmp-sym ,face-sym))))
+          (puthash key val diff-hl-spec-cache)))
+      val))
+  )
+
+(global-diff-hl-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
