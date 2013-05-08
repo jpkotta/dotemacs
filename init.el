@@ -547,6 +547,7 @@ and so on."
 (defer-until-loaded "abbrev" (diminish 'abbrev-mode ""))
 (defer-until-loaded "auto-complete" (diminish 'auto-complete-mode ""))
 (defer-until-loaded "doxymacs" (diminish 'doxymacs-mode ""))
+(defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode ""))
 (defer-until-loaded "eldoc" (diminish 'eldoc-mode ""))
 (defer-until-loaded "face-remap" (diminish 'buffer-face-mode ""))
 (defer-until-loaded "fixme-mode" (diminish 'fixme-mode ""))
@@ -3492,7 +3493,8 @@ columns.  Otherwise, move the cursor line arg columns."
 
 ;; drag things (words, regions, lines) with arrow keys
 (with-library 'drag-stuff
-  (setq drag-stuff-modifier '(meta shift)))
+  (setq drag-stuff-modifier '(meta shift))
+  (drag-stuff-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
