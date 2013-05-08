@@ -13,8 +13,8 @@
 (defmacro tic (tt)
   `(setq ,tt (current-time)))
 (defun toc (tt)
-  (- (time-to-seconds (current-time))
-     (time-to-seconds tt)))
+  (- (float-time (current-time))
+     (float-time tt)))
 
 ;; profile this file's evaluation time
 (setq init-el-time (make-tictoc))
@@ -48,14 +48,14 @@
 
   (interactive "DAdd directory to load-path: ")
   (unless (or absolute
-             (called-interactively-p))
+             (called-interactively-p 'interactive))
     (setq dir (concat (expand-file-name user-emacs-directory) dir)))
   (setq dir (expand-file-name dir))
   (let ((path-var (or other-path-var 'load-path)))
     (add-to-list path-var dir nil (lambda (a b)
                                   (string= (expand-file-name a)
                                            (expand-file-name b))))
-    (when (called-interactively-p)
+    (when (called-interactively-p 'interactive)
       (message "Added %s to %s." dir path-var))))
 
 (add-to-path user-emacs-directory 'absolute)
@@ -150,10 +150,10 @@
   cleaning out unwanted packages."
   (interactive)
   (package-show-package-list
-   (remove-if-not (lambda (x) (and (not (memq x jpk-packages))
-                            (not (package-built-in-p x))
-                            (package-installed-p x)))
-                  (mapcar 'car package-archive-contents))))
+   (cl-remove-if-not (lambda (x) (and (not (memq x jpk-packages))
+                               (not (package-built-in-p x))
+                               (package-installed-p x)))
+                     (mapcar 'car package-archive-contents))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
@@ -251,7 +251,7 @@ Should be equivalent to
   (replace-regexp-in-string
    (concat "\[" FROM "\]")
    (lambda (s)
-     (string (elt TO (search s FROM))))
+     (string (elt TO (cl-search s FROM))))
    STRING))
 
 ;; Don't create the .#filename files and don't ask about stealing.
@@ -287,10 +287,10 @@ Should be equivalent to
     ;; Generate all permutations of the remaining elements,
     ;; And add e to the front of each of these.
     ;; Do this for all possible e to generate all permutations.
-    (mapcan (lambda (e)
+    (cl-mapcan (lambda (e)
           (mapcar (lambda (p) (cons e p))
               (permutations
-               (remove* e bag :count 1))))
+               (cl-remove e bag :count 1))))
         bag)))
 
 ;; narrowing makes a region effectively the entire buffer
@@ -434,7 +434,7 @@ and so on."
 (defun insert-look-of-disapproval (arg)
   (interactive "*P")
   (if (not arg)
-      ;;(mapconcat 'ucs-insert '(3232 95 3232) "")
+      ;;(mapconcat 'insert-char '(3232 95 3232) "")
       (insert "ಠ_ಠ")
     (insert " _____)        _____)\n"
             " /   \\         /   \\\n"
@@ -447,7 +447,7 @@ and so on."
 (defun insert-awesome-face (arg)
   (interactive "*P")
   (if (not arg)
-      ;;(ucs-insert 9787)
+      ;;(insert-char 9787)
       (insert "☻")
     (insert "  __     __   \n"
             " /  o   /  o  \n"
@@ -490,7 +490,8 @@ and so on."
       (dotimes (_ (window-width))
         (sit-for 0.01)
         (dotimes (n 3)
-          (goto-line (+ h-pos n 2))
+          (goto-char (point-min))
+          (forward-line (+ h-pos n 1))
           (move-to-column 0)
           (insert " "))))
     (kill-buffer mouse-buffer)))
@@ -642,7 +643,7 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; unicode
 
-;; tip - use ucs-insert to insert unicode characters by name
+;; tip - use insert-char to insert unicode characters by name
 
 ;; from Jonathan Arkell (http://stackoverflow.com/questions/154097/whats-in-your-emacs/154980#154980)
 (prefer-coding-system 'utf-8)
@@ -657,8 +658,8 @@ The numbers are formatted according to the FORMAT string."
          ;;(cmp (lambda (x y) (string< (car x) (car y))))
          (cmp (lambda (x y) (< (cdr x) (cdr y))))
          ;; alist like ("name" . code-point)
-         (char-alist (sort (remove-if-not (lambda (x) (string-match regexp (car x)))
-                                          (ucs-names))
+         (char-alist (sort (cl-remove-if-not (lambda (x) (string-match regexp (car x)))
+                                             (ucs-names))
                            cmp)))
     (with-help-window "*Unicode characters*"
       (with-current-buffer standard-output
@@ -1092,14 +1093,14 @@ This function is suitable to add to `find-file-hook'."
     (setq bname (or (file-remote-p bname 'localname)
                     (concat "/sudo::" bname)))
     ;; FIXME mostly works around, but not quite
-    (flet ((server-buffer-done
-            (buffer &optional for-killing)
-            nil))
+    (cl-flet ((server-buffer-done
+               (buffer &optional for-killing)
+               nil))
       (find-alternate-file bname))
     (goto-char pt)))
 
 ;; normally this is bound to find-file-read-only
-;; use M-x toggle-read-only instead
+;; use M-x read-only-mode instead
 (global-set-key (kbd "C-x C-r") 'find-alternative-file-with-sudo)
 
 (add-hook 'find-file-hook 'find-file-root-header-warning)
@@ -1400,7 +1401,7 @@ changeset that affected the currently considered file(s)."
     (kbd "SPC") 'vc-dir-toggle)
 
   (defun jpk/vc-hg-log-view-mode-hook ()
-    (toggle-read-only 1))
+    (read-only-mode 1))
   (add-hook 'vc-hg-log-view-mode-hook 'jpk/vc-hg-log-view-mode-hook)
 
   (define-key vc-hg-log-view-mode-map
@@ -1473,11 +1474,17 @@ changeset that affected the currently considered file(s)."
 
 (defun insert-CR-eol (b e)
   (interactive "r")
-  (replace-regexp "\\([^]\\)$" "\\1"  nil b e))
+  (save-restriction 
+    (narrow-to-region b e)
+    (while (re-search-forward "\\([^]\\)$" nil t)
+      (replace-match "\\1" nil nil))))
 
 (defun remove-CR-eol (b e)
   (interactive "r")
-  (replace-regexp "$" "" nil b e))
+  (save-restriction 
+    (narrow-to-region b e)
+    (while (re-search-forward "$" nil t)
+      (replace-match "" nil nil))))
 
 (defun diff-add-or-remove-trailing-CR-in-hunk (add-not-remove)
   "Add trailing carriage returns in the current hunk."
@@ -2208,11 +2215,9 @@ isn't there and triggers an error"
 
 (defun make-scratch-buffer ()
   (interactive)
-  (save-excursion
-    (set-buffer (get-buffer-create "*scratch*"))
-    (lisp-interaction-mode)
-    (message "") ;; remove message from above command
-    ))
+  (with-current-buffer (get-buffer-create "*scratch*")
+    (with-temp-message ""
+      (lisp-interaction-mode))))
 
 (defun scratch-respawns-when-killed ()
   (interactive)
@@ -2967,7 +2972,7 @@ server/database name."
     
     (with-current-buffer table-b-buf
       (goto-char (point-min))
-      (search-forward-regexp "^INSERT INTO")
+      (re-search-forward "^INSERT INTO")
       (replace-regexp (regexp-quote table-b)
                       table-a
                       t (point) (point-max)))
