@@ -2814,6 +2814,7 @@ isn't there and triggers an error"
     (setq ac-sources
           '(ac-source-dictionary ac-source-words-in-buffer ac-source-filename))
     (auto-complete-mode 1))
+  (visual-line-mode 1)
   )
 
 (add-hook 'text-mode-hook 'jpk/text-mode-hook)
@@ -2826,8 +2827,8 @@ isn't there and triggers an error"
 (defun jpk/LaTeX-mode-hook ()
   (with-library 'adaptive-wrap
     (setq adaptive-wrap-extra-indent 0)
-    (visual-line-mode 1)
     (adaptive-wrap-prefix-mode 1))
+  (visual-line-mode 1)
   (with-library 'flyspell
     (flyspell-mode 1))
   (setq fill-column 80)
