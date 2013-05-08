@@ -117,7 +117,6 @@
         pkgbuild-mode
         projectile
         pylint
-        python
         ;;python-pep8
         rainbow-mode
         save-visited-files
@@ -2557,7 +2556,8 @@ isn't there and triggers an error"
 
 (defun jpk/python-mode-hook ()
   (with-library 'pylint
-    (setq pylint-options '("--rcfile=./.pylintrc"
+    (setq pylint-command "pylint2"
+          pylint-options '("--rcfile=./.pylintrc"
                            "--reports=n"
                            "--output-format=parseable"
                            "--disable=C,R"
