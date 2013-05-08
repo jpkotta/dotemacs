@@ -114,6 +114,7 @@
         multi-term
         openwith
         org
+        pkgbuild-mode
         projectile
         pylint
         python
@@ -2735,7 +2736,7 @@ isn't there and triggers an error"
 ;;; PKGBUILD
 
 (add-to-list 'auto-mode-alist
-             '("PKGBUILD" . shell-script-mode))
+             '("PKGBUILD" . pkgbuild-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
