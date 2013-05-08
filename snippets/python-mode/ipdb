@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# contributor: Jonathan Kotta <jpkotta@gmail.com>
+# name: ipdb.set_trace()
+# key: ipdb
+# --
+from IPython.core.debugger import Pdb; Pdb(color_scheme="Linux").set_trace()
