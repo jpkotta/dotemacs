@@ -2301,6 +2301,18 @@ isn't there and triggers an error"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generic Programming
 
+(defun previous-defun (&optional arg)
+  "Like `beginning-of-defun', and also recenters."
+  (interactive "^p")
+  (beginning-of-defun arg)
+  (recenter-no-redraw))
+
+(defun next-defun (&optional arg)
+  "Like `beginning-of-defun' with a negative arg, and also recenters."
+  (interactive "^p")
+  (beginning-of-defun (- arg))
+  (recenter-no-redraw))
+
 (which-function-mode 1)
 
 (defun insert-comment-bar (arg)
@@ -2385,14 +2397,17 @@ isn't there and triggers an error"
   (with-library 'highlight-parentheses
     (highlight-parentheses-mode 1))
 
-  (local-set-key (kbd "C-M-;") 'insert-comment-bar)
-
   (with-library 'pretty-mode
     (pretty-mode 1))
 
   (add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
 
+  (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (local-set-key (kbd "C-m") 'newline-and-indent)
+  (local-set-key (kbd "C-a") 'beginning-of-line-or-text)
+  (local-set-key (kbd "C-e") 'end-of-line-or-code)
+  (local-set-key (kbd "C-M-a") 'previous-defun)
+  (local-set-key (kbd "C-M-e") 'next-defun)
   )
 
 (add-hook 'prog-mode-hook 'jpk/prog-mode-hook)
@@ -2823,7 +2838,8 @@ isn't there and triggers an error"
                                ac-source-math-latex
                                ac-source-latex-commands)))
   (local-set-key [remap next-error] nil)
-  (local-set-key [remap previous-error] nil))
+  (local-set-key [remap previous-error] nil)
+  )
 
 (add-hook 'LaTeX-mode-hook 'jpk/LaTeX-mode-hook)
 
@@ -3563,8 +3579,6 @@ http://www.emacswiki.org/emacs/AlignCommands"
       (beginning-of-line-text arg)
     (move-beginning-of-line arg)))
 (put 'beginning-of-line-or-text 'CUA 'move)
-;; <home> is still bound to move-beginning-of-line
-(global-set-key (kbd "C-a") 'beginning-of-line-or-text)
 
 (defun end-of-line-code ()
   (interactive "^")
@@ -3585,8 +3599,6 @@ http://www.emacswiki.org/emacs/AlignCommands"
       (end-of-line-code)
     (end-of-line)))
 (put 'end-of-line-or-code 'CUA 'move)
-;; <end> is still bound to end-of-visual-line
-(global-set-key (kbd "C-e") 'end-of-line-or-code)
 
 ;; scroll the other buffer
 (global-set-key (kbd "S-<next>") 'scroll-other-window)
