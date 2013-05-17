@@ -341,7 +341,11 @@ Should be equivalent to
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; projectile
 
-(with-library 'projectile 
+(with-library 'projectile
+  (setq
+   projectile-cache-file (concat emacs-persistence-directory "projectile.cache")
+   projectile-ack-function 'ack
+   projectile-known-projects-file (concat emacs-persistence-directory "projectile-bookmarks.eld"))
   (projectile-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
