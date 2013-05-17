@@ -3056,7 +3056,7 @@ match.  It should be idempotent."
 
 (define-key isearch-mode-map (kbd "<C-backspace>") 'isearch-unfail)
 
-(with-library 'ergo-movement-mode
+(with-library 'ijkl-mode
   (define-key isearch-mode-map (kbd "M-k") 'isearch-other-meta-char))
 
 (with-library 'flex-isearch
@@ -3333,9 +3333,8 @@ point."
 ;; the best way to find the symbol for a key is to run C-h k <key>
 
 ;; use M-{ijkl} and C-M-{ijkl} like arrows
-;; integrates with CUA mode so shifted keys extend the region
-(with-library 'ergo-movement-mode
-  (ergo-movement-mode 1))
+(with-library 'ijkl-mode
+  (ijkl-mode 1))
 
 ;; normally bound to C-<mouse-3>
 (global-set-key (kbd "<down-mouse-3>") 'mouse-popup-menubar-stuff)
@@ -3401,13 +3400,7 @@ point."
 (global-set-key (kbd "<C-S-delete>") 'delete-syntax)
 (global-set-key (kbd "<C-S-backspace>") 'backward-delete-syntax)
 (global-set-key (kbd "C-<delete>") 'delete-word)
-(global-set-key (kbd "M-d") 'delete-word)
 (global-set-key (kbd "C-<backspace>") 'backward-delete-word)
-
-(with-library 'ergo-movement-mode
-  (global-set-key (kbd "C-S-d") (make-run-keybind-func "DEL" 'move))
-  (global-set-key (kbd "M-D") (make-run-keybind-func "C-<backspace>" 'move))
-  (global-set-key (kbd "M-d") (make-run-keybind-func "C-<delete>" 'move)))
 
 (defalias 'delete-vertical-space 'delete-blank-lines)
 
