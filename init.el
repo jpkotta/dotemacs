@@ -2322,8 +2322,6 @@ isn't there and triggers an error"
   (beginning-of-defun (- arg))
   (recenter-no-redraw))
 
-(which-function-mode 1)
-
 (defun insert-comment-bar (arg)
   (interactive "*p")
   (let ((num (if (> arg 1) arg 72))
