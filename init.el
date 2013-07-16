@@ -174,25 +174,41 @@
 
 (setq default-frame-alist '((vertical-scroll-bars . right)
                             (menu-bar-lines . 1)
-                            (background-color . "gray12")
                             (background-mode . dark)
-                            (border-color . "black")
-                            (cursor-color . "orange")
-                            (foreground-color . "green")
-                            (mouse-color . "orange")
                             (tool-bar-lines . 0)
                             (width . 81)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; color theme
+(load-library "calm-forest-theme.el")
+(load-theme 'calm-forest 'noconfirm)
 
-;; TODO
+;; Indicates when you're beyond a column (e.g. 80) and also shows the
+;; size of the region if it's active.
+(require 'modeline-posn nil 'noerror)
+(setq modelinepos-column-limit 80)
+
+;; frame title
+(setq-default frame-title-format
+              '(:eval
+                (format "%s@%s: %s %s"
+                        (or (file-remote-p default-directory 'user)
+                            user-real-login-name)
+                        (or (file-remote-p default-directory 'host)
+                            (car (split-string system-name "\\.")))
+                        (buffer-name)
+                        (cond
+                         (buffer-file-truename
+                          (concat "(" buffer-file-truename ")"))
+                         (dired-directory
+                          (concat "{" dired-directory "}"))
+                         (t
+                          "[no file]")))))
+
+;; cursor
+(blink-cursor-mode 0)
+(setq-default cursor-type 'bar)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
-
-(blink-cursor-mode 0)
-(setq-default cursor-type 'bar)
 
 (defmacro with-library (feature &rest body)
   "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
@@ -1031,34 +1047,6 @@ it's probably better to explicitly request a merge."
 (setq recentf-save-file (concat emacs-persistence-directory "recentf")
       recentf-max-saved-items 256)
 (recentf-mode 1)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Title and Modeline
-
-;; Indicates when you're beyond a column (e.g. 80) and also shows the
-;; size of the region if it's active.
-(require 'modeline-posn nil 'noerror)
-(setq modelinepos-column-limit 80)
-
-;; frame title
-(setq-default frame-title-format
-              '(:eval
-                (format "%s@%s: %s %s"
-                        (or (file-remote-p default-directory 'user)
-                            user-real-login-name)
-                        (or (file-remote-p default-directory 'host)
-                            (car (split-string system-name "\\.")))
-                        (buffer-name)
-                        (cond
-                         (buffer-file-truename
-                          (concat "(" buffer-file-truename ")"))
-                         (dired-directory
-                          (concat "{" dired-directory "}"))
-                         (t
-                          "[no file]")))))
-
-(global-set-key (kbd "<mode-line> <mouse-2>") 'mouse-delete-window)
-(global-set-key (kbd "<mode-line> <mouse-3>") 'mode-line-next-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
