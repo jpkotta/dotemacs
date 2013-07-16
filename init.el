@@ -2712,6 +2712,11 @@ isn't there and triggers an error"
   (eldoc-mode 1)
   (local-set-key (kbd "C-M-S-x") 'eval-region))
 
+;; http://milkbox.net/note/single-file-master-emacs-configuration/
+(defun imenu-elisp-sections ()
+  (setq imenu-prev-index-position-function nil)
+  (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
+
 (defer-until-loaded "lisp-mode"
   (dolist (mode '(lisp-mode
                   emacs-lisp-mode
@@ -2721,6 +2726,8 @@ isn't there and triggers an error"
                   emacs-lisp-mode-hook
                   lisp-interaction-mode-hook))
     (add-hook hook 'jpk/lisp-modes-hook))
+
+  (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
   )
 
 (defun jpk/ielm-mode-hook ()
