@@ -3533,6 +3533,12 @@ columns.  Otherwise, move the cursor line arg columns."
   (drag-stuff-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; anchored-transpose
+
+(add-to-path "nxhtml/util")
+(autoload 'anchored-transpose "anchored-transpose.el" "" 'interactive)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
 
 ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
