@@ -404,9 +404,8 @@ and so on."
   (local-unset-key (kbd "C-S-<right>"))
   (local-set-key (kbd "C-<down>") 'outline-forward-same-level)
   (local-set-key (kbd "C-<up>") 'outline-backward-same-level)
-  (with-library 'adaptive-wrap
-    (visual-line-mode 1)
-    (adaptive-wrap-prefix-mode 1))
+  (setq adaptive-wrap-extra-indent 0)
+  (visual-line-mode 1)
   (with-library 'flyspell
     (flyspell-mode 1))
   (with-library 'ac-org-mode
@@ -1287,9 +1286,8 @@ This function is suitable to add to `find-file-hook'."
   beginning of the line")
 
 (defun jpk/vc-hg-log-view-mode-hook ()
-  (with-library 'adaptive-wrap
-    (visual-line-mode 1)
-    (adaptive-wrap-prefix-mode 1))
+  (setq adaptive-wrap-extra-indent 0)
+  (visual-line-mode 1)
   ;; ignore graphlog stuff
   (setq log-view-message-re
         (replace-regexp-in-string "^\\^" hg-graphlog-re
@@ -1451,12 +1449,8 @@ changeset that affected the currently considered file(s)."
   (local-set-key (kbd "M-1") 'other-window-prev)
   (local-set-key (kbd "M-2") 'other-window)
 
-  (with-library 'adaptive-wrap
-    (visual-line-mode 1)
-    (setq adaptive-wrap-extra-indent 1)
-    (adaptive-wrap-prefix-mode 1)
-    (font-lock-mode 0)
-    (font-lock-mode 1))
+  (setq adaptive-wrap-extra-indent 1)
+  (visual-line-mode 1)
   )
 
 (add-hook 'diff-mode-hook 'jpk/diff-mode-hook)
@@ -2414,7 +2408,9 @@ isn't there and triggers an error"
   (with-library 'pretty-mode
     (pretty-mode 1))
 
-  (add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
+  (setq adaptive-wrap-extra-indent 1)
+
+  ;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
 
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (local-set-key (kbd "C-m") 'newline-and-indent)
@@ -2785,10 +2781,8 @@ isn't there and triggers an error"
 (fset 'sgml-mode 'nxml-mode)
 
 (defun jpk-nxml-mode-hook ()
-  (with-library 'adaptive-wrap
-    (setq adaptive-wrap-extra-indent 2)
-    (visual-line-mode 1)
-    (adaptive-word-wrap-mode 1)))
+  (setq adaptive-wrap-extra-indent 2)
+  (visual-line-mode 1))
 (add-hook 'nxml-mode-hook 'jpk-nxml-mode-hook)
 
 ;; This is considerably more heavyweight, but seems to be better
@@ -2837,6 +2831,7 @@ isn't there and triggers an error"
     (setq ac-sources
           '(ac-source-dictionary ac-source-words-in-buffer ac-source-filename))
     (auto-complete-mode 1))
+  (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
   )
 
@@ -2848,9 +2843,7 @@ isn't there and triggers an error"
 (setq LaTeX-item-indent -1)
 
 (defun jpk/LaTeX-mode-hook ()
-  (with-library 'adaptive-wrap
-    (setq adaptive-wrap-extra-indent 0)
-    (adaptive-wrap-prefix-mode 1))
+  (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
   (with-library 'flyspell
     (flyspell-mode 1))
@@ -2871,10 +2864,8 @@ isn't there and triggers an error"
 ;;; SQL
 
 (defun jpk/sql-mode-hook ()
-  (with-library 'adaptive-wrap
-    (setq adaptive-wrap-extra-indent 2)
-    (adaptive-wrap-prefix-mode 1)
-    (visual-line-mode 1))
+  (setq adaptive-wrap-extra-indent 2)
+  (visual-line-mode 1)
 
   (with-library 'wrap-region
     (wrap-region-add-wrapper "`" "`"))
@@ -3108,10 +3099,8 @@ match.  It should be idempotent."
     (call-interactively 'rgrep)))
 
 (defun jpk/grep-mode-hook ()
-  (with-library 'adaptive-wrap
-    (visual-line-mode 1)
-    (setq adaptive-wrap-extra-indent 4)
-    (adaptive-wrap-prefix-mode 1))
+  (setq adaptive-wrap-extra-indent 4)
+  (visual-line-mode 1)
   (with-library 'hide-lines
     (run-with-timer
      0.01 nil
@@ -3577,9 +3566,13 @@ http://www.emacswiki.org/emacs/AlignCommands"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; adaptive word wrap
 
-(autoload 'adaptive-wrap-prefix-mode "adaptive-wrap"
-  "Like `word-wrap', but preserves indentation of the actual line
-  in the wrapped lines." t)
+(with-library 'adaptive-wrap
+  (setq-default adaptive-wrap-extra-indent 2)
+  (defun toggle-font-lock-mode ()
+    (font-lock-mode 'toggle)
+    (font-lock-mode 'toggle))
+  (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
+  (add-hook 'visual-line-mode-hook 'toggle-font-lock-mode 'append))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; scrolling
