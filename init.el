@@ -4,9 +4,7 @@
 
 ;; Author: Jonathan Kotta <jpkotta@gmail.com>
 
-;;; Code:
-
-(message "loading jpkotta's init.el")
+(message "Loading jpkotta's init.el.")
 
 (defun make-tictoc ()
   (current-time))
@@ -75,7 +73,7 @@
   (make-directory emacs-persistence-directory t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; packages
+;;; Packages
 
 (setq jpk-packages
       '(
@@ -167,7 +165,7 @@
   (message "custom.el loaded in %f s" (toc custom-el-time)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Frame appearance
+;;; Appearance 
 
 (menu-bar-mode 1)
 (tool-bar-mode -1)
@@ -349,14 +347,14 @@ Should be equivalent to
 ;;(delete-selection-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; printing
+;;; Printing
 
 (with-library 'printing
   (setq pr-gv-command "okular")
   (pr-update-menus t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; projectile
+;;; Projectile
 
 (with-library 'projectile
   (setq
@@ -366,7 +364,7 @@ Should be equivalent to
   (projectile-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; repeatable commands
+;;; Repeatable Commands
 
 ;; From http://groups.google.com/group/gnu.emacs.help/browse_thread/thread/44728fda08f1ec8f?hl=en&tvc=2
 (require 'repeat)
@@ -439,8 +437,8 @@ and so on."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
 
-;; insert placeholder text
 (defun insert-lorem-ipsum ()
+  "Insert placeholder text."
   (interactive "*")
   (insert "Lorem ipsum dolor sit amet, consectetur adipisicing "
           "elit, sed do eiusmod tempor incididunt ut labore et "
@@ -453,6 +451,14 @@ and so on."
           "deserunt mollit anim id est laborum."))
 
 (defun insert-look-of-disapproval (arg)
+  "Insert a Look of Disapproval (ಠ_ಠ).
+With prefix arg, insert a large ASCII art version.
+ _____)        _____)
+ /   \         /   \
+(  O  )       (  O  )
+ \___/         \___/
+       ======= 
+"
   (interactive "*P")
   (if (not arg)
       ;;(mapconcat 'insert-char '(3232 95 3232) "")
@@ -466,6 +472,17 @@ and so on."
 (global-set-key (kbd "C-c w t f") 'insert-look-of-disapproval)
 
 (defun insert-awesome-face (arg)
+  "Insert a happy face (☻).
+With prefix arg, insert a large ASCII art version.
+  __     __   
+ /  o   /  o  
+|____| |____| 
+              
+------------- 
+|            )
+ \    ,-----, 
+  '-./____-'  
+"
   (interactive "*P")
   (if (not arg)
       ;;(insert-char 9787)
@@ -657,7 +674,7 @@ The numbers are formatted according to the FORMAT string."
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; clipboard
+;;; Clipboard
 
 (setq x-select-enable-clipboard t
       x-select-enable-primary nil
@@ -665,7 +682,7 @@ The numbers are formatted according to the FORMAT string."
       select-active-regions t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; unicode
+;;; Unicode
 
 ;; tip - use insert-char to insert unicode characters by name
 
@@ -679,7 +696,6 @@ The numbers are formatted according to the FORMAT string."
   (interactive "sRegexp (default \".*\"): ")
   (let* ((regexp (or regexp ".*"))
          (case-fold-search t)
-         ;;(cmp (lambda (x y) (string< (car x) (car y))))
          (cmp (lambda (x y) (< (cdr x) (cdr y))))
          ;; alist like ("name" . code-point)
          (char-alist (sort (cl-remove-if-not (lambda (x) (string-match regexp (car x)))
@@ -1278,7 +1294,7 @@ This function is suitable to add to `find-file-hook'."
   (setq log-view-message-re
         (replace-regexp-in-string "^\\^" hg-graphlog-re
                                   log-view-message-re)))
-
+                
 (add-hook 'vc-hg-log-view-mode-hook 'jpk/vc-hg-log-view-mode-hook)
 
 (defer-until-loaded "vc-hg"
