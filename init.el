@@ -2552,15 +2552,42 @@ isn't there and triggers an error"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
 
-(remove-from-list 'which-func-modes 'python-mode)
-
 (defer-until-loaded "python"
+
   ;; syntax highlighting of operators
   (font-lock-add-keywords
    'python-mode
    (list
     operators-font-lock-spec
     brackets-font-lock-spec))
+
+  (with-library 'pylint
+    (setq pylint-options '("--rcfile=./.pylintrc"
+                           "--reports=n"
+                           "--output-format=parseable"
+                           "--disable=C,R"
+                           "--include-ids=y"))
+
+    (defun pylint2 ()
+      (interactive)
+      (let ((pylint-command "pylint2"))
+        (pylint)))
+
+    (defun pylint3 ()
+      (interactive)
+      (let ((pylint-command "pylint"))
+        (pylint)))
+
+    (define-key python-mode-map (kbd "C-c C-v") 'pylint2)
+    )
+
+  (define-key python-mode-map (kbd "S-<return>") 'python-send-region-or-line)
+  (define-key python-mode-map (kbd "<backtab>") 'delete-indentation)
+  (define-key python-mode-map (kbd "S-TAB") 'delete-indentation)
+  (define-key python-mode-map (kbd "C-c C-3") 'python-2to3)
+
+  (setq python-indent-offset 4)
+
   )
 
 (defun python-send-region-or-line (beg en)
@@ -2573,7 +2600,7 @@ isn't there and triggers an error"
                         (line-end-position))))
 
 (defun python-2to3 ()
-  "Run 2to3 on the current buffer and put the output in a new buffer."
+  "Run 2to3 on the current buffer and put the diff in a new buffer."
   (interactive)
   (let ((output-buffer "*Python 2to3*"))
     (shell-command (concat "2to3 " (buffer-file-name))
@@ -2582,30 +2609,12 @@ isn't there and triggers an error"
       (diff-mode))))
 
 (defun jpk/python-mode-hook ()
-  (with-library 'pylint
-    (setq pylint-command "pylint2"
-          pylint-options '("--rcfile=./.pylintrc"
-                           "--reports=n"
-                           "--output-format=parseable"
-                           "--disable=C,R"
-                           "--include-ids=y"))
-    (local-set-key (kbd "C-c C-v") 'pylint))
-
-  (local-set-key (kbd "S-<return>") 'python-send-region-or-line)
-
-  (local-set-key (kbd "<backtab>") 'delete-indentation)
-  (local-set-key (kbd "S-TAB") 'delete-indentation)
-
-  (local-set-key (kbd "C-c C-3") 'python-2to3)
-
-  (setq python-indent-offset 4)
+  ;; which-func-mode causes huge performance problems in python-mode
+  (when (boundp 'which-func-mode)
+    (which-func-mode -1))
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 (add-hook 'python-mode-hook 'jpk/prog-mode-hook)
-
-;; a better debugger
-(add-to-path "/usr/share/emacs/site-lisp/pydb" 'absolute)
-(autoload 'pydb "pydb.el" "Python debugger" t)
 
 (defun python-path ()
   "Returns a list of strings containing all the directories in Python's path."
