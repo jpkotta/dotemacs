@@ -59,6 +59,7 @@
  '(size-indication-mode t)
  '(svn-status-hide-unmodified t)
  '(svn-status-verbose t)
+ '(tab-width 4)
  '(term-default-fg-color "lavender blush")
  '(text-mode-hook (quote (text-mode-hook-identify)))
  '(transient-mark-mode t)

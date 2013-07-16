@@ -28,7 +28,6 @@
 ;; Patches
 ;;
 ;; ibuffer
-;; multi-term
 ;; graphlog stuff in vc-hg
 ;; pretty-mode
 
@@ -254,12 +253,14 @@ Should be equivalent to
                    'first) ;; position
     (ad-activate func)))
 
-;; suspend-frame is annoying in X, but useful in terminals.
-(global-set-key (kbd "C-x C-z")
-                (lambda () (interactive)
-                  (if (display-graphic-p)
-                      (message "Use `M-x suspend-frame' instead.")
-                    (suspend-frame))))
+(defun suspend-frame-if-not-gui ()
+  "Like `suspend-frame', but does not suspend GUI frames."
+  (interactive)
+  (if (display-graphic-p)
+      (message "Use `M-x suspend-frame' instead.")
+    (suspend-frame)))
+
+(global-set-key (kbd "C-x C-z") 'suspend-frame-if-not-gui)
 
 (defun pl-tr (STRING FROM TO)
   "perlish transpose: similar to STRING =~ tr/FROM/TO/"
@@ -339,10 +340,6 @@ Should be equivalent to
 
 ;; cancel everything, including active minibuffers and recursive edits
 (global-set-key (kbd "C-M-g") 'top-level)
-
-(defun remove-from-list (symbol element)
-  "Inverse of `add-to-list'.  TODO: add compare-fn."
-  (set symbol (delete element (eval symbol))))
 
 ;;(delete-selection-mode 1)
 
@@ -497,10 +494,6 @@ With prefix arg, insert a large ASCII art version.
             "  '-./____-'  \n")
     ))
 
-(defun insert-look-of-worry ()
-  (interactive "*")
-  (insert "٩( ͡๏̯͡๏)۶"))
-
 (defun insert-euro-sign ()
   (interactive "*")
   (insert "€"))
@@ -602,7 +595,7 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help
 
-(setq message-log-max 1000)
+(setq message-log-max 10000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
@@ -712,6 +705,13 @@ The numbers are formatted according to the FORMAT string."
 ;;; Daemon/Server
 
 (global-set-key (kbd "C-x C-S-c") 'save-buffers-kill-emacs)
+
+(defun server-edit-or-save-buffers-kill-terminal (arg)
+  "Runs `server-edit', and if it did nothing, then runs `save-buffers-kill-terminal'."
+  (interactive "P")
+  (if (if (boundp 'server-edit) (server-edit) t) ;; returns nil if it marked the buffer as "done"
+    (save-buffers-kill-terminal arg)))
+(global-set-key (kbd "C-x C-c") 'server-edit-or-save-buffers-kill-terminal)
 
 (when (daemonp)
   (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function))
@@ -1416,8 +1416,7 @@ changeset that affected the currently considered file(s)."
     (read-only-mode 1))
   (add-hook 'vc-hg-log-view-mode-hook 'jpk/vc-hg-log-view-mode-hook)
 
-  (define-key vc-hg-log-view-mode-map
-    (kbd "q") (lambda () (interactive) (kill-buffer (buffer-name))))
+  (define-key vc-hg-log-view-mode-map (kbd "q") 'kill-this-buffer)
 
   (global-set-key (kbd "C-x v O") 'vc-log-outgoing)
   (global-set-key (kbd "C-x v I") 'vc-log-incoming)
@@ -2704,7 +2703,7 @@ isn't there and triggers an error"
 (setq eval-expression-print-length nil) ;; unlimited
 
 (setq quoted-symbol-font-lock-spec
-      '("'\\([-a-zA-Z_][-a-zA-Z0-9_]*\\)\\>" 1 'font-lock-constant-face))
+      '("'\\([^][[:space:]()]+\\)\\>" 1 'font-lock-constant-face))
 
 (defun lisp-set-up-extra-font-lock (mode)
   (font-lock-add-keywords
