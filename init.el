@@ -120,6 +120,7 @@
         ;;python-pep8
         rainbow-mode
         save-visited-files
+        ssh-config-mode
         smart-tabs-mode
         smex
         ;;syntax-subword
@@ -537,6 +538,9 @@ and so on."
 ;; program that knows how to read the file can use the agent.
 (with-library 'keychain-environment
   (keychain-refresh-environment))
+
+(add-to-list 'auto-mode-alist '(".ssh/config\\'"  . ssh-config-mode))
+(add-to-list 'auto-mode-alist '("sshd?_config\\'" . ssh-config-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C SubWordMode
