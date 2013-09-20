@@ -107,6 +107,7 @@
         mediawiki
         mic-paren
         modeline-posn
+        morlock
         mouse+
         multi-term
         openwith
@@ -2707,6 +2708,10 @@ isn't there and triggers an error"
    (list
     brackets-font-lock-spec
     quoted-symbol-font-lock-spec)))
+
+(with-library 'morlock
+  (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
+  (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
 
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
