@@ -2875,6 +2875,19 @@ isn't there and triggers an error"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; SQL
 
+;; I have a feeling that there's some sort of hook that could do this
+;; more cleanly.
+(defun insert-semicolon-and-send-input (&optional no-newline artificial)
+  "Like `comint-send-input', but inserts a semicolon first."
+  (interactive)
+  (save-excursion
+    (let ((pmark (process-mark (get-buffer-process (current-buffer)))))
+      (when (> (point) (marker-position pmark))
+        (end-of-line)
+        (unless (save-excursion (search-backward ";" (line-beginning-position) 'noerror))
+          (insert ";")))))
+  (comint-send-input no-newline artificial))
+ 
 (defun jpk/sql-mode-hook ()
   (setq adaptive-wrap-extra-indent 2)
   (visual-line-mode 1)
@@ -2885,6 +2898,11 @@ isn't there and triggers an error"
   (sql-highlight-ansi-keywords))
 
 (defer-until-loaded "sql"
+
+  (define-key sql-interactive-mode-map (kbd "RET") 'insert-semicolon-and-send-input)
+
+  ;;;;
+  
   (defadvice sql-sqlite (around complete-and-process-file activate)
     (let (sql-user
           sql-server
