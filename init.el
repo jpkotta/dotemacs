@@ -2590,6 +2590,15 @@ isn't there and triggers an error"
 
   )
 
+(when (executable-find "ipython2")
+  (setq python-shell-interpreter "ipython2"
+        python-shell-interpreter-args ""
+        python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+        python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+        python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
+        python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
+        python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+
 (defun python-send-region-or-line (beg en)
   "Like `python-send-region', but automatically send the current
   line if region is not active."
