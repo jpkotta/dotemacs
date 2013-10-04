@@ -2565,9 +2565,8 @@ isn't there and triggers an error"
   (with-library 'pylint
     (setq pylint-options '("--rcfile=./.pylintrc"
                            "--reports=n"
-                           "--output-format=parseable"
-                           "--disable=C,R"
-                           "--include-ids=y"))
+                           "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
+                           "--disable=C,R"))
 
     (defun pylint2 ()
       (interactive)
