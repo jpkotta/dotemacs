@@ -898,9 +898,9 @@ If given a prefix argument, select the previous candidate."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hide-lines
 
-(global-set-key (kbd "C-c s a") 'show-all-invisible)
-(global-set-key (kbd "C-c s s") 'hide-non-matching-lines)
-(global-set-key (kbd "C-c s d") 'hide-matching-lines)
+(global-set-key (kbd "C-c s a") 'hide-lines-show-all)
+(global-set-key (kbd "C-c s s") 'hide-lines-not-matching)
+(global-set-key (kbd "C-c s d") 'hide-lines-matching)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ido - Interactive Do
@@ -3136,7 +3136,7 @@ match.  It should be idempotent."
      0.01 nil
      (lambda ()
        (with-current-buffer "*grep*"
-         (hide-matching-lines "^find"))))))
+         (hide-lines-matching "^find"))))))
 
 (add-hook 'grep-mode-hook 'jpk/grep-mode-hook)
 
