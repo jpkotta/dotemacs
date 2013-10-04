@@ -1590,7 +1590,7 @@ isn't there and triggers an error"
 (defun jpk/ediff-before-setup-hook ()
   (setq before-ediff-window-config (current-window-configuration)))
 (defun jpk/ediff-quit-hook ()
-  (when before-ediff-window-config
+  (when (window-configuration-p before-ediff-window-config)
     (set-window-configuration before-ediff-window-config)))
 (add-hook 'ediff-before-setup-hook 'jpk/ediff-before-setup-hook)
 (add-hook 'ediff-quit-hook 'jpk/ediff-quit-hook)
@@ -2302,11 +2302,12 @@ isn't there and triggers an error"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; fixme-mode
 
+;; TODO: improve this to only highlight in comments like fic-mode
+;; TODO: don't use a list of modes, just a hook should be sufficient
 (with-library 'fixme-mode
   (setq fixme-highlighted-words '("FIXME" "TODO" "BUG" "XXX" "DEBUG"))
   (dolist (m '(matlab-mode verilog-mode lisp-interaction-mode lisp-mode))
     (add-to-list 'fixme-modes m))
-
   (fixme-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2784,6 +2785,8 @@ isn't there and triggers an error"
 
 (add-to-list 'auto-mode-alist
              '("PKGBUILD" . pkgbuild-mode))
+(add-to-list 'auto-mode-alist
+             '("\.install\\'" . pkgbuild-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
