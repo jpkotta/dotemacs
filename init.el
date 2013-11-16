@@ -747,7 +747,7 @@ used instead of `browse-url-new-window-flag'."
               '("-newwindow"))
           (list url))))
 
-(setq browse-url-browser-function 'browse-url-opera
+(setq browse-url-browser-function 'browse-url-firefox
       browse-url-new-window-flag t)
 
 (setq url-configuration-directory (concat emacs-persistence-directory "url/"))
@@ -1104,7 +1104,6 @@ This function is suitable to add to `find-file-hook'."
         (pt (point)))
     (setq bname (or (file-remote-p bname 'localname)
                     (concat "/sudo::" bname)))
-    ;; FIXME mostly works around, but not quite
     (cl-flet ((server-buffer-done
                (buffer &optional for-killing)
                nil))
@@ -1415,7 +1414,8 @@ changeset that affected the currently considered file(s)."
     (read-only-mode 1))
   (add-hook 'vc-hg-log-view-mode-hook 'jpk/vc-hg-log-view-mode-hook)
 
-  (define-key vc-hg-log-view-mode-map (kbd "q") 'kill-this-buffer)
+  (when (boundp 'vc-hg-log-view-mode-map)
+	(define-key vc-hg-log-view-mode-map (kbd "q") 'kill-this-buffer))
 
   (global-set-key (kbd "C-x v O") 'vc-log-outgoing)
   (global-set-key (kbd "C-x v I") 'vc-log-incoming)
