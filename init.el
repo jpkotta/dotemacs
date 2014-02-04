@@ -97,6 +97,7 @@
         findr
         flex-isearch
         full-ack
+        fvwm-mode
         hide-lines
         htmlize
         ido-ubiquitous
@@ -2762,15 +2763,6 @@ isn't there and triggers an error"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; FVWM
-(autoload 'fvwm-mode "fvwm-mode.el"
-  "Major mode for Fvwm config files." t)
-
-;; fvwm config file major mode
-(defer-until-loaded "fvwm-mode"
-  (setq fvwm-fvwmcommand-path "FvwmCommand")
-  ;; this may be slow
-  (setq fvwm-preload-completions nil)
-  )
 
 (defun jpk/fvwm-mode-hook ()
   ;;(fvwm-enable-indentation)
@@ -2779,14 +2771,6 @@ isn't there and triggers an error"
   (setq tab-width 4))
 
 (add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
-
-;; fvwm major mode
-(add-to-list 'auto-mode-alist
-             '("\\`FvwmApplet-" . fvwm-mode))
-(add-to-list 'auto-mode-alist
-             '("\\`FvwmScript-" . fvwm-mode))
-(add-to-list 'auto-mode-alist
-             '("\\.fvwm\\'" . fvwm-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
