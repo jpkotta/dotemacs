@@ -345,6 +345,10 @@ Should be equivalent to
 
 ;;(delete-selection-mode 1)
 
+;; Disable highlighting clickable stuff when the mouse moves over it.
+;; Turning it off speeds up remote X.
+(setq mouse-highlight nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
 
@@ -580,18 +584,19 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Diminish
 ;; Hide some minor mode indicators in the modeline.
-(defer-until-loaded "abbrev" (diminish 'abbrev-mode ""))
-(defer-until-loaded "auto-complete" (diminish 'auto-complete-mode ""))
-(defer-until-loaded "doxymacs" (diminish 'doxymacs-mode ""))
-(defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode ""))
-(defer-until-loaded "eldoc" (diminish 'eldoc-mode ""))
-(defer-until-loaded "face-remap" (diminish 'buffer-face-mode ""))
-(defer-until-loaded "fixme-mode" (diminish 'fixme-mode ""))
-(defer-until-loaded "flyspell" (diminish 'flyspell-mode ""))
-(defer-until-loaded "highlight-parentheses" (diminish 'highlight-parentheses-mode ""))
-(defer-until-loaded "workgroups" (diminish 'workgroups-mode ""))
-(defer-until-loaded "wrap-region" (diminish 'wrap-region-mode ""))
-(defer-until-loaded "yasnippet" (diminish 'yas-minor-mode ""))
+(defer-until-loaded "abbrev" (diminish 'abbrev-mode))
+(defer-until-loaded "auto-complete" (diminish 'auto-complete-mode))
+(defer-until-loaded "doxymacs" (diminish 'doxymacs-mode))
+(defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode))
+(defer-until-loaded "eldoc" (diminish 'eldoc-mode))
+(defer-until-loaded "face-remap" (diminish 'buffer-face-mode))
+(defer-until-loaded "fixme-mode" (diminish 'fixme-mode))
+(defer-until-loaded "flyspell" (diminish 'flyspell-mode))
+(defer-until-loaded "highlight-parentheses" (diminish 'highlight-parentheses-mode))
+(defer-until-loaded "projectile" (diminish 'projectile-mode "proj"))
+(defer-until-loaded "workgroups" (diminish 'workgroups-mode))
+(defer-until-loaded "wrap-region" (diminish 'wrap-region-mode))
+(defer-until-loaded "yasnippet" (diminish 'yas-minor-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help
@@ -1139,7 +1144,7 @@ This function is suitable to add to `find-file-hook'."
 
 ;; it's really annoying when the frame raises by itself
 (defadvice mouse-avoidance-set-mouse-position (around disable-raise activate)
-  (flet ((raise-frame (&optional frame) t))
+  (cl-flet ((raise-frame (&optional frame) t))
     ad-do-it))
 
 (global-set-key (kbd "<mouse-2>") 'mouse-yank-primary)
@@ -1283,8 +1288,7 @@ This function is suitable to add to `find-file-hook'."
 ;;; VC mode
 
 (defvar hg-graphlog-re "^[\\\\|/o@ +-]*"
-  "Matches the junk Mercurial's graphlog extension puts at the
-  beginning of the line")
+  "Matches the junk hg log -G puts at the beginning of the line")
 
 (defun jpk/vc-hg-log-view-mode-hook ()
   (setq adaptive-wrap-extra-indent 0)
@@ -1465,7 +1469,7 @@ changeset that affected the currently considered file(s)."
   "Do not ask if a previously copied hunk should be changed.")
 (defadvice ediff-test-save-region (around always-true activate)
   (if ediff-copy-diff-silent
-      (flet ((yes-or-no-p (prompt) t))
+      (cl-flet ((yes-or-no-p (prompt) t))
         ad-do-it)
     ad-do-it))
 
@@ -1863,16 +1867,15 @@ isn't there and triggers an error"
   (define-key dired-mode-map (kbd "S-<down-mouse-2>")
     'dired-mouse-find-file-other-window)
 
-  (setq dired-deletion-confirmer 'y-or-n-p)
-
-  (define-key dired-mode-map (kbd "e") 'wdired-change-to-wdired-mode)
+  (setq dired-deletion-confirmer 'y-or-n-p
+        dired-dwim-target t)
 
   (defun dired-do-move (&optional arg)
     "Similar to `dired-do-rename', but move the file or files to a
   new directory, whether there's one or many.  Also, when doing
   completion on the destination, treat it as a directory."
     (interactive "P")
-    (flet ((dired-mark-read-file-name
+    (cl-flet ((dired-mark-read-file-name
             (prompt dir op-symbol arg files &optional default)
             (dired-mark-pop-up
              nil op-symbol files
@@ -2065,7 +2068,7 @@ isn't there and triggers an error"
   (define-ibuffer-sorter pathname
     "Sort by pathname"
     (:description "path")
-    (flet ((get-pathname
+    (cl-flet ((get-pathname
             (data)
             (with-current-buffer (car data)
               (or buffer-file-name
@@ -2620,8 +2623,8 @@ isn't there and triggers an error"
 
 (defun jpk/python-mode-hook ()
   ;; which-func-mode causes huge performance problems in python-mode
-  (when (boundp 'which-func-mode)
-    (which-func-mode -1))
+  (when (boundp 'which-function-mode)
+    (which-function-mode -1))
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 (add-hook 'python-mode-hook 'jpk/prog-mode-hook)
@@ -2824,6 +2827,7 @@ isn't there and triggers an error"
               "\\.hgignore" "\\.?hgrc" ;; mercurial files
               "Doxyfile" ;; Doxygen
               "\\.rules" ;; udev
+              "\\.service" "\\.target" "\\.socket" "\\.mount" ;; systemd
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
 
@@ -3007,9 +3011,8 @@ server/database name."
     (with-current-buffer table-b-buf
       (goto-char (point-min))
       (re-search-forward "^INSERT INTO")
-      (replace-regexp (regexp-quote table-b)
-                      table-a
-                      t (point) (point-max)))
+      (while (re-search-forward (regexp-quote table-b))
+        (replace-match table-a nil nil)))
     
     (if (and (> (buffer-size table-a-buf) 0)
            (> (buffer-size table-b-buf) 0))
@@ -3482,8 +3485,8 @@ point."
   (set-variable 'tab-width arg))
 
 ;; new buffers default to using 4 spaces for indent
-(setq-default tab-width 8)
-(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4
+              indent-tabs-mode nil)
 
 ;; smart-tabs-mode will indent with tabs, align with spaces
 (with-library 'smart-tabs-mode
