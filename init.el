@@ -726,34 +726,6 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Web Browser
 
-(defcustom browse-url-opera-arguments '()
-  "A list of strings passed to the Opera browser as arguments."
-  :version "21.1"
-  :type '(repeat (string :tag "Argument"))
-  :group 'browse-url)
-
-(defun browse-url-opera (url &optional new-window)
-  "Ask Opera to load URL.  Default to the URL around or before
-point.  The strings in variable `browse-url-opera-arguments'
-are also passed.
-
-When called interactively, if variable `browse-url-new-window-flag' is
-non-nil, load the document in a new browser window, otherwise use an
-existing one.  A non-nil interactive prefix argument reverses the
-effect of `browse-url-new-window-flag'.
-
-When called non-interactively, optional second argument NEW-WINDOW is
-used instead of `browse-url-new-window-flag'."
-  (interactive (browse-url-interactive-arg "URL: "))
-  (apply 'start-process (concat "opera " url)
-         nil
-         "opera"
-         (append
-          browse-url-gnome-moz-arguments
-          (if (browse-url-maybe-new-window new-window)
-              '("-newwindow"))
-          (list url))))
-
 (setq browse-url-browser-function 'browse-url-firefox
       browse-url-new-window-flag t)
 
