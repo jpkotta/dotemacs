@@ -1043,6 +1043,13 @@ it's probably better to explicitly request a merge."
       recentf-max-saved-items 256)
 (recentf-mode 1)
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; savehist
+
+(setq savehist-file (concat emacs-persistence-directory "history"))
+(savehist-mode 1)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
 
@@ -1420,6 +1427,7 @@ changeset that affected the currently considered file(s)."
 (defun jpk/diff-mode-hook ()
   (local-set-key (kbd "C-c C-k") 'diff-hunk-kill)
   (local-set-key (kbd "C-c C-S-k") 'diff-file-kill)
+  (local-unset-key (kbd "K")) ;; diff-file-kill
   (local-set-key (kbd "C-c C-c") 'commit-patch-buffer)
   (local-set-key (kbd "C-c C-m") 'diff-add-trailing-CR-in-hunk)
   (local-set-key (kbd "C-c C-j") 'diff-remove-trailing-CR-in-hunk)
@@ -1823,6 +1831,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (make-directory dirname t))))
 
 (add-hook 'find-file-hook 'create-directory-if-necessary)
+(add-hook 'before-save-hook 'create-directory-if-necessary)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
@@ -3093,9 +3102,17 @@ match.  It should be idempotent."
 
 ;; editable grep results
 (require 'wgrep nil 'noerror)
+(define-key grep-mode-map (kbd "C-x C-q") 'wgrep-change-to-wgrep-mode)
 
 ;; recenter after running next-error
 (setq next-error-recenter '(4))
+
+;; previous-error just calls next-error
+(defadvice next-error (after recenter-error-buffer activate)
+  (let ((win (get-buffer-window next-error-last-buffer)))
+    (when win
+      (with-selected-window win
+        (recenter-no-redraw)))))
 
 (global-set-key [remap next-error] (make-repeatable-command 'next-error))
 (global-set-key [remap previous-error] (make-repeatable-command 'previous-error))
