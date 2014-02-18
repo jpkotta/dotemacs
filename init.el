@@ -1739,10 +1739,23 @@ isn't there and triggers an error"
 
 (global-set-key (kbd "M-|") 'shell-command-on-region-or-buffer)
 
-;; TODO make this a emacs function
-;; copy the terminfo files for eterm-color to a remote host
-;; ssh remote mkdir -p .terminfo/e/
-;; scp (concat data-directory "e/eterm-color") (concat data-directory "e/eterm-color.ti") remote:.terminfo/e/
+(defun copy-eterm-color-terminfo (hostspec)
+  "Copy the eterm-color terminfo file to a remote host.
+HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
+  (interactive
+   (let ((hosts (mapcar (lambda (x) (cond ((stringp x) x)
+                                     ((null (car x)) (cadr x))
+                                     (t (concat (car x) "@" (cadr x)))))
+                        (apply 'append
+                               (mapcar
+                                (lambda (x) (remove-if-not 'identity (apply (car x) (cdr x))))
+                                (tramp-get-completion-function "ssh"))))))
+     (list (completing-read "Hostname: " hosts nil 'confirm nil nil hosts nil))))
+  (let ((destdir (format "/ssh:%s:.terminfo/e/" hostspec)))
+    (ignore-errors
+      (dired-create-directory destdir))
+    (copy-file (concat data-directory "e/eterm-color")
+               (concat destdir "eterm-color"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; man pages
