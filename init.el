@@ -79,6 +79,7 @@
         ac-dabbrev
         adaptive-wrap
         auctex
+        aurel
         auto-complete
         backup-walker
         bm
@@ -2777,6 +2778,8 @@ isn't there and triggers an error"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
+
+(setq aurel-download-directory "/tmp/pacaurtmp-jpkotta")
 
 (add-to-list 'auto-mode-alist
              '("PKGBUILD" . pkgbuild-mode))
