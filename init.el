@@ -169,14 +169,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Appearance 
 
-(menu-bar-mode 1)
+(menu-bar-mode -1)
 (tool-bar-mode -1)
 
 (setq default-frame-alist '((vertical-scroll-bars . right)
-                            (menu-bar-lines . 1)
+                            (menu-bar-lines . 0)
                             (background-mode . dark)
                             (tool-bar-lines . 0)
                             (width . 81)))
+(setq initial-frame-alist '((menu-bar-lines . 1)))
 
 (load-library "calm-forest-theme.el")
 (load-theme 'calm-forest 'noconfirm)
@@ -714,12 +715,13 @@ The numbers are formatted according to the FORMAT string."
 
 (global-set-key (kbd "C-x C-S-c") 'save-buffers-kill-emacs)
 
-(defun server-edit-or-save-buffers-kill-terminal (arg)
-  "Runs `server-edit', and if it did nothing, then runs `save-buffers-kill-terminal'."
-  (interactive "P")
-  (if (if (boundp 'server-edit) (server-edit) t) ;; returns nil if it marked the buffer as "done"
-    (save-buffers-kill-terminal arg)))
-(global-set-key (kbd "C-x C-c") 'server-edit-or-save-buffers-kill-terminal)
+;; (defun server-edit-or-save-buffers-kill-terminal (arg)
+;;   "Runs `server-edit', and if it did nothing, then runs `save-buffers-kill-terminal'."
+;;   (interactive "P")
+;;   (if (if (boundp 'server-edit) (server-edit) t) ;; returns nil if it marked the buffer as "done"
+;;     (save-buffers-kill-terminal arg)))
+;; (global-set-key (kbd "C-x C-c") 'server-edit-or-save-buffers-kill-terminal)
+(global-set-key (kbd "C-x C-c") 'delete-frame)
 
 (when (daemonp)
   (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function))
@@ -1430,6 +1432,7 @@ changeset that affected the currently considered file(s)."
   (local-set-key (kbd "C-c C-k") 'diff-hunk-kill)
   (local-set-key (kbd "C-c C-S-k") 'diff-file-kill)
   (local-unset-key (kbd "K")) ;; diff-file-kill
+  (local-unset-key (kbd "M-K")) ;; diff-file-kill
   (local-set-key (kbd "C-c C-c") 'commit-patch-buffer)
   (local-set-key (kbd "C-c C-m") 'diff-add-trailing-CR-in-hunk)
   (local-set-key (kbd "C-c C-j") 'diff-remove-trailing-CR-in-hunk)
@@ -2540,6 +2543,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'c-mode-common-hook 'jpk/c-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; GUD (Grand Unified Debugger)
+
+(defer-until-loaded 'gud
+  (define-key gud-minor-mode-map (kbd "C-c C-n") (make-repeatable-command 'gud-next))
+  (define-key gud-minor-mode-map (kbd "C-c C-s") (make-repeatable-command 'gud-step))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Make
 (add-to-list 'auto-mode-alist '("Makefile" . makefile-gmake-mode))
 
@@ -2588,7 +2599,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (setq pylint-options '("--rcfile=./.pylintrc"
                            "--reports=n"
                            "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
-                           "--disable=C,R"))
+                           "--disable=C,R,I0011"))
 
     (defun pylint2 ()
       (interactive)
@@ -2711,6 +2722,18 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Lisp
+
+(defun describe-symbol-at-point ()
+  "Get help for the symbol at point."
+  (interactive)
+  (let ((sym (intern-soft (current-word))))
+    (unless
+        (cond ((null sym))
+              ((not (eq t (help-function-arglist sym)))
+               (describe-function sym))
+              ((boundp sym)
+               (describe-variable sym)))
+      (message "nothing"))))
 
 ;; http://emacs.wordpress.com/2007/01/17/eval-and-replace-anywhere/
 (defun eval-and-replace-last-sexp ()
