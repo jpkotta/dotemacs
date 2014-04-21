@@ -585,20 +585,21 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Diminish
 ;; Hide some minor mode indicators in the modeline.
-(defer-until-loaded "abbrev" (diminish 'abbrev-mode))
-(defer-until-loaded "auto-complete" (diminish 'auto-complete-mode))
-(defer-until-loaded "doxymacs" (diminish 'doxymacs-mode))
-(defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode))
-(defer-until-loaded "eldoc" (diminish 'eldoc-mode))
-(defer-until-loaded "face-remap" (diminish 'buffer-face-mode))
-(defer-until-loaded "fixme-mode" (diminish 'fixme-mode))
-(defer-until-loaded "flyspell" (diminish 'flyspell-mode))
-(defer-until-loaded "highlight-parentheses" (diminish 'highlight-parentheses-mode))
-(defer-until-loaded "projectile" (diminish 'projectile-mode "proj"))
-(defer-until-loaded "workgroups" (diminish 'workgroups-mode))
-(defer-until-loaded "wrap-region" (diminish 'wrap-region-mode))
-(defer-until-loaded "yasnippet" (diminish 'yas-minor-mode))
-
+(with-library 'diminish
+  (defer-until-loaded "abbrev" (diminish 'abbrev-mode))
+  (defer-until-loaded "auto-complete" (diminish 'auto-complete-mode))
+  (defer-until-loaded "doxymacs" (diminish 'doxymacs-mode))
+  (defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode))
+  (defer-until-loaded "eldoc" (diminish 'eldoc-mode))
+  (defer-until-loaded "face-remap" (diminish 'buffer-face-mode))
+  (defer-until-loaded "fixme-mode" (diminish 'fixme-mode))
+  (defer-until-loaded "flyspell" (diminish 'flyspell-mode))
+  (defer-until-loaded "highlight-parentheses" (diminish 'highlight-parentheses-mode))
+  (defer-until-loaded "projectile" (diminish 'projectile-mode "proj"))
+  (defer-until-loaded "workgroups" (diminish 'workgroups-mode))
+  (defer-until-loaded "wrap-region" (diminish 'wrap-region-mode))
+  (defer-until-loaded "yasnippet" (diminish 'yas-minor-mode))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help
 
@@ -964,7 +965,8 @@ it's probably better to explicitly request a merge."
         ffap-read-file-or-url grep-read-files write-file
         elp-instrument-package))
 
-(ido-ubiquitous-mode 1)
+(with-library 'ido-ubiquitous
+  (ido-ubiquitous-mode 1))
 
 ;; ido for M-x
 ;; minibuffer-complete-cycle is also nice, but this is better
@@ -1626,7 +1628,8 @@ isn't there and triggers an error"
       val))
   )
 
-(global-diff-hl-mode 1)
+(with-library 'diff-hl
+  (global-diff-hl-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
@@ -1959,6 +1962,26 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (dired-details-install))
   )
 
+(defer-until-loaded 'view-mode
+  (defun dired-view-next ()
+    "Move to next dired line and view ."
+    (interactive)
+    (quit-window)
+    (dired-next-line 1)
+    (dired-view-file))
+
+  (defun dired-view-prev ()
+    "Move to next dired line and view ."
+    (interactive)
+    (quit-window)
+    (dired-next-line -1)
+    (dired-view-file))
+
+  (define-key view-mode-map (kbd "n") 'dired-view-next)
+  (define-key view-mode-map (kbd "p") 'dired-view-prev)
+
+  )
+  
 ;; word wrap looks terrible in dired buffers
 (defun jpk/dired-before-readin-hook ()
   (visual-line-mode 0)
@@ -2801,8 +2824,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;; Not really HTML editing related, but this will make an HTML file of
 ;; the buffer, with all the syntax highlighting.
-(with-library 'htmlize-view
-  (htmlize-view-add-to-files-menu))
+(with-library 'htmlize
+  (with-library 'htmlize-view
+    (htmlize-view-add-to-files-menu)))
 ;; fix a bug in htmlize from emacs-goodies-el
 (defer-until-loaded "htmlize"
   (defun htmlize-face-size (face)
@@ -3101,8 +3125,8 @@ match.  It should be idempotent."
 ;;; grep
 
 ;; editable grep results
-(require 'wgrep nil 'noerror)
-(define-key grep-mode-map (kbd "C-x C-q") 'wgrep-change-to-wgrep-mode)
+(with-library 'wgrep
+  (define-key grep-mode-map (kbd "C-x C-q") 'wgrep-change-to-wgrep-mode))
 
 ;; recenter after running next-error
 (setq next-error-recenter '(4))
