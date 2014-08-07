@@ -55,7 +55,7 @@
     (when (called-interactively-p 'interactive)
       (message "Added %s to %s." dir path-var))))
 
-(add-to-path user-emacs-directory 'absolute)
+(add-to-path "lisp")
 
 ;; this is a place to try out random elisp files
 (add-to-path "staging")
