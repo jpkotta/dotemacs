@@ -1425,6 +1425,16 @@ changeset that affected the currently considered file(s)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; diff
 
+(require 'ediff-tweak)
+
+;; put the ediff control window in the same frame
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+;; Skip over whitespace-only differences in ediff mode.  Still finds
+;; such regions, only changes navigation.  Toggle with # # in ediff
+;; mode.
+(setq-default ediff-ignore-similar-regions t)
+
 (autoload 'commit-patch-buffer "commit-patch-buffer.el"
   "Use diff-mode buffers as commits for VC." t)
 
@@ -1437,27 +1447,15 @@ changeset that affected the currently considered file(s)."
   (local-set-key (kbd "C-c C-m") 'diff-add-trailing-CR-in-hunk)
   (local-set-key (kbd "C-c C-j") 'diff-remove-trailing-CR-in-hunk)
   (local-set-key (kbd "C-c C-o") 'diff-goto-source)
-  ;; FIXME why?
-  (local-set-key (kbd "M-1") 'other-window-prev)
-  (local-set-key (kbd "M-2") 'other-window)
+  ;; FIXME why? special-mode-map suppress-keymap
+  (local-set-key (kbd "M-1") nil)
+  (local-set-key (kbd "M-2") nil)
 
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
   )
 
 (add-hook 'diff-mode-hook 'jpk/diff-mode-hook)
-
-;; put the ediff control window in the same frame
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
-
-;; don't bother me about previously manipulated hunks
-(defvar ediff-copy-diff-silent t
-  "Do not ask if a previously copied hunk should be changed.")
-(defadvice ediff-test-save-region (around always-true activate)
-  (if ediff-copy-diff-silent
-      (cl-flet ((yes-or-no-p (prompt) t))
-        ad-do-it)
-    ad-do-it))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commit-patch-buffer is very picky about the patch buffer.
@@ -1514,77 +1512,6 @@ changeset that affected the currently considered file(s)."
 (defun diff-remove-trailing-CR-in-hunk ()
   (interactive)
   (diff-add-or-remove-trailing-CR-in-hunk nil))
-
-;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Skip over whitespace-only differences in ediff mode.  Still finds
-;; such regions, only changes navigation.  Toggle with # # in ediff
-;; mode.
-(setq-default ediff-ignore-similar-regions t)
-
-(defun ediff-regions-linewise-this-buffer ()
-  (interactive)
-  (ediff-regions-linewise (buffer-name) (buffer-name)))
-
-(defun ediff-regions-wordwise-this-buffer ()
-  (interactive)
-  (ediff-regions-wordwise (buffer-name) (buffer-name)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;
-;; binary diff with hexl-mode
-;; http://trey-jackson.blogspot.com/2010/10/emacs-tip-38-automatically-diff-binary.html
-
-(defvar ediff-do-hexl-diff nil
-  "variable used to store trigger for doing diff in hexl-mode")
-(defadvice ediff-files-internal (around ediff-files-internal-for-binary-files activate)
-  "catch the condition when the binary files differ
-
-the reason for catching the error out here (when re-thrown from the inner advice)
-is to let the stack continue to unwind before we start the new diff
-otherwise some code in the middle of the stack expects some output that
-isn't there and triggers an error"
-  (let ((file-A (ad-get-arg 0))
-        (file-B (ad-get-arg 1))
-        ediff-do-hexl-diff)
-    (condition-case err
-        (progn
-          ad-do-it)
-      (error
-       (if ediff-do-hexl-diff
-           (let ((buf-A (find-file-noselect file-A))
-                 (buf-B (find-file-noselect file-B)))
-             (with-current-buffer buf-A
-               (hexl-mode 1))
-             (with-current-buffer buf-B
-               (hexl-mode 1))
-             (ediff-buffers buf-A buf-B))
-         (error (error-message-string err)))))))
-
-(defadvice ediff-setup-diff-regions (around ediff-setup-diff-regions-for-binary-files activate)
-  "when binary files differ, set the variable "
-  (condition-case err
-      (progn
-        ad-do-it)
-    (error
-     (setq ediff-do-hexl-diff
-           (and (string-match-p "^Errors in diff output.  Diff output is in.*"
-                                (error-message-string err))
-                (string-match-p "^\\(Binary \\)?[fF]iles .* and .* differ"
-                                (buffer-substring-no-properties
-                                 (line-beginning-position)
-                                 (line-end-position)))
-                (y-or-n-p "The binary files differ, look at the differences in hexl-mode? ")))
-     (error (error-message-string err)))))
-
-(defvar before-ediff-window-config nil
-  "Stores the window configuration before running ediff, so it can be restored afterwards.")
-(defun jpk/ediff-before-setup-hook ()
-  (setq before-ediff-window-config (current-window-configuration)))
-(defun jpk/ediff-quit-hook ()
-  (when (window-configuration-p before-ediff-window-config)
-    (set-window-configuration before-ediff-window-config)))
-(add-hook 'ediff-before-setup-hook 'jpk/ediff-before-setup-hook)
-(add-hook 'ediff-quit-hook 'jpk/ediff-quit-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; diff-hl
