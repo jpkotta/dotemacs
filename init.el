@@ -78,6 +78,7 @@
       '(
         ac-dabbrev
         adaptive-wrap
+        anchored-transpose
         auctex
         aurel
         auto-complete
@@ -121,6 +122,7 @@
         ;;python-pep8
         rainbow-mode
         save-visited-files
+        sqlup-mode
         ssh-config-mode
         smart-tabs-mode
         smex
@@ -178,7 +180,6 @@
                             (background-mode . dark)
                             (tool-bar-lines . 0)
                             (width . 81)))
-(setq initial-frame-alist '((menu-bar-lines . 1)))
 
 (load-library "calm-forest-theme.el")
 (load-theme 'calm-forest 'noconfirm)
@@ -1024,13 +1025,13 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Autosave
 
-(setq autosave-dir (concat emacs-persistence-directory "autosaves/")
-      auto-save-list-file-prefix (concat emacs-persistence-directory
-                                         "auto-save-list/")
-      auto-save-file-name-transforms
-      `((".*" ,autosave-dir t)))
-(if (not (file-exists-p autosave-dir))
-    (make-directory autosave-dir t))
+(setq auto-save-dir (concat emacs-persistence-directory "auto-save/")
+      auto-save-list-dir (concat emacs-persistence-directory "auto-save-list/")
+      auto-save-list-file-prefix auto-save-list-dir
+      auto-save-file-name-transforms `((".*" ,auto-save-dir t)))
+(dolist (d (list auto-save-dir auto-save-list-dir))
+  (if (not (file-exists-p d))
+      (make-directory d t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; save-visited-files
@@ -1064,7 +1065,7 @@ it's probably better to explicitly request a merge."
                                      "tramp-backup/")
       tramp-backup-directory-alist `(("." . ,tramp-backup-directory))
       tramp-auto-save-directory (concat emacs-persistence-directory
-                                        "tramp-autosaves/")
+                                        "tramp-auto-save/")
       )
 
 (dolist (d (list tramp-auto-save-directory tramp-backup-directory))
@@ -1492,9 +1493,6 @@ This function is suitable to add to `find-file-hook'."
 
 (defun jpk/term-mode-hook ()
   (setq cua--ena-cua-keys-keymap nil)
-  ;; use a different face if possible
-  (when (fboundp 'buffer-face-set)
-    (buffer-face-set 'fixed-pitch))
   (with-library 'yasnippet
     (yas-minor-mode 0)))
 (add-hook 'term-mode-hook 'jpk/term-mode-hook)
@@ -1652,6 +1650,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'find-file-hook 'create-directory-if-necessary)
 (add-hook 'before-save-hook 'create-directory-if-necessary)
 
+(defun jpk/save-buffer-maybe (&optional args)
+  "Like `save-buffer' but just prints a message if the buffer has no file."
+  (interactive "p")
+  (if (buffer-file-name)
+      (save-buffer args)
+    (message "Buffer is not associated with a file.  Use `write-file' instead.")))
+(global-set-key [remap save-buffer] 'jpk/save-buffer-maybe)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
 
@@ -1690,11 +1696,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   completion on the destination, treat it as a directory."
     (interactive "P")
     (cl-flet ((dired-mark-read-file-name
-            (prompt dir op-symbol arg files &optional default)
-            (dired-mark-pop-up
-             nil op-symbol files
-             (function read-directory-name)
-             (format prompt (dired-mark-prompt arg files)) dir default)))
+               (prompt dir op-symbol arg files &optional default)
+               (dired-mark-pop-up
+                nil op-symbol files
+                (function read-directory-name)
+                (format prompt (dired-mark-prompt arg files)) dir default)))
       (if (boundp 'dired-do-move-files)
           (dired-do-move-files 'move (function dired-rename-file)
                                "Move" arg dired-keep-marker-rename "Move")
@@ -1903,13 +1909,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     "Sort by pathname"
     (:description "path")
     (cl-flet ((get-pathname
-            (data)
-            (with-current-buffer (car data)
-              (or buffer-file-name
-                 (if (eq major-mode 'dired-mode)
-                     (expand-file-name dired-directory))
-                 ;; so that all non pathnames are at the end
-                 "~"))))
+               (data)
+               (with-current-buffer (car data)
+                 (or buffer-file-name
+                    (if (eq major-mode 'dired-mode)
+                        (expand-file-name dired-directory))
+                    ;; so that all non pathnames are at the end
+                    "~"))))
       (string-lessp (get-pathname a) (get-pathname b))))
 
   (define-key ibuffer-mode-map
@@ -2194,29 +2200,19 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   "Font lock mode face for backets.  Changing this directly
   affects only new buffers.")
 
-(defvar operators-regexp
-  (regexp-opt '("+" "-" "*" "/" "%" "!"
-                "&" "^" "~" "|"
-                "=" "<" ">"
-                "." "," ";" ":" "?"))
-  "Regexp matching symbols that are operators in most programming
-  languages.")
-
 (setq operators-font-lock-spec
-      (cons operators-regexp
+      (cons (regexp-opt '("+" "-" "*" "/" "%" "!"
+                          "&" "^" "~" "|"
+                          "=" "<" ">"
+                          "." "," ";" ":" "?"))
             (list
              0 ;; use whole match
              'font-lock-builtin-face
              'keep ;; OVERRIDE
              )))
 
-(defvar brackets-regexp
-  (regexp-opt '("(" ")" "[" "]" "{" "}"))
-  "Regexp matching symbols that are grouping operators in most
-  programming languages.")
-
 (setq brackets-font-lock-spec
-      (cons brackets-regexp
+      (cons (regexp-opt '("(" ")" "[" "]" "{" "}"))
             (list
              0 ;; use whole match
              'font-lock-bracket-face
@@ -2354,6 +2350,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (add-hook 'c-mode-common-hook 'jpk/c-mode-hook)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Java
+
+(defer-until-loaded "cc-mode"
+  (font-lock-add-keywords
+   'java-mode
+   (list
+    operators-font-lock-spec
+    brackets-font-lock-spec))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUD (Grand Unified Debugger)
@@ -2730,6 +2737,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'wrap-region
     (wrap-region-add-wrapper "`" "`"))
 
+  (with-library 'sqlup-mode
+    (sqlup-mode 1))
+  
   (sql-highlight-ansi-keywords))
 
 (defer-until-loaded "sql"
@@ -2757,6 +2767,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (sql-set-product-feature 'mysql :sqli-login
                            '(user password server database))
+  (sql-set-product-feature 'mysql :prompt-regexp
+                           "^\\(?:mysql\\|mariadb\\).*> ")
 
   (defun sql-make-alternate-buffer-name ()
     "Return a string that can be used to rename a SQLi buffer.
@@ -2952,6 +2964,10 @@ match.  It should be idempotent."
     (when win
       (with-selected-window win
         (recenter-no-redraw)))))
+
+;; compilation-previous-error just calls compilation-next-error
+(defadvice compilation-next-error (after recenter-error-buffer activate)
+  (recenter-no-redraw))
 
 (global-set-key [remap next-error] (make-repeatable-command 'next-error))
 (global-set-key [remap previous-error] (make-repeatable-command 'previous-error))
@@ -3398,12 +3414,6 @@ columns.  Otherwise, move the cursor line arg columns."
   (drag-stuff-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; anchored-transpose
-
-(add-to-path "nxhtml/util")
-(autoload 'anchored-transpose "anchored-transpose.el" "" 'interactive)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
 
 ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
@@ -3446,11 +3456,8 @@ http://www.emacswiki.org/emacs/AlignCommands"
 
 (with-library 'adaptive-wrap
   (setq-default adaptive-wrap-extra-indent 2)
-  (defun toggle-font-lock-mode ()
-    (font-lock-mode 'toggle)
-    (font-lock-mode 'toggle))
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
-  (add-hook 'visual-line-mode-hook 'toggle-font-lock-mode 'append))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; scrolling
