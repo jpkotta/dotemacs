@@ -2637,18 +2637,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (fset 'html-mode 'nxml-mode)
 (fset 'sgml-mode 'nxml-mode)
 
-(defun jpk-nxml-mode-hook ()
-  (setq adaptive-wrap-extra-indent 2)
-  (visual-line-mode 1))
-(add-hook 'nxml-mode-hook 'jpk-nxml-mode-hook)
-
-;; This is considerably more heavyweight, but seems to be better
-(defun load-nxhtml-mode ()
-  "Load the nxhtml library (slow)."
-  (interactive)
-  (add-to-path "nxhtml")
-  (load (concat user-emacs-directory "nxhtml/autostart.el")))
-
 ;; Not really HTML editing related, but this will make an HTML file of
 ;; the buffer, with all the syntax highlighting.
 (with-library 'htmlize
