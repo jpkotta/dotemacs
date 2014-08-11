@@ -114,6 +114,7 @@
         multi-term
         openwith
         org
+        php-mode
         pkgbuild-mode
         projectile
         pylint
@@ -2385,15 +2386,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (cperl-set-style "BSD"))
 
 (add-hook 'cperl-mode-hook 'jpk/cperl-mode-hook)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; PHP
-
-(add-to-path "nxhtml/related")
-(autoload 'php-mode "php-mode.el"
-  "Major mode for editing PHP source." t)
-;; note: this is overridden when nxhtml-mode is loaded
-(add-to-list 'auto-mode-alist '("\\.php\\'" . php-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
