@@ -574,8 +574,8 @@ With prefix arg, insert a large ASCII art version.
 (with-library 'keychain-environment
   (keychain-refresh-environment))
 
-(add-to-list 'auto-mode-alist '(".ssh/config\\'"  . ssh-config-mode))
-(add-to-list 'auto-mode-alist '("sshd?_config\\'" . ssh-config-mode))
+(dolist (x '(".ssh/config\\'" "sshd?_config\\'"))
+  (add-to-list 'auto-mode-alist `(,x . ssh-config-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C SubWordMode
@@ -887,7 +887,7 @@ If given a prefix argument, select the previous candidate."
 (global-set-key (kbd "C-c s d") 'hide-lines-matching)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ido - Interactive Do
+;;; ido - Interactively Do Things
 
 (ido-mode 'both) ;; both buffers and files
 (ido-everywhere t)
@@ -963,6 +963,7 @@ it's probably better to explicitly request a merge."
 
 (define-key minibuffer-local-map (kbd "C-c f") 'insert-filename-or-buffername)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; use ido (almost) everywhere
 (setq ido-ubiquitous-function-exceptions
       '(ido-write-file ido-find-file ido-list-directory ffap-menu-ask
@@ -972,9 +973,8 @@ it's probably better to explicitly request a merge."
 (with-library 'ido-ubiquitous
   (ido-ubiquitous-mode 1))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ido for M-x
-;; minibuffer-complete-cycle is also nice, but this is better
-
 (defun smex-update-after-load (unused)
   (when (boundp 'smex-cache)
     (smex-update)))
@@ -1118,6 +1118,8 @@ This function is suitable to add to `find-file-hook'."
   (add-to-list 'tramp-default-proxies-alist
                '((regexp-quote (system-name)) nil nil))
   )
+
+;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Mouse
@@ -2528,8 +2530,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     verilog-number-font-lock-spec))
   )
 
-(add-to-list 'auto-mode-alist
-             '("\\.vams\\'" . verilog-mode))
+(add-to-list 'auto-mode-alist '("\\.vams\\'" . verilog-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Lisp
@@ -2632,10 +2633,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq aurel-download-directory "/tmp/pacaurtmp-jpkotta")
 
-(add-to-list 'auto-mode-alist
-             '("PKGBUILD" . pkgbuild-mode))
-(add-to-list 'auto-mode-alist
-             '("\.install\\'" . pkgbuild-mode))
+(dolist (x '("PKGBUILD" "\.install\\'"))
+  (add-to-list 'auto-mode-alist `(,x . pkgbuild-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
@@ -2871,7 +2870,8 @@ server/database name."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; assembly
 
-(add-to-list 'auto-mode-alist '("\\.dsl\\'" . asm-mode))
+(dolist (x '("\\.dsl\\'" "\\.lst\\'"))
+  (add-to-list 'auto-mode-alist `(,x . asm-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; UNDO/REDO
@@ -3353,8 +3353,9 @@ point."
   (smart-tabs-advice cperl-indent-line cperl-indent-level)
   (smart-tabs-advice c-indent-line     c-basic-offset)
   (smart-tabs-advice c-indent-region   c-basic-offset)
-  (smart-tabs-advice php-cautious-indent-region c-basic-offset)
-  (smart-tabs-advice php-cautious-indent-line c-basic-offset)
+  (with-library 'php-mode
+    (smart-tabs-advice php-cautious-indent-region c-basic-offset)
+    (smart-tabs-advice php-cautious-indent-line c-basic-offset))
   )
 
 ;; shift-tab should undo what tab does
