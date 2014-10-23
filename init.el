@@ -35,36 +35,14 @@
 ;;; Paths
 ;; add my elisp files to the load path
 
-(defun add-to-path (dir &optional absolute other-path-var)
-  "Adds DIR to `load-path'.  Since it uses `add-to-list', this
-  function is idempotent.  By default, DIR is relative to
-  `user-emacs-directory'.  If ABSOLUTE is non-nil, DIR will be
-  added directly to `load-path' (i.e., it will be relative to the
-  root of the directory tree).  If OTHER-PATH-VAR is non-nil,
-  then that variable will be used instead of `load-path'."
-
-  (interactive "DAdd directory to load-path: ")
-  (unless (or absolute
-             (called-interactively-p 'interactive))
-    (setq dir (concat (expand-file-name user-emacs-directory) dir)))
-  (setq dir (expand-file-name dir))
-  (let ((path-var (or other-path-var 'load-path)))
-    (add-to-list path-var dir nil (lambda (a b)
-                                  (string= (expand-file-name a)
-                                           (expand-file-name b))))
-    (when (called-interactively-p 'interactive)
-      (message "Added %s to %s." dir path-var))))
-
-(add-to-path "lisp")
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;; this is a place to try out random elisp files
-(add-to-path "staging")
+(add-to-list 'load-path (concat user-emacs-directory "staging"))
 
 ;; info directory
-(eval-after-load "info"
-  '(progn
-     (add-to-path "~/.info" 'absolute 'Info-additional-directory-list)
-     ))
+(with-eval-after-load "info"
+  (add-to-list 'Info-additional-directory-list "~/.info"))
 
 ;; a place to put various
 (setq emacs-persistence-directory (concat user-emacs-directory "persistence/"))
@@ -749,7 +727,7 @@ The numbers are formatted according to the FORMAT string."
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 (setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
 
-(add-to-path "ac-sources")
+(add-to-list 'load-path (concat user-emacs-directory "ac-sources"))
 (with-library 'auto-complete-config
   (setq ac-source-yasnippet nil) ;; broken for latest yasnippet
   (ac-config-default))
