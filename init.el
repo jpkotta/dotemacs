@@ -33,8 +33,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
-;; add my elisp files to the load path
 
+;; add my elisp files to the load path
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;; this is a place to try out random elisp files
@@ -196,20 +196,6 @@
   (declare (indent defun))
   `(when (require ,feature nil 'noerror)
      ,@body))
-
-(defmacro defer-until-loaded (library &rest body)
-  "Evaluate BODY only after LIBRARY is loaded.
-
-Should be equivalent to
-    (eval-after-load LIBRARY
-      '(progn
-         BODY
-         nil)) "
-  (declare (indent defun))
-  `(eval-after-load ,library
-     '(progn
-        ,@body
-        nil)))
 
 (defun setup-RAIDE-file ()
   "View RAIDE files from Eagle."
@@ -399,7 +385,7 @@ and so on."
   (with-library 'ac-org-mode
     (add-to-list 'ac-sources 'ac-source-org)))
 
-(defer-until-loaded "org"
+(with-eval-after-load "org"
   (setq-default org-hide-leading-stars t)
   (add-to-list 'org-mode-hook 'jpk/org-mode-hook)
   (put 'org-end-of-line 'CUA 'move)
@@ -567,19 +553,19 @@ With prefix arg, insert a large ASCII art version.
 ;;; Diminish
 ;; Hide some minor mode indicators in the modeline.
 (with-library 'diminish
-  (defer-until-loaded "abbrev" (diminish 'abbrev-mode))
-  (defer-until-loaded "auto-complete" (diminish 'auto-complete-mode))
-  (defer-until-loaded "doxymacs" (diminish 'doxymacs-mode))
-  (defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode))
-  (defer-until-loaded "eldoc" (diminish 'eldoc-mode))
-  (defer-until-loaded "face-remap" (diminish 'buffer-face-mode))
-  (defer-until-loaded "fixme-mode" (diminish 'fixme-mode))
-  (defer-until-loaded "flyspell" (diminish 'flyspell-mode))
-  (defer-until-loaded "highlight-parentheses" (diminish 'highlight-parentheses-mode))
-  (defer-until-loaded "projectile" (diminish 'projectile-mode "proj"))
-  (defer-until-loaded "workgroups" (diminish 'workgroups-mode))
-  (defer-until-loaded "wrap-region" (diminish 'wrap-region-mode))
-  (defer-until-loaded "yasnippet" (diminish 'yas-minor-mode))
+  (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
+  (with-eval-after-load "auto-complete" (diminish 'auto-complete-mode))
+  (with-eval-after-load "doxymacs" (diminish 'doxymacs-mode))
+  (with-eval-after-load "drag-stuff" (diminish 'drag-stuff-mode))
+  (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
+  (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
+  (with-eval-after-load "fixme-mode" (diminish 'fixme-mode))
+  (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
+  (with-eval-after-load "highlight-parentheses" (diminish 'highlight-parentheses-mode))
+  (with-eval-after-load "projectile" (diminish 'projectile-mode "proj"))
+  (with-eval-after-load "workgroups" (diminish 'workgroups-mode))
+  (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
+  (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help
@@ -620,7 +606,7 @@ for non-decimal strings."
 
 (cua-selection-mode t) ;; enable without C-x, C-c, C-v
 
-(defer-until-loaded "cua-rect"
+(with-eval-after-load "cua-rect"
   (defun cua-sequence-rectangle (first incr format)
     "Resequence each line of CUA rectangle starting from FIRST.
 The numbers are formatted according to the FORMAT string."
@@ -732,7 +718,7 @@ The numbers are formatted according to the FORMAT string."
   (setq ac-source-yasnippet nil) ;; broken for latest yasnippet
   (ac-config-default))
 
-(defer-until-loaded "auto-complete"
+(with-eval-after-load "auto-complete"
 
   (setq ac-auto-start 3
         ac-auto-show-menu t
@@ -805,7 +791,7 @@ If given a prefix argument, select the previous candidate."
 
 ;; TODO: wrap flyspell-auto-correct-word with ido
 
-(defer-until-loaded "flyspell"
+(with-eval-after-load "flyspell"
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
 
@@ -837,7 +823,7 @@ If given a prefix argument, select the previous candidate."
 (global-set-key (kbd "<right-fringe> <mouse-4>") 'bm-previous-mouse)
 (global-set-key (kbd "<right-fringe> <mouse-1>") 'bm-toggle-mouse)
 
-(defer-until-loaded "bm"
+(with-eval-after-load "bm"
   (defvar bm-mode-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "m") 'bm-toggle)
@@ -1090,7 +1076,7 @@ This function is suitable to add to `find-file-hook'."
 ;; Basically what this does is connect through ssh and then sudo on
 ;; the remote machine (except localhost).  You can use
 ;; "/sudo:remote-host:/path/to/file" to open a remote file as root.
-(defer-until-loaded "tramp"
+(with-eval-after-load "tramp"
   (add-to-list 'tramp-default-proxies-alist
                '(nil "\\`root\\'" "/ssh:%h:"))
   (add-to-list 'tramp-default-proxies-alist
@@ -1253,7 +1239,7 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
 
-(defer-until-loaded "vc-hg"
+(with-eval-after-load "vc-hg"
   (require 'vc-hg-fixes)
   )
 
@@ -1262,7 +1248,7 @@ This function is suitable to add to `find-file-hook'."
     (ignore-errors
       ad-do-it)))
 
-(defer-until-loaded "vc-dir"
+(with-eval-after-load "vc-dir"
   
   (defun vc-dir-toggle ()
     "Toggle the mark on a file in `vc-dir-mode'."
@@ -1383,7 +1369,7 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; diff-hl
 
-(defer-until-loaded "diff-hl"
+(with-eval-after-load "diff-hl"
   (define-fringe-bitmap 'diff-hl-bmp-insert
     [#b00000000
      #b00011000
@@ -1439,7 +1425,7 @@ This function is suitable to add to `find-file-hook'."
     (goto-char (point-max))))
 
 ;; used for interactive terminals
-(defer-until-loaded "comint"
+(with-eval-after-load "comint"
   (define-key comint-mode-map
     (kbd "<up>") 'comint-previous-matching-input-from-input)
   (define-key comint-mode-map
@@ -1451,7 +1437,7 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
-(defer-until-loaded "multi-term"
+(with-eval-after-load "multi-term"
 
   (dolist
       (bind '(("C-<right>"     . term-send-forward-word)
@@ -1641,7 +1627,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
 
-(defer-until-loaded "dired"
+(with-eval-after-load "dired"
   (setq image-dired-dir (concat emacs-persistence-directory "image-dired/"))
   
   (define-key dired-mode-map (kbd "C-s") 'dired-isearch-filenames)
@@ -1764,7 +1750,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (dired-details-install))
   )
 
-(defer-until-loaded 'view-mode
+(with-eval-after-load 'view-mode
   (defun dired-view-next ()
     "Move to next dired line and view ."
     (interactive)
@@ -1823,7 +1809,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; image-mode
 
-(defer-until-loaded "image-mode"
+(with-eval-after-load "image-mode"
   (define-key image-mode-map (kbd "<next>") 'image-scroll-up)
   (define-key image-mode-map (kbd "<prior>") 'image-scroll-down)
   )
@@ -1831,7 +1817,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CSV mode
 
-(defer-until-loaded "csv-mode"
+(with-eval-after-load "csv-mode"
 
   ;; It seems silly to set csv separators for all buffers the same, so
   ;; this makes everything buffer local and easily settable from the
@@ -1881,7 +1867,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; IBuffer
 
-(defer-until-loaded "ibuffer"
+(with-eval-after-load "ibuffer"
   (require 'ibuf-ext)
   (require 'ibuf-macs)
 
@@ -2071,7 +2057,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
             figlet-figletify-region-comment))
   (autoload func "figlet.el"
     "Figlet interface for Emacs." t))
-(defer-until-loaded "figlet.el"
+(with-eval-after-load "figlet.el"
   (add-to-list 'figlet-options "-k") ;; kerning
   )
 
@@ -2245,7 +2231,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (imenu--cleanup)
     (setq imenu--index-alist nil)))
 
-(defer-until-loaded "doxymacs"
+(with-eval-after-load "doxymacs"
   (load "doxymacs-hacks.el")
   )
 
@@ -2280,7 +2266,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
        "\\<[_a-zA-Z][_a-zA-Z0-9]*_t\\>" "\\|"
        (regexp-opt '("unsigned" "int" "char" "float" "void") 'words)))
 
-(defer-until-loaded "cc-mode"
+(with-eval-after-load "cc-mode"
   (font-lock-add-keywords
    'c-mode
    (list
@@ -2332,20 +2318,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'c-mode-common-hook 'jpk/c-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Java
-
-(defer-until-loaded "cc-mode"
-  (font-lock-add-keywords
-   'java-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUD (Grand Unified Debugger)
 
-(defer-until-loaded 'gud
+(with-eval-after-load 'gud
   (define-key gud-minor-mode-map (kbd "C-c C-n") (make-repeatable-command 'gud-next))
   (define-key gud-minor-mode-map (kbd "C-c C-s") (make-repeatable-command 'gud-step))
   )
@@ -2361,23 +2336,15 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Perl
 
-(defer-until-loaded "cperl-mode"
-  (font-lock-add-keywords
-   'cperl-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
-  )
-
 (defun jpk/cperl-mode-hook ()
-  (cperl-set-style "BSD"))
+  (cperl-set-style "BSD")
+  )
 
 (add-hook 'cperl-mode-hook 'jpk/cperl-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
 
-(defer-until-loaded "python"
 
   ;; syntax highlighting of operators
   (font-lock-add-keywords
@@ -2385,6 +2352,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
    (list
     operators-font-lock-spec
     brackets-font-lock-spec))
+(with-eval-after-load "python"
 
   (with-library 'pylint
     (setq pylint-options '("--rcfile=./.pylintrc"
@@ -2463,22 +2431,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;; Octave/Matlab
 
 ;; ;; hack for octave mode "end" keyword
-;; (defer-until-loaded "octave-mod"
+;; (with-eval-after-load "octave-mod"
 ;;   (add-to-list 'octave-end-keywords "end[[:space:]]*\\([%#].*\\|$\\)")
 ;;   (setq octave-block-end-regexp
 ;;         (concat "\\<\\("
 ;;                 (mapconcat 'identity octave-end-keywords "\\|")
 ;;                 "\\)\\>"))
 ;;   )
-
-(defer-until-loaded "octave-mod"
-  ;; syntax highlighting of operators
-  (font-lock-add-keywords
-   'octave-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
-  )
 
 (defun octave-send-buffer ()
   (interactive)
@@ -2499,7 +2458,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq verilog-number-font-lock-spec '("\\<[0-9]+'[bdh]". font-lock-type-face))
 
-(defer-until-loaded "verilog-mode"
+
+(with-eval-after-load "verilog-mode"
   (font-lock-add-keywords
    'verilog-mode
    (list
@@ -2566,11 +2526,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
 
-(defer-until-loaded "lisp-mode"
   (dolist (mode '(lisp-mode
                   emacs-lisp-mode
                   lisp-interaction-mode))
     (lisp-set-up-extra-font-lock mode))
+(with-eval-after-load "lisp-mode"
   (dolist (hook '(lisp-mode-hook
                   emacs-lisp-mode-hook
                   lisp-interaction-mode-hook))
@@ -2627,7 +2587,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'htmlize-view
     (htmlize-view-add-to-files-menu)))
 ;; fix a bug in htmlize from emacs-goodies-el
-(defer-until-loaded "htmlize"
+(with-eval-after-load "htmlize"
   (defun htmlize-face-size (face)
     ;; The size (height) of FACE, taking inheritance into account.
     ;; Only works in Emacs 21 and later.
@@ -2719,7 +2679,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   
   (sql-highlight-ansi-keywords))
 
-(defer-until-loaded "sql"
+(with-eval-after-load "sql"
 
   (define-key sql-interactive-mode-map (kbd "RET") 'insert-semicolon-and-send-input)
 
@@ -3028,7 +2988,7 @@ The user is prompted at each instance like query-replace."
   "Simply wrap RE with `^' and `$', like so: `foo' -> `^foo$'"
   (when (stringp re) (concat "^" re "$")))
 
-(defer-until-loaded "full-ack.el"
+(with-eval-after-load "full-ack.el"
 
   (defsubst ack-read (regexp)
     (read-from-minibuffer
