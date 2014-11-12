@@ -901,19 +901,10 @@ it's probably better to explicitly request a merge."
   (setq truncate-lines t))
 (add-hook 'ido-minibuffer-setup-hook 'jpk/ido-minibuffer-setup-hook)
 
-(defun insert-filename ()
-  "Use `read-file-name' to insert a file name."
-  (interactive)
-  (let* ((buffer (window-buffer (minibuffer-selected-window)))
-         (file-path-maybe (buffer-file-name buffer)))
-    (insert (read-file-name
-             "File: "
-             (file-name-directory file-path-maybe)
-             (file-name-nondirectory file-path-maybe)))))
-
 (defun insert-filename-or-buffername (&optional arg)
   "If the buffer has a file, insert the base name of that file.
-  Otherwise insert the buffer name.  With prefix argument, insert the full file name."
+  Otherwise insert the buffer name.  With prefix argument, insert
+  the full file name."
   (interactive "P")
   (let* ((buffer (window-buffer (minibuffer-selected-window)))
          (file-path-maybe (buffer-file-name buffer)))
@@ -1555,9 +1546,68 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; file functions
 
-;; move-buffer-file, copy-buffer-file-name-as-kill,
-;; rename-file-and-buffer, and other useful commands.
-(require 'buffer-extension nil 'noerror)
+(defun rename-file-and-buffer (new-name)
+  "Rename the current buffer and file it is visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((cur-name (buffer-file-name)))
+    (if (not (and cur-name (file-exists-p cur-name)))
+        (message "Buffer is not visiting a file!")
+      (cond
+       ((vc-backend cur-name)
+        (vc-rename-file cur-name new-name))
+       (t
+        (rename-file cur-name new-name t)
+        (rename-buffer new-name)
+        (set-visited-file-name new-name t t)
+        (set-buffer-modified-p nil))))))
+
+(defun move-buffer-file (dir)
+  "Move both current buffer and file it's visiting to DIR."
+  (interactive "DNew directory: ")
+  (let* ((name (buffer-name))
+         (filename (buffer-file-name))
+         (dir
+          (if (string-match dir "\\(?:/\\|\\\\)$")
+              (substring dir 0 -1) dir))
+         (newname (concat dir "/" name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (copy-file filename newname 1)
+      (delete-file filename)
+      (set-visited-file-name newname)
+      (set-buffer-modified-p nil)
+      t)))
+
+(defun copy-buffer-file-name-as-kill(choice)
+  "Copy the buffer-file-name to the kill-ring"
+  (interactive "cCopy Buffer Name (F) Full, (D) Directory, (N) Name")
+  (let ((new-kill-string)
+        (name (if (eq major-mode 'dired-mode)
+                  (dired-get-filename)
+                (or (buffer-file-name) ""))))
+    (cond ((eq choice ?f)
+           (setq new-kill-string name))
+          ((eq choice ?d)
+           (setq new-kill-string (file-name-directory name)))
+          ((eq choice ?n)
+           (setq new-kill-string (file-name-nondirectory name)))
+          (t (message "Quit")))
+    (when new-kill-string
+      (message "%s copied" new-kill-string)
+      (kill-new new-kill-string))))
+
+(defun kill-this-buffer-and-file ()
+  "Removes file connected to current buffer and kills buffer."
+  (interactive)
+  (let ((filename (buffer-file-name))
+        (buffer (current-buffer))
+        (name (buffer-name)))
+    (if (not (and filename (file-exists-p filename)))
+        (error "Buffer '%s' is not visiting a file!" name)
+      (when (yes-or-no-p "Are you sure you want to remove this file? ")
+        (delete-file filename)
+        (kill-buffer buffer)
+        (message "File '%s' successfully removed" filename)))))
 
 (defalias 'delete-this-buffer-and-file 'kill-this-buffer-and-file
   "I always think that this should be called 'delete'.  It's not
