@@ -78,20 +78,6 @@ Optional arg REVISION is a revision to annotate from."
      (date-to-time (concat (match-string-no-properties 2) " 00:00:00")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; incoming/outgoing
-
-(defun vc-hg-log-incoming (buffer remote-location)
-  (vc-hg-command buffer nil nil "incoming" "-n" (unless (string= remote-location "")
-                                              remote-location)))
-
-(defun vc-hg-log-outgoing (buffer remote-location)
-  (vc-hg-command buffer nil nil "outgoing" "-n" (unless (string= remote-location "")
-                                              remote-location)))
-
-(global-set-key (kbd "C-x v O") 'vc-log-outgoing)
-(global-set-key (kbd "C-x v I") 'vc-log-incoming)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other stuff
 
 ;; this version works better when viewing explicit ranges of revs
