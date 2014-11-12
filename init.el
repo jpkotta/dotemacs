@@ -113,7 +113,7 @@
 
 (package-initialize)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
+             '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives
              '("org" . "http://orgmode.org/elpa/"))
 
