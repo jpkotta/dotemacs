@@ -69,7 +69,6 @@
         diff-hl
         diminish
         dired+
-        dired-details
         drag-stuff
         evil-numbers
         expand-region
@@ -1744,10 +1743,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       errors))
 
   (require 'wuxch-dired-copy-paste nil 'noerror)
-
-  (with-library 'dired-details
-    (setq dired-details-hide-link-targets nil)
-    (dired-details-install))
   )
 
 (with-eval-after-load 'view-mode
