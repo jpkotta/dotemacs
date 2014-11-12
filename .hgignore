@@ -1,6 +1,7 @@
 syntax: glob
 
-elpa
+elpa*
 staging
 repos
 persistence
+url
