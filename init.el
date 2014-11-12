@@ -603,7 +603,10 @@ for non-decimal strings."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CUA mode
 
-(cua-selection-mode t) ;; enable without C-x, C-c, C-v
+;; FIXME: Emacs 24.4 has a reasonable rectangle-mark-mode.  Add
+;; cua-rect functionality to it, and get rid of cua-mode.
+
+(global-set-key (kbd "C-<return>") 'cua-rectangle-mark-mode)
 
 (with-eval-after-load "cua-rect"
   (defun cua-sequence-rectangle (first incr format)
@@ -625,10 +628,6 @@ The numbers are formatted according to the FORMAT string."
                                  (delete-region s e)
                                  (insert (format format first))
                                  (setq first (+ first incr)))))
-
-  ;; FIXME workaround for emacs 24
-  (define-key cua--rectangle-keymap
-    [remap delete-forward-char] 'cua-delete-rectangle)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
