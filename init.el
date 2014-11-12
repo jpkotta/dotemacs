@@ -560,7 +560,6 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
   (with-eval-after-load "fixme-mode" (diminish 'fixme-mode))
   (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
-  (with-eval-after-load "highlight-parentheses" (diminish 'highlight-parentheses-mode))
   (with-eval-after-load "projectile" (diminish 'projectile-mode "proj"))
   (with-eval-after-load "workgroups" (diminish 'workgroups-mode))
   (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
@@ -2247,10 +2246,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'wrap-region
     (wrap-region-mode 1))
 
-  ;; highlight nested parens
-  (with-library 'highlight-parentheses
-    (highlight-parentheses-mode 1))
-
   (with-library 'pretty-mode
     (pretty-mode 1))
 
@@ -2501,7 +2496,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;; Verilog
 
 (setq verilog-number-font-lock-spec '("\\<[0-9]+'[bdh]". font-lock-type-face))
-
 
 (with-eval-after-load "verilog-mode"
   (font-lock-add-keywords
@@ -2924,7 +2918,7 @@ match.  It should be idempotent."
 (define-key isearch-mode-map (kbd "<C-backspace>") 'isearch-unfail)
 
 (with-library 'ergo-movement-mode
-  (define-key isearch-mode-map (kbd "M-k") 'isearch-other-meta-char))
+  (define-key isearch-mode-map (kbd "M-k") nil))
 
 (with-library 'flex-isearch
   (setq flex-isearch-auto 'on-failed)
@@ -3111,7 +3105,6 @@ The user is prompted at each instance like query-replace."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paren Highlighting
-;; see also highlight-parentheses-mode
 
 (show-paren-mode 1)
 

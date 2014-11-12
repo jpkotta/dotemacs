@@ -52,7 +52,6 @@
  '(octave-block-offset 4)
  '(octave-continuation-string "...")
  '(read-quoted-char-radix 16)
- '(safe-local-variable-values (quote ((eval when (and (buffer-file-name) (file-regular-p (buffer-file-name)) (string-match-p "^[^.]" (buffer-file-name))) (emacs-lisp-mode)) (encoding . utf-8) (emacs-lisp-docstring-fill-column . 78))))
  '(same-window-buffer-names (quote ("*Python*" "*Diff*" "*Apropos*" "*shell*" "*mail*" "*inferior-lisp*" "*ielm*" "*scheme*" "*Hg outgoing*" "*Hg incoming*")))
  '(same-window-regexps (quote ("\\*vc-.*\\*" "\\*rsh-[^-]*\\*\\(\\|<[0-9]*>\\)" "\\*telnet-.*\\*\\(\\|<[0-9]+>\\)" "^\\*rlogin-.*\\*\\(\\|<[0-9]+>\\)" "\\*info\\*\\(\\|<[0-9]+>\\)" "\\*gud-.*\\*\\(\\|<[0-9]+>\\)" "\\`\\*Customiz.*\\*\\'")))
  '(scroll-bar-mode (quote right))
