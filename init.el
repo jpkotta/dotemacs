@@ -389,6 +389,7 @@ and so on."
   (add-to-list 'org-mode-hook 'jpk/org-mode-hook)
   (put 'org-end-of-line 'CUA 'move)
   (put 'org-beginning-of-line 'CUA 'move)
+  (put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
   )
 
 ;; (setq org-src-fontify-natively t)
@@ -578,7 +579,7 @@ With prefix arg, insert a large ASCII art version.
 (defun str2num (str &optional base)
   "Like string-to-number, but with 'normal' (C-style) prefixes
 for non-decimal strings."
-  (let ((case-fold-search nil))
+  (let ((case-fold-search t))
     (cond
      ((string-match "0x[0-9A-F]+" str)
       (string-to-number (replace-regexp-in-string "0x" "" str)
@@ -1103,7 +1104,11 @@ This function is suitable to add to `find-file-hook'."
     (other-window 1)
     (split-window-vertically)
     (select-window this-window)
-    (split-window-vertically)))
+    (split-window-vertically))
+  (dotimes (i 4)
+    (unless (= i 0)
+      (next-buffer))
+    (other-window 1)))
 
 ;; default bindings are too long, make single keystrokes
 (defun other-window-prev ()
@@ -1357,50 +1362,10 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; diff-hl
 
-(with-eval-after-load "diff-hl"
-  (define-fringe-bitmap 'diff-hl-bmp-insert
-    [#b00000000
-     #b00011000
-     #b00011000
-     #b01111110
-     #b01111110
-     #b00011000
-     #b00011000
-     #b00000000])
-
-  (define-fringe-bitmap 'diff-hl-bmp-delete
-    [#b00000000
-     #b00000000
-     #b00000000
-     #b01111110
-     #b01111110
-     #b00000000
-     #b00000000
-     #b00000000])
-
-  (define-fringe-bitmap 'diff-hl-bmp-change
-    [#b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000])
-
-  (defun diff-hl-fringe-spec (type pos)
-    (let* ((key (cons type pos))
-           (val (gethash key diff-hl-spec-cache)))
-      (unless val
-        (let* ((face-sym (intern (concat "diff-hl-" (symbol-name type))))
-               (bmp-sym (intern (concat "diff-hl-bmp-" (symbol-name type)))))
-          (setq val (propertize " " 'display `((left-fringe ,bmp-sym ,face-sym))))
-          (puthash key val diff-hl-spec-cache)))
-      val))
-  )
-
 (with-library 'diff-hl
-  (global-diff-hl-mode 1))
+  (setq diff-hl-fringe-bmp-function 'diff-hl-fringe-bmp-from-type)
+  (global-diff-hl-mode 1)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
@@ -1541,6 +1506,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setenv "MANWIDTH" "72")
 (setq woman-fill-column 72)
+(setq woman-cache-filename (concat emacs-persistence-directory "woman.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; file functions
