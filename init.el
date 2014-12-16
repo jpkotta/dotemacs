@@ -78,6 +78,9 @@
         full-ack
         fvwm-mode
         hide-lines
+        highlight-numbers
+        ;;highlight-operators
+        highlight-quoted
         htmlize
         ido-ubiquitous
         isearch+
@@ -92,6 +95,7 @@
         multi-term
         openwith
         org
+        paren-face
         php-mode
         pkgbuild-mode
         projectile
@@ -2083,12 +2087,27 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     ad-do-it))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Pretty mode
+;;; prettify-symbols
 
-;; https://github.com/mattharrison/pretty-mode.git
-;; interesting, although it kind of messes up indenting
-(autoload 'pretty-mode "pretty-mode.el"
-  "Display certain keywords as pretty unicode glyphs" t)
+;; prettify-symbols-mode is enabled in major mode hooks.
+;; Major modes can append more symbols before enabling prettify-symbols-mode.
+(setq prettify-symbols-alist
+      '(("" . ?§)
+        ("<=" . ?≤)
+        (">=" . ?≥)
+        ("alpha" . ?α)
+        ("beta" . ?β)
+        ("gamma" . ?γ)
+        ("delta" . ?Δ)
+        ("epsilon" . ?ε)
+        ("theta" . ?θ)
+        ("lambda" . ?λ)
+        ("mu" . ?μ)
+        ("pi" . ?π)
+        ("phi" . ?φ)
+        ("sigma" . ?σ)
+        ("sqrt" . ?√)
+        ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; compile
@@ -2166,34 +2185,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (setq to-insert (concat to-insert "\n")))
     (insert to-insert)))
 
-;; extra syntax highlighting
-(defface font-lock-bracket-face
-  '((t (:foreground "cyan3")))
-  "Font lock mode face for brackets, e.g. '(', ']', etc."
-  :group 'font-lock-faces)
-(defvar font-lock-bracket-face 'font-lock-bracket-face
-  "Font lock mode face for backets.  Changing this directly
-  affects only new buffers.")
-
-(setq operators-font-lock-spec
-      (cons (regexp-opt '("+" "-" "*" "/" "%" "!"
-                          "&" "^" "~" "|"
-                          "=" "<" ">"
-                          "." "," ";" ":" "?"))
-            (list
-             0 ;; use whole match
-             'font-lock-builtin-face
-             'keep ;; OVERRIDE
-             )))
-
-(setq brackets-font-lock-spec
-      (cons (regexp-opt '("(" ")" "[" "]" "{" "}"))
-            (list
-             0 ;; use whole match
-             'font-lock-bracket-face
-             'keep ;; OVERRIDE
-             )))
-
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
 
@@ -2212,9 +2203,20 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'wrap-region
     (wrap-region-mode 1))
 
-  (with-library 'pretty-mode
-    (pretty-mode 1))
+  ;; highlight numeric literals
+  (with-library 'highlight-numbers
+    (highlight-numbers-mode 1))
 
+  ;; highlight brackets
+  (with-library 'paren-face
+    (setq paren-face-regexp (regexp-opt '("[" "]" "(" ")" "{" "}")))
+    (set-face-attribute 'parenthesis nil :foreground "cyan3")
+    (paren-face-mode 1))
+
+  ;; highlight operators like '+' and '&'
+  (with-library 'highlight-operators
+    (highlight-operators-mode 1))
+  
   (setq adaptive-wrap-extra-indent 1)
 
   ;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
@@ -2275,14 +2277,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (font-lock-add-keywords
    'c-mode
    (list
-    operators-font-lock-spec
-    brackets-font-lock-spec
     (cons c-types-regexp 'font-lock-type-face)))
   (font-lock-add-keywords
    'c++-mode
    (list
-    operators-font-lock-spec
-    brackets-font-lock-spec
     (cons c-types-regexp 'font-lock-type-face)))
 
   ;; TODO find a better way to do this
@@ -2309,6 +2307,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                                             "-ansi -Wall -g3"))
                      file))))))
 
+(setq prettify-symbols-c-alist
+      '(("!=" . ?≠)
+        ("NULL" . ?∅)
+        ("&&" . ?⋀)
+        ("||" . ?⋁)
+        ("!" . ?¬)
+        ("HUGE_VAL" . ?∞)
+        ("->" . ?→)
+        ("M_PI" . ?π)
+        ))
+
 (defun jpk/c-mode-hook ()
   (smart-tabs-mode 1)
   (setq tab-width 4)
@@ -2316,6 +2325,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (imenu-add-to-menubar "IMenu")
   (setq comment-start "// "
         comment-end "")
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-c-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
   ;;(cpp-highlight-if-0/1)
   ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
   )
@@ -2341,7 +2354,21 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Perl
 
+(defalias 'perl-mode 'cperl-mode)
+
+(setq cperl-invalid-face nil)
+
+(setq prettify-symbols-perl-alist
+      '(("!=" . ?≠)
+        ("->" . ?→)
+        ("=>" . ?⇒)
+        ))
+
 (defun jpk/cperl-mode-hook ()
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-perl-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
   (cperl-set-style "BSD")
   )
 
@@ -2350,13 +2377,19 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
 
+;; (defun jpk/python-eval-insert-region (beg end)
+;;   (interactive "r")
+;;   (let ((str (if (region-active-p)
+;;                  (buffer-substring-no-properties
+;;                   (region-beginning) (region-end))
+;;                (buffer-substring-no-properties
+;;                 (line-beginning-position) (line-end-position)))))
+;;     (save-excursion
+;;       (beginning-of-line)
+;;       (insert (shell-command-to-string
+;;                (concat "python -c " (shell-quote-argument
+;;                                      (concat "print(repr(" str "))"))))))))
 
-  ;; syntax highlighting of operators
-  (font-lock-add-keywords
-   'python-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
 (with-eval-after-load "python"
 
   (with-library 'pylint
@@ -2414,10 +2447,34 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (with-current-buffer output-buffer
       (diff-mode))))
 
+(setq prettify-symbols-python-alist
+      '(("!=" . ?≠)
+        ("None" . ?∅)
+        ("and" . ?⋀)
+        ("or" . ?⋁)
+        ("!" . ?¬)
+        ("all" . ?∀)
+        ("any" . ?∃)
+        ("**" . ?⁑)
+        ("*" . ?∙)
+        ("**2" . ?²)
+        ("**3" . ?³)
+        ("**n" . ?ⁿ)
+        ("Ellipsis" . ?…)
+        ("..." . ?…)
+        ("in" . ?∈)
+        ("not in" . ?∉)
+        ("sum" . ?∑)
+        ))
+
 (defun jpk/python-mode-hook ()
   ;; which-func-mode causes huge performance problems in python-mode
   (when (boundp 'which-function-mode)
     (which-function-mode -1))
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-python-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 (add-hook 'python-mode-hook 'jpk/prog-mode-hook)
@@ -2467,10 +2524,22 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (font-lock-add-keywords
    'verilog-mode
    (list
-    operators-font-lock-spec
-    brackets-font-lock-spec
     verilog-number-font-lock-spec))
   )
+
+(setq prettify-symbols-verilog-alist
+      '(("begin" . ?{)
+        ("end" . ?})
+        ("<=" . ?⇐)
+        ))
+
+(defun jpk/verilog-mode-hook ()
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-verilog-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
+  )
+(add-hook 'verilog-mode-hook 'jpk/verilog-mode-hook)
 
 (add-to-list 'auto-mode-alist '("\\.vams\\'" . verilog-mode))
 
@@ -2507,33 +2576,35 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq eval-expression-print-length nil) ;; unlimited
 
-(setq quoted-symbol-font-lock-spec
-      '("'\\([^][[:space:]()]+\\)\\>" 1 'font-lock-constant-face))
-
-(defun lisp-set-up-extra-font-lock (mode)
-  (font-lock-add-keywords
-   mode
-   (list
-    brackets-font-lock-spec
-    quoted-symbol-font-lock-spec)))
-
 (with-library 'morlock
   (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
   (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
 
+(setq prettify-symbols-lisp-alist
+      '(("/=" . ?≠)
+        ("nil" . ?∅)
+        ("and" . ?⋀)
+        ("or" . ?⋁)
+        ("not" . ?¬)))
+
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
-  (local-set-key (kbd "C-M-S-x") 'eval-region))
+  (local-set-key (kbd "C-M-S-x") 'eval-region)
+  (with-library 'highlight-quoted
+    (highlight-quoted-mode 1))
+  (with-library 'highlight-operators
+    (highlight-operators-mode -1))
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-lisp-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
+  )
 
 ;; http://milkbox.net/note/single-file-master-emacs-configuration/
 (defun imenu-elisp-sections ()
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
 
-  (dolist (mode '(lisp-mode
-                  emacs-lisp-mode
-                  lisp-interaction-mode))
-    (lisp-set-up-extra-font-lock mode))
 (with-eval-after-load "lisp-mode"
   (dolist (hook '(lisp-mode-hook
                   emacs-lisp-mode-hook
