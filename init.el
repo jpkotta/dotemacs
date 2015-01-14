@@ -191,6 +191,11 @@
 (blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
 
+(setq eol-mnemonic-dos "(CRLF)"
+      eol-mnemonic-mac "(CR)"
+      eol-mnemonic-undecided "(EOL?)"
+      eol-mnemonic-unix "(LF)")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
