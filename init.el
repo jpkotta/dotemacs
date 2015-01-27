@@ -33,38 +33,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
+
 ;; add my elisp files to the load path
-
-(defun add-to-path (dir &optional absolute other-path-var)
-  "Adds DIR to `load-path'.  Since it uses `add-to-list', this
-  function is idempotent.  By default, DIR is relative to
-  `user-emacs-directory'.  If ABSOLUTE is non-nil, DIR will be
-  added directly to `load-path' (i.e., it will be relative to the
-  root of the directory tree).  If OTHER-PATH-VAR is non-nil,
-  then that variable will be used instead of `load-path'."
-
-  (interactive "DAdd directory to load-path: ")
-  (unless (or absolute
-             (called-interactively-p 'interactive))
-    (setq dir (concat (expand-file-name user-emacs-directory) dir)))
-  (setq dir (expand-file-name dir))
-  (let ((path-var (or other-path-var 'load-path)))
-    (add-to-list path-var dir nil (lambda (a b)
-                                  (string= (expand-file-name a)
-                                           (expand-file-name b))))
-    (when (called-interactively-p 'interactive)
-      (message "Added %s to %s." dir path-var))))
-
-(add-to-path "lisp")
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;; this is a place to try out random elisp files
-(add-to-path "staging")
+(add-to-list 'load-path (concat user-emacs-directory "staging"))
 
 ;; info directory
-(eval-after-load "info"
-  '(progn
-     (add-to-path "~/.info" 'absolute 'Info-additional-directory-list)
-     ))
+(with-eval-after-load "info"
+  (add-to-list 'Info-additional-directory-list "~/.info"))
 
 ;; a place to put various
 (setq emacs-persistence-directory (concat user-emacs-directory "persistence/"))
@@ -94,7 +72,6 @@
         diff-hl
         diminish
         dired+
-        dired-details
         drag-stuff
         evil-numbers
         expand-region
@@ -104,6 +81,9 @@
         full-ack
         fvwm-mode
         hide-lines
+        highlight-numbers
+        ;;highlight-operators
+        highlight-quoted
         htmlize
         ido-ubiquitous
         isearch+
@@ -117,6 +97,7 @@
         mouse+
         multi-term
         openwith
+        paren-face
         php-mode
         pkgbuild-mode
         projectile
@@ -216,6 +197,11 @@
 (blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
 
+(setq eol-mnemonic-dos "(CRLF)"
+      eol-mnemonic-mac "(CR)"
+      eol-mnemonic-undecided "(EOL?)"
+      eol-mnemonic-unix "(LF)")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
@@ -224,20 +210,6 @@
   (declare (indent defun))
   `(when (require ,feature nil 'noerror)
      ,@body))
-
-(defmacro defer-until-loaded (library &rest body)
-  "Evaluate BODY only after LIBRARY is loaded.
-
-Should be equivalent to
-    (eval-after-load LIBRARY
-      '(progn
-         BODY
-         nil)) "
-  (declare (indent defun))
-  `(eval-after-load ,library
-     '(progn
-        ,@body
-        nil)))
 
 (defun setup-RAIDE-file ()
   "View RAIDE files from Eagle."
@@ -427,11 +399,12 @@ and so on."
   (with-library 'ac-org-mode
     (add-to-list 'ac-sources 'ac-source-org)))
 
-(defer-until-loaded "org"
+(with-eval-after-load "org"
   (setq-default org-hide-leading-stars t)
   (add-to-list 'org-mode-hook 'jpk/org-mode-hook)
   (put 'org-end-of-line 'CUA 'move)
   (put 'org-beginning-of-line 'CUA 'move)
+  (put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
   )
 
 ;; (setq org-src-fontify-natively t)
@@ -580,8 +553,8 @@ With prefix arg, insert a large ASCII art version.
 (with-library 'keychain-environment
   (keychain-refresh-environment))
 
-(add-to-list 'auto-mode-alist '(".ssh/config\\'"  . ssh-config-mode))
-(add-to-list 'auto-mode-alist '("sshd?_config\\'" . ssh-config-mode))
+(dolist (x '(".ssh/config\\'" "sshd?_config\\'"))
+  (add-to-list 'auto-mode-alist `(,x . ssh-config-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C SubWordMode
@@ -595,19 +568,18 @@ With prefix arg, insert a large ASCII art version.
 ;;; Diminish
 ;; Hide some minor mode indicators in the modeline.
 (with-library 'diminish
-  (defer-until-loaded "abbrev" (diminish 'abbrev-mode))
-  (defer-until-loaded "auto-complete" (diminish 'auto-complete-mode))
-  (defer-until-loaded "doxymacs" (diminish 'doxymacs-mode))
-  (defer-until-loaded "drag-stuff" (diminish 'drag-stuff-mode))
-  (defer-until-loaded "eldoc" (diminish 'eldoc-mode))
-  (defer-until-loaded "face-remap" (diminish 'buffer-face-mode))
-  (defer-until-loaded "fixme-mode" (diminish 'fixme-mode))
-  (defer-until-loaded "flyspell" (diminish 'flyspell-mode))
-  (defer-until-loaded "highlight-parentheses" (diminish 'highlight-parentheses-mode))
-  (defer-until-loaded "projectile" (diminish 'projectile-mode "proj"))
-  (defer-until-loaded "workgroups" (diminish 'workgroups-mode))
-  (defer-until-loaded "wrap-region" (diminish 'wrap-region-mode))
-  (defer-until-loaded "yasnippet" (diminish 'yas-minor-mode))
+  (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
+  (with-eval-after-load "auto-complete" (diminish 'auto-complete-mode))
+  (with-eval-after-load "doxymacs" (diminish 'doxymacs-mode))
+  (with-eval-after-load "drag-stuff" (diminish 'drag-stuff-mode))
+  (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
+  (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
+  (with-eval-after-load "fixme-mode" (diminish 'fixme-mode))
+  (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
+  (with-eval-after-load "projectile" (diminish 'projectile-mode "proj"))
+  (with-eval-after-load "workgroups" (diminish 'workgroups-mode))
+  (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
+  (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help
@@ -622,7 +594,7 @@ With prefix arg, insert a large ASCII art version.
 (defun str2num (str &optional base)
   "Like string-to-number, but with 'normal' (C-style) prefixes
 for non-decimal strings."
-  (let ((case-fold-search nil))
+  (let ((case-fold-search t))
     (cond
      ((string-match "0x[0-9A-F]+" str)
       (string-to-number (replace-regexp-in-string "0x" "" str)
@@ -646,9 +618,12 @@ for non-decimal strings."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CUA mode
 
-(cua-selection-mode t) ;; enable without C-x, C-c, C-v
+;; FIXME: Emacs 24.4 has a reasonable rectangle-mark-mode.  Add
+;; cua-rect functionality to it, and get rid of cua-mode.
 
-(defer-until-loaded "cua-rect"
+(global-set-key (kbd "C-<return>") 'cua-rectangle-mark-mode)
+
+(with-eval-after-load "cua-rect"
   (defun cua-sequence-rectangle (first incr format)
     "Resequence each line of CUA rectangle starting from FIRST.
 The numbers are formatted according to the FORMAT string."
@@ -668,10 +643,6 @@ The numbers are formatted according to the FORMAT string."
                                  (delete-region s e)
                                  (insert (format format first))
                                  (setq first (+ first incr)))))
-
-  ;; FIXME workaround for emacs 24
-  (define-key cua--rectangle-keymap
-    [remap delete-forward-char] 'cua-delete-rectangle)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -755,12 +726,12 @@ The numbers are formatted according to the FORMAT string."
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 (setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
 
-(add-to-path "ac-sources")
+(add-to-list 'load-path (concat user-emacs-directory "ac-sources"))
 (with-library 'auto-complete-config
   (setq ac-source-yasnippet nil) ;; broken for latest yasnippet
   (ac-config-default))
 
-(defer-until-loaded "auto-complete"
+(with-eval-after-load "auto-complete"
 
   (setq ac-auto-start 3
         ac-auto-show-menu t
@@ -834,10 +805,9 @@ If given a prefix argument, select the previous candidate."
 ;; TODO: wrap flyspell-auto-correct-word with ido
 
 ;; TODO: http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
-
 (setq ispell-program-name "aspell")
 
-(defer-until-loaded "flyspell"
+(with-eval-after-load "flyspell"
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
 
@@ -869,7 +839,7 @@ If given a prefix argument, select the previous candidate."
 (global-set-key (kbd "<right-fringe> <mouse-4>") 'bm-previous-mouse)
 (global-set-key (kbd "<right-fringe> <mouse-1>") 'bm-toggle-mouse)
 
-(defer-until-loaded "bm"
+(with-eval-after-load "bm"
   (defvar bm-mode-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "m") 'bm-toggle)
@@ -897,7 +867,7 @@ If given a prefix argument, select the previous candidate."
 (global-set-key (kbd "C-c s d") 'hide-lines-matching)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ido - Interactive Do
+;;; ido - Interactively Do Things
 
 (ido-mode 'both) ;; both buffers and files
 (ido-everywhere t)
@@ -949,19 +919,10 @@ it's probably better to explicitly request a merge."
   (setq truncate-lines t))
 (add-hook 'ido-minibuffer-setup-hook 'jpk/ido-minibuffer-setup-hook)
 
-(defun insert-filename ()
-  "Use `read-file-name' to insert a file name."
-  (interactive)
-  (let* ((buffer (window-buffer (minibuffer-selected-window)))
-         (file-path-maybe (buffer-file-name buffer)))
-    (insert (read-file-name
-             "File: "
-             (file-name-directory file-path-maybe)
-             (file-name-nondirectory file-path-maybe)))))
-
 (defun insert-filename-or-buffername (&optional arg)
   "If the buffer has a file, insert the base name of that file.
-  Otherwise insert the buffer name.  With prefix argument, insert the full file name."
+  Otherwise insert the buffer name.  With prefix argument, insert
+  the full file name."
   (interactive "P")
   (let* ((buffer (window-buffer (minibuffer-selected-window)))
          (file-path-maybe (buffer-file-name buffer)))
@@ -973,6 +934,7 @@ it's probably better to explicitly request a merge."
 
 (define-key minibuffer-local-map (kbd "C-c f") 'insert-filename-or-buffername)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; use ido (almost) everywhere
 (setq ido-ubiquitous-function-exceptions
       '(ido-write-file ido-find-file ido-list-directory ffap-menu-ask
@@ -982,9 +944,8 @@ it's probably better to explicitly request a merge."
 (with-library 'ido-ubiquitous
   (ido-ubiquitous-mode 1))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ido for M-x
-;; minibuffer-complete-cycle is also nice, but this is better
-
 (defun smex-update-after-load (unused)
   (when (boundp 'smex-cache)
     (smex-update)))
@@ -1122,12 +1083,14 @@ This function is suitable to add to `find-file-hook'."
 ;; Basically what this does is connect through ssh and then sudo on
 ;; the remote machine (except localhost).  You can use
 ;; "/sudo:remote-host:/path/to/file" to open a remote file as root.
-(defer-until-loaded "tramp"
+(with-eval-after-load "tramp"
   (add-to-list 'tramp-default-proxies-alist
                '(nil "\\`root\\'" "/ssh:%h:"))
   (add-to-list 'tramp-default-proxies-alist
                '((regexp-quote (system-name)) nil nil))
   )
+
+;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Mouse
@@ -1159,7 +1122,11 @@ This function is suitable to add to `find-file-hook'."
     (other-window 1)
     (split-window-vertically)
     (select-window this-window)
-    (split-window-vertically)))
+    (split-window-vertically))
+  (dotimes (i 4)
+    (unless (= i 0)
+      (next-buffer))
+    (other-window 1)))
 
 ;; default bindings are too long, make single keystrokes
 (defun other-window-prev ()
@@ -1283,7 +1250,7 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
 
-(defer-until-loaded "vc-hg"
+(with-eval-after-load "vc-hg"
   (require 'vc-hg-fixes)
   )
 
@@ -1292,7 +1259,7 @@ This function is suitable to add to `find-file-hook'."
     (ignore-errors
       ad-do-it)))
 
-(defer-until-loaded "vc-dir"
+(with-eval-after-load "vc-dir"
   
   (defun vc-dir-toggle ()
     "Toggle the mark on a file in `vc-dir-mode'."
@@ -1413,50 +1380,10 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; diff-hl
 
-(defer-until-loaded "diff-hl"
-  (define-fringe-bitmap 'diff-hl-bmp-insert
-    [#b00000000
-     #b00011000
-     #b00011000
-     #b01111110
-     #b01111110
-     #b00011000
-     #b00011000
-     #b00000000])
-
-  (define-fringe-bitmap 'diff-hl-bmp-delete
-    [#b00000000
-     #b00000000
-     #b00000000
-     #b01111110
-     #b01111110
-     #b00000000
-     #b00000000
-     #b00000000])
-
-  (define-fringe-bitmap 'diff-hl-bmp-change
-    [#b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000
-     #b00011000])
-
-  (defun diff-hl-fringe-spec (type pos)
-    (let* ((key (cons type pos))
-           (val (gethash key diff-hl-spec-cache)))
-      (unless val
-        (let* ((face-sym (intern (concat "diff-hl-" (symbol-name type))))
-               (bmp-sym (intern (concat "diff-hl-bmp-" (symbol-name type)))))
-          (setq val (propertize " " 'display `((left-fringe ,bmp-sym ,face-sym))))
-          (puthash key val diff-hl-spec-cache)))
-      val))
-  )
-
 (with-library 'diff-hl
-  (global-diff-hl-mode 1))
+  (setq diff-hl-fringe-bmp-function 'diff-hl-fringe-bmp-from-type)
+  (global-diff-hl-mode 1)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
@@ -1469,7 +1396,7 @@ This function is suitable to add to `find-file-hook'."
     (goto-char (point-max))))
 
 ;; used for interactive terminals
-(defer-until-loaded "comint"
+(with-eval-after-load "comint"
   (define-key comint-mode-map
     (kbd "<up>") 'comint-previous-matching-input-from-input)
   (define-key comint-mode-map
@@ -1481,7 +1408,7 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
-(defer-until-loaded "multi-term"
+(with-eval-after-load "multi-term"
 
   (dolist
       (bind '(("C-<right>"     . term-send-forward-word)
@@ -1597,13 +1524,73 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setenv "MANWIDTH" "72")
 (setq woman-fill-column 72)
+(setq woman-cache-filename (concat emacs-persistence-directory "woman.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; file functions
 
-;; move-buffer-file, copy-buffer-file-name-as-kill,
-;; rename-file-and-buffer, and other useful commands.
-(require 'buffer-extension nil 'noerror)
+(defun rename-file-and-buffer (new-name)
+  "Rename the current buffer and file it is visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((cur-name (buffer-file-name)))
+    (if (not (and cur-name (file-exists-p cur-name)))
+        (message "Buffer is not visiting a file!")
+      (cond
+       ((vc-backend cur-name)
+        (vc-rename-file cur-name new-name))
+       (t
+        (rename-file cur-name new-name t)
+        (rename-buffer new-name)
+        (set-visited-file-name new-name t t)
+        (set-buffer-modified-p nil))))))
+
+(defun move-buffer-file (dir)
+  "Move both current buffer and file it's visiting to DIR."
+  (interactive "DNew directory: ")
+  (let* ((name (buffer-name))
+         (filename (buffer-file-name))
+         (dir
+          (if (string-match dir "\\(?:/\\|\\\\)$")
+              (substring dir 0 -1) dir))
+         (newname (concat dir "/" name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (copy-file filename newname 1)
+      (delete-file filename)
+      (set-visited-file-name newname)
+      (set-buffer-modified-p nil)
+      t)))
+
+(defun copy-buffer-file-name-as-kill(choice)
+  "Copy the buffer-file-name to the kill-ring"
+  (interactive "cCopy Buffer Name (F) Full, (D) Directory, (N) Name")
+  (let ((new-kill-string)
+        (name (if (eq major-mode 'dired-mode)
+                  (dired-get-filename)
+                (or (buffer-file-name) ""))))
+    (cond ((eq choice ?f)
+           (setq new-kill-string name))
+          ((eq choice ?d)
+           (setq new-kill-string (file-name-directory name)))
+          ((eq choice ?n)
+           (setq new-kill-string (file-name-nondirectory name)))
+          (t (message "Quit")))
+    (when new-kill-string
+      (message "%s copied" new-kill-string)
+      (kill-new new-kill-string))))
+
+(defun kill-this-buffer-and-file ()
+  "Removes file connected to current buffer and kills buffer."
+  (interactive)
+  (let ((filename (buffer-file-name))
+        (buffer (current-buffer))
+        (name (buffer-name)))
+    (if (not (and filename (file-exists-p filename)))
+        (error "Buffer '%s' is not visiting a file!" name)
+      (when (yes-or-no-p "Are you sure you want to remove this file? ")
+        (delete-file filename)
+        (kill-buffer buffer)
+        (message "File '%s' successfully removed" filename)))))
 
 (defalias 'delete-this-buffer-and-file 'kill-this-buffer-and-file
   "I always think that this should be called 'delete'.  It's not
@@ -1671,7 +1658,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
 
-(defer-until-loaded "dired"
+(with-eval-after-load "dired"
   (setq image-dired-dir (concat emacs-persistence-directory "image-dired/"))
   
   (define-key dired-mode-map (kbd "C-s") 'dired-isearch-filenames)
@@ -1788,13 +1775,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       errors))
 
   (require 'wuxch-dired-copy-paste nil 'noerror)
-
-  (with-library 'dired-details
-    (setq dired-details-hide-link-targets nil)
-    (dired-details-install))
   )
 
-(defer-until-loaded 'view-mode
+(with-eval-after-load 'view-mode
   (defun dired-view-next ()
     "Move to next dired line and view ."
     (interactive)
@@ -1853,7 +1836,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; image-mode
 
-(defer-until-loaded "image-mode"
+(with-eval-after-load "image-mode"
   (define-key image-mode-map (kbd "<next>") 'image-scroll-up)
   (define-key image-mode-map (kbd "<prior>") 'image-scroll-down)
   )
@@ -1861,7 +1844,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CSV mode
 
-(defer-until-loaded "csv-mode"
+(with-eval-after-load "csv-mode"
 
   ;; It seems silly to set csv separators for all buffers the same, so
   ;; this makes everything buffer local and easily settable from the
@@ -1911,7 +1894,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; IBuffer
 
-(defer-until-loaded "ibuffer"
+(with-eval-after-load "ibuffer"
   (require 'ibuf-ext)
   (require 'ibuf-macs)
 
@@ -2101,7 +2084,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
             figlet-figletify-region-comment))
   (autoload func "figlet.el"
     "Figlet interface for Emacs." t))
-(defer-until-loaded "figlet.el"
+(with-eval-after-load "figlet.el"
   (add-to-list 'figlet-options "-k") ;; kerning
   )
 
@@ -2118,12 +2101,27 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     ad-do-it))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Pretty mode
+;;; prettify-symbols
 
-;; https://github.com/mattharrison/pretty-mode.git
-;; interesting, although it kind of messes up indenting
-(autoload 'pretty-mode "pretty-mode.el"
-  "Display certain keywords as pretty unicode glyphs" t)
+;; prettify-symbols-mode is enabled in major mode hooks.
+;; Major modes can append more symbols before enabling prettify-symbols-mode.
+(setq prettify-symbols-alist
+      '(("" . ?§)
+        ("<=" . ?≤)
+        (">=" . ?≥)
+        ("alpha" . ?α)
+        ("beta" . ?β)
+        ("gamma" . ?γ)
+        ("delta" . ?Δ)
+        ("epsilon" . ?ε)
+        ("theta" . ?θ)
+        ("lambda" . ?λ)
+        ("mu" . ?μ)
+        ("pi" . ?π)
+        ("phi" . ?φ)
+        ("sigma" . ?σ)
+        ("sqrt" . ?√)
+        ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; compile
@@ -2201,34 +2199,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (setq to-insert (concat to-insert "\n")))
     (insert to-insert)))
 
-;; extra syntax highlighting
-(defface font-lock-bracket-face
-  '((t (:foreground "cyan3")))
-  "Font lock mode face for brackets, e.g. '(', ']', etc."
-  :group 'font-lock-faces)
-(defvar font-lock-bracket-face 'font-lock-bracket-face
-  "Font lock mode face for backets.  Changing this directly
-  affects only new buffers.")
-
-(setq operators-font-lock-spec
-      (cons (regexp-opt '("+" "-" "*" "/" "%" "!"
-                          "&" "^" "~" "|"
-                          "=" "<" ">"
-                          "." "," ";" ":" "?"))
-            (list
-             0 ;; use whole match
-             'font-lock-builtin-face
-             'keep ;; OVERRIDE
-             )))
-
-(setq brackets-font-lock-spec
-      (cons (regexp-opt '("(" ")" "[" "]" "{" "}"))
-            (list
-             0 ;; use whole match
-             'font-lock-bracket-face
-             'keep ;; OVERRIDE
-             )))
-
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
 
@@ -2247,13 +2217,20 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'wrap-region
     (wrap-region-mode 1))
 
-  ;; highlight nested parens
-  (with-library 'highlight-parentheses
-    (highlight-parentheses-mode 1))
+  ;; highlight numeric literals
+  (with-library 'highlight-numbers
+    (highlight-numbers-mode 1))
 
-  (with-library 'pretty-mode
-    (pretty-mode 1))
+  ;; highlight brackets
+  (with-library 'paren-face
+    (setq paren-face-regexp (regexp-opt '("[" "]" "(" ")" "{" "}")))
+    (set-face-attribute 'parenthesis nil :foreground "cyan3")
+    (paren-face-mode 1))
 
+  ;; highlight operators like '+' and '&'
+  (with-library 'highlight-operators
+    (highlight-operators-mode 1))
+  
   (setq adaptive-wrap-extra-indent 1)
 
   ;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
@@ -2275,7 +2252,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (imenu--cleanup)
     (setq imenu--index-alist nil)))
 
-(defer-until-loaded "doxymacs"
+(with-eval-after-load "doxymacs"
   (load "doxymacs-hacks.el")
   )
 
@@ -2310,18 +2287,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
        "\\<[_a-zA-Z][_a-zA-Z0-9]*_t\\>" "\\|"
        (regexp-opt '("unsigned" "int" "char" "float" "void") 'words)))
 
-(defer-until-loaded "cc-mode"
+(with-eval-after-load "cc-mode"
   (font-lock-add-keywords
    'c-mode
    (list
-    operators-font-lock-spec
-    brackets-font-lock-spec
     (cons c-types-regexp 'font-lock-type-face)))
   (font-lock-add-keywords
    'c++-mode
    (list
-    operators-font-lock-spec
-    brackets-font-lock-spec
     (cons c-types-regexp 'font-lock-type-face)))
 
   ;; TODO find a better way to do this
@@ -2348,6 +2321,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                                             "-ansi -Wall -g3"))
                      file))))))
 
+(setq prettify-symbols-c-alist
+      '(("!=" . ?≠)
+        ("NULL" . ?∅)
+        ("&&" . ?⋀)
+        ("||" . ?⋁)
+        ("!" . ?¬)
+        ("HUGE_VAL" . ?∞)
+        ("->" . ?→)
+        ("M_PI" . ?π)
+        ))
+
 (defun jpk/c-mode-hook ()
   (smart-tabs-mode 1)
   (setq tab-width 4)
@@ -2355,6 +2339,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (imenu-add-to-menubar "IMenu")
   (setq comment-start "// "
         comment-end "")
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-c-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
   ;;(cpp-highlight-if-0/1)
   ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
   )
@@ -2362,20 +2350,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'c-mode-common-hook 'jpk/c-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Java
-
-(defer-until-loaded "cc-mode"
-  (font-lock-add-keywords
-   'java-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUD (Grand Unified Debugger)
 
-(defer-until-loaded 'gud
+(with-eval-after-load 'gud
   (define-key gud-minor-mode-map (kbd "C-c C-n") (make-repeatable-command 'gud-next))
   (define-key gud-minor-mode-map (kbd "C-c C-s") (make-repeatable-command 'gud-step))
   )
@@ -2391,30 +2368,43 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Perl
 
-(defer-until-loaded "cperl-mode"
-  (font-lock-add-keywords
-   'cperl-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
-  )
+(defalias 'perl-mode 'cperl-mode)
+
+(setq cperl-invalid-face nil)
+
+(setq prettify-symbols-perl-alist
+      '(("!=" . ?≠)
+        ("->" . ?→)
+        ("=>" . ?⇒)
+        ))
 
 (defun jpk/cperl-mode-hook ()
-  (cperl-set-style "BSD"))
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-perl-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
+  (cperl-set-style "BSD")
+  )
 
 (add-hook 'cperl-mode-hook 'jpk/cperl-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
 
-(defer-until-loaded "python"
+;; (defun jpk/python-eval-insert-region (beg end)
+;;   (interactive "r")
+;;   (let ((str (if (region-active-p)
+;;                  (buffer-substring-no-properties
+;;                   (region-beginning) (region-end))
+;;                (buffer-substring-no-properties
+;;                 (line-beginning-position) (line-end-position)))))
+;;     (save-excursion
+;;       (beginning-of-line)
+;;       (insert (shell-command-to-string
+;;                (concat "python -c " (shell-quote-argument
+;;                                      (concat "print(repr(" str "))"))))))))
 
-  ;; syntax highlighting of operators
-  (font-lock-add-keywords
-   'python-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
+(with-eval-after-load "python"
 
   (with-library 'pylint
     (setq pylint-options '("--rcfile=./.pylintrc"
@@ -2471,10 +2461,34 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (with-current-buffer output-buffer
       (diff-mode))))
 
+(setq prettify-symbols-python-alist
+      '(("!=" . ?≠)
+        ("None" . ?∅)
+        ("and" . ?⋀)
+        ("or" . ?⋁)
+        ("!" . ?¬)
+        ("all" . ?∀)
+        ("any" . ?∃)
+        ("**" . ?⁑)
+        ("*" . ?∙)
+        ("**2" . ?²)
+        ("**3" . ?³)
+        ("**n" . ?ⁿ)
+        ("Ellipsis" . ?…)
+        ("..." . ?…)
+        ("in" . ?∈)
+        ("not in" . ?∉)
+        ("sum" . ?∑)
+        ))
+
 (defun jpk/python-mode-hook ()
   ;; which-func-mode causes huge performance problems in python-mode
   (when (boundp 'which-function-mode)
     (which-function-mode -1))
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-python-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 (add-hook 'python-mode-hook 'jpk/prog-mode-hook)
@@ -2493,22 +2507,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;; Octave/Matlab
 
 ;; ;; hack for octave mode "end" keyword
-;; (defer-until-loaded "octave-mod"
+;; (with-eval-after-load "octave-mod"
 ;;   (add-to-list 'octave-end-keywords "end[[:space:]]*\\([%#].*\\|$\\)")
 ;;   (setq octave-block-end-regexp
 ;;         (concat "\\<\\("
 ;;                 (mapconcat 'identity octave-end-keywords "\\|")
 ;;                 "\\)\\>"))
 ;;   )
-
-(defer-until-loaded "octave-mod"
-  ;; syntax highlighting of operators
-  (font-lock-add-keywords
-   'octave-mode
-   (list
-    operators-font-lock-spec
-    brackets-font-lock-spec))
-  )
 
 (defun octave-send-buffer ()
   (interactive)
@@ -2529,17 +2534,28 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq verilog-number-font-lock-spec '("\\<[0-9]+'[bdh]". font-lock-type-face))
 
-(defer-until-loaded "verilog-mode"
+(with-eval-after-load "verilog-mode"
   (font-lock-add-keywords
    'verilog-mode
    (list
-    operators-font-lock-spec
-    brackets-font-lock-spec
     verilog-number-font-lock-spec))
   )
 
-(add-to-list 'auto-mode-alist
-             '("\\.vams\\'" . verilog-mode))
+(setq prettify-symbols-verilog-alist
+      '(("begin" . ?{)
+        ("end" . ?})
+        ("<=" . ?⇐)
+        ))
+
+(defun jpk/verilog-mode-hook ()
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-verilog-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
+  )
+(add-hook 'verilog-mode-hook 'jpk/verilog-mode-hook)
+
+(add-to-list 'auto-mode-alist '("\\.vams\\'" . verilog-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Lisp
@@ -2574,34 +2590,36 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq eval-expression-print-length nil) ;; unlimited
 
-(setq quoted-symbol-font-lock-spec
-      '("'\\([^][[:space:]()]+\\)\\>" 1 'font-lock-constant-face))
-
-(defun lisp-set-up-extra-font-lock (mode)
-  (font-lock-add-keywords
-   mode
-   (list
-    brackets-font-lock-spec
-    quoted-symbol-font-lock-spec)))
-
 (with-library 'morlock
   (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
   (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
 
+(setq prettify-symbols-lisp-alist
+      '(("/=" . ?≠)
+        ("nil" . ?∅)
+        ("and" . ?⋀)
+        ("or" . ?⋁)
+        ("not" . ?¬)))
+
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
-  (local-set-key (kbd "C-M-S-x") 'eval-region))
+  (local-set-key (kbd "C-M-S-x") 'eval-region)
+  (with-library 'highlight-quoted
+    (highlight-quoted-mode 1))
+  (with-library 'highlight-operators
+    (highlight-operators-mode -1))
+  (prettify-symbols-mode -1)
+  (dolist (x prettify-symbols-lisp-alist)
+    (add-to-list 'prettify-symbols-alist x))
+  (prettify-symbols-mode 1)
+  )
 
 ;; http://milkbox.net/note/single-file-master-emacs-configuration/
 (defun imenu-elisp-sections ()
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
 
-(defer-until-loaded "lisp-mode"
-  (dolist (mode '(lisp-mode
-                  emacs-lisp-mode
-                  lisp-interaction-mode))
-    (lisp-set-up-extra-font-lock mode))
+(with-eval-after-load "lisp-mode"
   (dolist (hook '(lisp-mode-hook
                   emacs-lisp-mode-hook
                   lisp-interaction-mode-hook))
@@ -2642,10 +2660,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq aurel-download-directory (concat "/tmp/pacaurtmp-" user-real-login-name))
 
-(add-to-list 'auto-mode-alist
-             '("PKGBUILD" . pkgbuild-mode))
-(add-to-list 'auto-mode-alist
-             '("\.install\\'" . pkgbuild-mode))
+(dolist (x '("PKGBUILD" "\.install\\'"))
+  (add-to-list 'auto-mode-alist `(,x . pkgbuild-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
@@ -2660,7 +2676,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'htmlize-view
     (htmlize-view-add-to-files-menu)))
 ;; fix a bug in htmlize from emacs-goodies-el
-(defer-until-loaded "htmlize"
+(with-eval-after-load "htmlize"
   (defun htmlize-face-size (face)
     ;; The size (height) of FACE, taking inheritance into account.
     ;; Only works in Emacs 21 and later.
@@ -2752,7 +2768,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   
   (sql-highlight-ansi-keywords))
 
-(defer-until-loaded "sql"
+(with-eval-after-load "sql"
 
   (define-key sql-interactive-mode-map (kbd "RET") 'insert-semicolon-and-send-input)
 
@@ -2881,7 +2897,8 @@ server/database name."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; assembly
 
-(add-to-list 'auto-mode-alist '("\\.dsl\\'" . asm-mode))
+(dolist (x '("\\.dsl\\'" "\\.lst\\'"))
+  (add-to-list 'auto-mode-alist `(,x . asm-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; UNDO/REDO
@@ -2952,7 +2969,7 @@ match.  It should be idempotent."
 (define-key isearch-mode-map (kbd "<C-backspace>") 'isearch-unfail)
 
 (with-library 'ergo-movement-mode
-  (define-key isearch-mode-map (kbd "M-k") 'isearch-other-meta-char))
+  (define-key isearch-mode-map (kbd "M-k") nil))
 
 (with-library 'flex-isearch
   (setq flex-isearch-auto 'on-failed)
@@ -3060,7 +3077,7 @@ The user is prompted at each instance like query-replace."
   "Simply wrap RE with `^' and `$', like so: `foo' -> `^foo$'"
   (when (stringp re) (concat "^" re "$")))
 
-(defer-until-loaded "full-ack.el"
+(with-eval-after-load "full-ack.el"
 
   (defsubst ack-read (regexp)
     (read-from-minibuffer
@@ -3139,7 +3156,6 @@ The user is prompted at each instance like query-replace."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paren Highlighting
-;; see also highlight-parentheses-mode
 
 (show-paren-mode 1)
 
@@ -3365,8 +3381,9 @@ point."
   (smart-tabs-advice cperl-indent-line cperl-indent-level)
   (smart-tabs-advice c-indent-line     c-basic-offset)
   (smart-tabs-advice c-indent-region   c-basic-offset)
-  (smart-tabs-advice php-cautious-indent-region c-basic-offset)
-  (smart-tabs-advice php-cautious-indent-line c-basic-offset)
+  (with-library 'php-mode
+    (smart-tabs-advice php-cautious-indent-region c-basic-offset)
+    (smart-tabs-advice php-cautious-indent-line c-basic-offset))
   )
 
 ;; shift-tab should undo what tab does
