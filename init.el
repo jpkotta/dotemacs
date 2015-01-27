@@ -98,7 +98,7 @@
         multi-term
         openwith
         paren-face
-        php-mode
+        ;;php-mode
         pkgbuild-mode
         projectile
         pylint
