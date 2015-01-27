@@ -71,6 +71,9 @@
 (unless (file-exists-p emacs-persistence-directory)
   (make-directory emacs-persistence-directory t))
 
+;; set up specific to the local machine
+(require 'local-init nil 'noerror)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 
