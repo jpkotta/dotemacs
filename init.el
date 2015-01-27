@@ -830,6 +830,10 @@ If given a prefix argument, select the previous candidate."
 
 ;; TODO: wrap flyspell-auto-correct-word with ido
 
+;; TODO: http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
+
+(setq ispell-program-name "aspell")
+
 (defer-until-loaded "flyspell"
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
@@ -2633,7 +2637,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
 
-(setq aurel-download-directory "/tmp/pacaurtmp-jpkotta")
+(setq aurel-download-directory (concat "/tmp/pacaurtmp-" user-real-login-name))
 
 (add-to-list 'auto-mode-alist
              '("PKGBUILD" . pkgbuild-mode))
@@ -3311,6 +3315,8 @@ point."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
+
+(electric-indent-mode nil)
 
 (defun indent-relative-dwim ()
   "Indent the current line to either: the beginning of last
