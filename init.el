@@ -114,7 +114,6 @@
         mouse+
         multi-term
         openwith
-        org
         php-mode
         pkgbuild-mode
         projectile
@@ -134,11 +133,15 @@
         yasnippet
         ))
 
+(cond
+ ((string= emacs-version "24.4.1")
+  (setq package-user-dir (concat user-emacs-directory "elpa24.4")))
+ ((string= emacs-version "24.3.1")
+  (setq package-user-dir (concat user-emacs-directory "elpa24.3"))))
+  
 (package-initialize)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
-(add-to-list 'package-archives
-             '("org" . "http://orgmode.org/elpa/"))
+             '("melpa" . "http://melpa.org/packages/"))
 
 (when (not package-archive-contents)
   (package-refresh-contents))
