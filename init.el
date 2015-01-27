@@ -1049,16 +1049,6 @@ This function is suitable to add to `find-file-hook'."
 (add-hook 'find-file-hook 'find-file-root-header-warning)
 (add-hook 'dired-mode-hook 'find-file-root-header-warning)
 
-;; Basically what this does is connect through ssh and then sudo on
-;; the remote machine (except localhost).  You can use
-;; "/sudo:remote-host:/path/to/file" to open a remote file as root.
-(with-eval-after-load "tramp"
-  (add-to-list 'tramp-default-proxies-alist
-               '(nil "\\`root\\'" "/ssh:%h:"))
-  (add-to-list 'tramp-default-proxies-alist
-               '((regexp-quote (system-name)) nil nil))
-  )
-
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
