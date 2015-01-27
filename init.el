@@ -744,33 +744,6 @@ The numbers are formatted according to the FORMAT string."
   (with-library 'ac-dabbrev
     (add-to-list 'ac-sources 'ac-source-dabbrev))
 
-  (defun ac-expand (arg)
-    "Try expand, and if expanded twice, select next candidate.
-If given a prefix argument, select the previous candidate."
-    (interactive "P")
-    (unless (ac-expand-common)
-      (let ((string (ac-selected-candidate)))
-        (when string
-          (when (equal ac-prefix string)
-            (if (not arg)
-                (ac-next)
-              (ac-previous))
-            (setq string (ac-selected-candidate)))
-          (ac-expand-string string
-                            (or (eq last-command 'ac-expand)
-                               (eq last-command 'ac-expand-previous)))
-          ;; Do reposition if menu at long line
-          (if (and (> (popup-direction ac-menu) 0)
-                 (ac-menu-at-wrapper-line-p))
-              (ac-reposition))
-          (setq ac-show-menu t)
-          string))))
-
-  (defun ac-expand-previous (arg)
-    "Like `ac-expand', but select previous candidate."
-    (interactive "P")
-    (ac-expand (not arg)))
-
   ;; keybinds
   (define-key ac-completing-map (kbd "C-n") 'ac-next)
   (define-key ac-completing-map (kbd "C-p") 'ac-previous)
