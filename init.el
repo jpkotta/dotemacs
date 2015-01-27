@@ -117,11 +117,7 @@
         yasnippet
         ))
 
-(cond
- ((string= emacs-version "24.4.1")
-  (setq package-user-dir (concat user-emacs-directory "elpa24.4")))
- ((string= emacs-version "24.3.1")
-  (setq package-user-dir (concat user-emacs-directory "elpa24.3"))))
+(setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version))
   
 (package-initialize)
 (add-to-list 'package-archives
