@@ -2984,6 +2984,12 @@ match.  It should be idempotent."
 
 (add-hook 'grep-mode-hook 'jpk/grep-mode-hook)
 
+(defun jpk/grep-setup-hook ()
+  (setenv "GREP_OPTIONS") ;; workaround until emacs 25
+  )
+
+(add-hook 'grep-setup-hook 'jpk/grep-setup-hook)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Search and replace
 
