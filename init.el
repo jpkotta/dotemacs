@@ -1374,7 +1374,11 @@ This function is suitable to add to `find-file-hook'."
 ;;; Terminals
 
 (with-eval-after-load "multi-term"
-
+  (defun term-send-C-x ()
+    "Type C-x in term-mode."
+    (interactive)
+    (term-send-raw-string "\C-x"))
+  
   (dolist
       (bind '(("C-<right>"     . term-send-forward-word)
               ("C-<left>"      . term-send-backward-word)
@@ -1383,6 +1387,7 @@ This function is suitable to add to `find-file-hook'."
               ("C-k"           . term-send-raw)
               ("C-y"           . term-send-raw)
               ("C-c C-z"       . term-stop-subjob)
+              ("C-c C-x"       . term-send-C-x)
               ("C-z"           . term-stop-subjob)
               ;; work like urxvt tabbed
               ("<S-down>"      . multi-term)
