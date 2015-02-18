@@ -5,17 +5,7 @@
 ;; Author: Jonathan Kotta <jpkotta@gmail.com>
 
 (message "Loading jpkotta's init.el.")
-
-(defun make-tictoc ()
-  (current-time))
-(defmacro tic (tt)
-  `(setq ,tt (current-time)))
-(defun toc (tt)
-  (- (float-time (current-time))
-     (float-time tt)))
-
-;; profile this file's evaluation time
-(setq init-el-time (make-tictoc))
+(setq init-el-time (current-time)) ;; profile this file's evaluation time
 
 ;; this init file uses principles from:
 ;; http://a-nickels-worth.blogspot.com/2007/11/effective-emacs.html
@@ -148,9 +138,7 @@
 ;; store settings from customization system in a separate file
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (message "loading customizations from %s" custom-file)
-(let ((custom-el-time (make-tictoc)))
-  (load custom-file 'noerror)
-  (message "custom.el loaded in %f s" (toc custom-el-time)))
+(load custom-file 'noerror)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Appearance 
@@ -3548,7 +3536,7 @@ http://www.emacswiki.org/emacs/AlignCommands"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(message "jpkotta's init.el loaded")
-(message "init.el loaded in %0.3f s." (toc init-el-time))
+(message "init.el loaded in %0.3fs."
+         (float-time (time-subtract (current-time) init-el-time)))
 
 ;;; init.el ends here
