@@ -1635,6 +1635,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (define-key dired-mode-map (kbd "C-M-s") 'dired-isearch-filenames-regexp)
 
   (with-library 'dired+
+    (setq diredp-wrap-around-flag nil)
     (toggle-diredp-find-file-reuse-dir 1)
     (define-key dired-mode-map (kbd "<mouse-2>")
       'diredp-mouse-find-file-reuse-dir-buffer)
@@ -1642,6 +1643,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (with-library 'dired-x
     (setq dired-omit-verbose nil)
+    (delete ".bin" dired-omit-extensions) 
     (define-key dired-mode-map (kbd "C-c C-o") 'dired-omit-mode)
     (add-hook 'dired-mode-hook 'dired-omit-mode))
 
