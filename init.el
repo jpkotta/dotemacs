@@ -201,6 +201,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
+(when (and (string= system-type "windows-nt")
+         (executable-find "bash"))
+  (setq shell-file-name (executable-find "bash")))
+
 (defmacro with-library (feature &rest body)
   "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
   (declare (indent defun))
@@ -1050,6 +1054,8 @@ This function is suitable to add to `find-file-hook'."
 (add-hook 'dired-mode-hook 'find-file-root-header-warning)
 
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
+
+;; In Windows, use the sshx method (it's a cygwinized version of ssh).
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Mouse
@@ -2366,10 +2372,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (with-eval-after-load "python"
 
   (with-library 'pylint
+    ;; N.B. you probably want to set shell-file-name to something like
+    ;; "C:/cygwin/bin/bash.exe" on Windows, because the default shell
+    ;; will fuck up the command line.
     (setq pylint-options '("--rcfile=./.pylintrc"
                            "--reports=n"
                            "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
-                           "--disable=C,R,I0011"))
+                           "--disable=C,R,locally-disabled"
+                           ))
 
     (defun pylint2 ()
       (interactive)
@@ -2414,11 +2424,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (defun python-2to3 ()
   "Run 2to3 on the current buffer and put the diff in a new buffer."
   (interactive)
-  (let ((output-buffer "*Python 2to3*"))
+  (let ((output-buffer "*Python 2to3*")
+        (shell-file-name (getenv "SHELL")))
     (shell-command (concat "2to3 " (buffer-file-name))
                    (get-buffer-create output-buffer))
     (with-current-buffer output-buffer
-      (diff-mode))))
+      (diff-mode))
+    (switch-to-buffer-other-window output-buffer)))
 
 (setq prettify-symbols-python-alist
       '(("!=" . ?≠)
