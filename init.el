@@ -3303,7 +3303,7 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
 
-(electric-indent-mode nil)
+(electric-indent-mode -1)
 
 (defun indent-relative-dwim ()
   "Indent the current line to either: the beginning of last
