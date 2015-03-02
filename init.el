@@ -3328,7 +3328,8 @@ point."
 
     (cond
      ((= (current-column) last-line-indent)
-      (indent-line-to next-indent))
+      (unless (eq this-command 'newline-and-indent)
+        (indent-line-to next-indent)))
      ((= (current-column) next-indent)
       (indent-line-to 0))
      (t
