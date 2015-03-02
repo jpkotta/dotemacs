@@ -5,3 +5,5 @@ staging
 repos
 persistence
 url
+
+lisp/local-init.el
