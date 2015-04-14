@@ -897,10 +897,6 @@ it's probably better to explicitly request a merge."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; use ido (almost) everywhere
-(setq ido-ubiquitous-function-exceptions
-      '(ido-write-file ido-find-file ido-list-directory ffap-menu-ask
-        ffap-read-file-or-url grep-read-files write-file
-        elp-instrument-package))
 
 (with-library 'ido-ubiquitous
   (ido-ubiquitous-mode 1))
@@ -1028,9 +1024,9 @@ This function is suitable to add to `find-file-hook'."
         (pt (point)))
     (setq bname (or (file-remote-p bname 'localname)
                     (concat "/sudo::" bname)))
-    (cl-flet ((server-buffer-done
-               (buffer &optional for-killing)
-               nil))
+    (cl-letf (((symbol-function 'server-buffer-done)
+               (lambda (buffer &optional for-killing)
+                 nil)))
       (find-alternate-file bname))
     (goto-char pt)))
 
@@ -2374,12 +2370,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
     (defun pylint2 ()
       (interactive)
-      (let ((pylint-command "pylint2"))
+      (let ((pylint-command (or (executable-find "pylint2")
+                               "pylint")))
         (pylint)))
 
     (defun pylint3 ()
       (interactive)
-      (let ((pylint-command "pylint"))
+      (let ((pylint-command (or (executable-find "pylint3")
+                               "pylint")))
         (pylint)))
 
     (define-key python-mode-map (kbd "C-c C-v") 'pylint2)
