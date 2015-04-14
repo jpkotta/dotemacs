@@ -70,6 +70,7 @@
         flex-isearch
         full-ack
         fvwm-mode
+        ggtags
         hide-lines
         highlight-numbers
         ;;highlight-operators
@@ -327,13 +328,20 @@
   (pr-update-menus t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; ggtags
+
+(setq ggtags-global-window-height nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
 
 (with-library 'projectile
   (setq
    projectile-cache-file (concat emacs-persistence-directory "projectile.cache")
    projectile-ack-function 'ack
-   projectile-known-projects-file (concat emacs-persistence-directory "projectile-bookmarks.eld"))
+   projectile-known-projects-file (concat emacs-persistence-directory "projectile-bookmarks.eld")
+   projectile-tags-command "ctags-exuberant -Re -f \"%s\" %s")
+  ;; If ggtags-mode is on, projectile automatically uses it.
   (projectile-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -564,7 +572,8 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
   (with-eval-after-load "fixme-mode" (diminish 'fixme-mode))
   (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
-  (with-eval-after-load "projectile" (diminish 'projectile-mode "proj"))
+  (with-eval-after-load "ggtags" (diminish 'ggtags-mode))
+  (with-eval-after-load "projectile" (diminish 'projectile-mode))
   (with-eval-after-load "workgroups" (diminish 'workgroups-mode))
   (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
   (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
@@ -914,21 +923,6 @@ it's probably better to explicitly request a merge."
   (global-set-key (kbd "M-x") 'smex)
   (global-set-key (kbd "M-X") 'smex-major-mode-commands)
   (global-set-key (kbd "C-c M-x") 'execute-extended-command))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; TAGS
-
-(with-library 'etags
-
-  (setq ctags-executable "ctags-exuberant")
-
-  (defun create-tags (dir)
-    "Create a tags file in directory DIR."
-    (interactive "DDirectory: ")
-    (shell-command
-     (format "%s -f %s/TAGS -e -R %s"
-             ctags-executable dir (directory-file-name dir))))
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Backup
