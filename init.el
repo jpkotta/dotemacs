@@ -3270,20 +3270,9 @@ point."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; delete things
-;; Most of these keys kill by default; I think it's more intuitive to delete.
-(require 'delete-things)
-
-(global-set-key (kbd "C-k") 'delete-line)
-(global-set-key (kbd "C-S-k") 'kill-line)
 
 (global-set-key (kbd "M-SPC") 'delete-horizontal-space)
 (global-set-key (kbd "M-S-SPC") 'delete-blank-lines)
-
-(global-set-key (kbd "<C-S-delete>") 'delete-syntax)
-(global-set-key (kbd "<C-S-backspace>") 'backward-delete-syntax)
-(global-set-key (kbd "C-<delete>") 'delete-word)
-(global-set-key (kbd "M-d") 'delete-word)
-(global-set-key (kbd "C-<backspace>") 'backward-delete-word)
 
 (with-library 'ergo-movement-mode
   (global-set-key (kbd "C-S-d") (make-run-keybind-func "DEL" 'move))
