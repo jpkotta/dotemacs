@@ -57,6 +57,7 @@
         bm
         boxquote
         buffer-move
+        calmer-forest-theme
         csharp-mode
         csv-mode
         diff-hl
@@ -153,8 +154,29 @@
                             (tool-bar-lines . 0)
                             (width . 81)))
 
-(load-library "calm-forest-theme.el")
-(load-theme 'calm-forest 'noconfirm)
+(load-theme 'calmer-forest 'noconfirm)
+(custom-theme-set-faces
+ 'calmer-forest
+
+ '(fringe ((t (:background "gray10" :foreground "dark green"))))
+ '(highlight ((t (:background "gray6"))))
+
+ '(mode-line ((t (:background "gray37" :foreground "grey85" :overline "black"))))
+ '(mode-line-buffer-id ((t (:weight bold))))
+ '(mode-line-inactive ((t (:inherit mode-line :background "grey20" :foreground "grey40" :weight light))))
+ '(modelinepos-region ((t (:inverse-video t))))
+
+ '(region ((t (:background "#400060"))))
+ '(mouse ((t (:background "orange"))))
+ '(mouse-flash-position ((t (:background "gray75"))))
+ '(secondary-selection ((t (:background "#600040"))))
+
+ '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
+ '(ac-completion-face ((t (:foreground "green3"))))
+ '(ac-selection-face ((t (:background "gray9" :foreground "magenta"))))
+
+ '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
+ )
 
 ;; Indicates when you're beyond a column (e.g. 80) and also shows the
 ;; size of the region if it's active.
