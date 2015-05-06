@@ -352,7 +352,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ggtags
 
-(setq ggtags-global-window-height nil)
+(setq ggtags-global-window-height nil
+      ggtags-enable-navigation-keys nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
@@ -1263,6 +1264,9 @@ This function is suitable to add to `find-file-hook'."
 ;; such regions, only changes navigation.  Toggle with # # in ediff
 ;; mode.
 (setq-default ediff-ignore-similar-regions t)
+
+;; show fine differences
+(setq-default ediff-auto-refine 'on)
 
 (autoload 'commit-patch-buffer "commit-patch-buffer.el"
   "Use diff-mode buffers as commits for VC." t)
@@ -2961,6 +2965,7 @@ match.  It should be idempotent."
 ;; recenter after running next-error
 (setq next-error-recenter '(4))
 
+;; recenter the error buffer
 ;; previous-error just calls next-error
 (defadvice next-error (after recenter-error-buffer activate)
   (let ((win (get-buffer-window next-error-last-buffer)))
