@@ -24,6 +24,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
+;; set up specific to the local machine
+(load-file (concat user-emacs-directory "lisp/local-init.el"))
+
 ;; add my elisp files to the load path
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
@@ -38,9 +41,6 @@
 (setq emacs-persistence-directory (concat user-emacs-directory "persistence/"))
 (unless (file-exists-p emacs-persistence-directory)
   (make-directory emacs-persistence-directory t))
-
-;; set up specific to the local machine
-(require 'local-init nil 'noerror)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
