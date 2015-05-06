@@ -101,7 +101,7 @@
         ssh-config-mode
         smart-tabs-mode
         smex
-        ;;syntax-subword
+        syntax-subword
         undo-tree
         wgrep
         workgroups
@@ -3295,6 +3295,7 @@ point."
 
 (global-set-key (kbd "M-SPC") 'delete-horizontal-space)
 (global-set-key (kbd "M-S-SPC") 'delete-blank-lines)
+(global-set-key (kbd "C-d") 'delete-forward-char)
 
 (with-library 'ergo-movement-mode
   (global-set-key (kbd "C-S-d") (make-run-keybind-func "DEL" 'move))
