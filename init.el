@@ -24,11 +24,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
-;; set up specific to the local machine
-(load-file (concat user-emacs-directory "lisp/local-init.el"))
-
 ;; add my elisp files to the load path
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
+
+;; set up specific to the local machine
+(load-file (concat user-emacs-directory "lisp/local-init.el"))
 
 ;; this is a place to try out random elisp files
 (add-to-list 'load-path (concat user-emacs-directory "staging"))
@@ -134,6 +134,12 @@
                                (package-installed-p x)))
                      (mapcar 'car package-archive-contents))))
 
+(defmacro with-library (feature &rest body)
+  "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
+  (declare (indent defun))
+  `(when (require ,feature nil 'noerror)
+     ,@body))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
 
@@ -154,29 +160,30 @@
                             (tool-bar-lines . 0)
                             (width . 81)))
 
-(load-theme 'calmer-forest 'noconfirm)
-(custom-theme-set-faces
- 'calmer-forest
+(with-library 'calmer-forest-theme
+  (load-theme 'calmer-forest 'noconfirm)
+  (custom-theme-set-faces
+   'calmer-forest
 
- '(fringe ((t (:background "gray10" :foreground "dark green"))))
- '(highlight ((t (:background "gray6"))))
+   '(fringe ((t (:background "gray10" :foreground "dark green"))))
+   '(highlight ((t (:background "gray6"))))
 
- '(mode-line ((t (:background "gray37" :foreground "grey85" :overline "black"))))
- '(mode-line-buffer-id ((t (:weight bold))))
- '(mode-line-inactive ((t (:inherit mode-line :background "grey20" :foreground "grey40" :weight light))))
- '(modelinepos-region ((t (:inverse-video t))))
+   '(mode-line ((t (:background "gray37" :foreground "grey85" :overline "black"))))
+   '(mode-line-buffer-id ((t (:weight bold))))
+   '(mode-line-inactive ((t (:inherit mode-line :background "grey20" :foreground "grey40" :weight light))))
+   '(modelinepos-region ((t (:inverse-video t))))
 
- '(region ((t (:background "#400060"))))
- '(mouse ((t (:background "orange"))))
- '(mouse-flash-position ((t (:background "gray75"))))
- '(secondary-selection ((t (:background "#600040"))))
+   '(region ((t (:background "#400060"))))
+   '(mouse ((t (:background "orange"))))
+   '(mouse-flash-position ((t (:background "gray75"))))
+   '(secondary-selection ((t (:background "#600040"))))
 
- '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
- '(ac-completion-face ((t (:foreground "green3"))))
- '(ac-selection-face ((t (:background "gray9" :foreground "magenta"))))
+   '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
+   '(ac-completion-face ((t (:foreground "green3"))))
+   '(ac-selection-face ((t (:background "gray9" :foreground "magenta"))))
 
- '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
- )
+   '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
+   ))
 
 ;; Indicates when you're beyond a column (e.g. 80) and also shows the
 ;; size of the region if it's active.
@@ -215,12 +222,6 @@
 (when (and (string= system-type "windows-nt")
          (executable-find "bash"))
   (setq shell-file-name (executable-find "bash")))
-
-(defmacro with-library (feature &rest body)
-  "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
-  (declare (indent defun))
-  `(when (require ,feature nil 'noerror)
-     ,@body))
 
 (defun setup-RAIDE-file ()
   "View RAIDE files from Eagle."
