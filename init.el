@@ -986,6 +986,7 @@ it's probably better to explicitly request a merge."
 
 (setq save-visited-files-location (concat emacs-persistence-directory
                                           "save-visited-files")
+      save-visited-files-ignore-tramp-files t
       save-visited-files-auto-restore t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -994,7 +995,6 @@ it's probably better to explicitly request a merge."
 (setq recentf-save-file (concat emacs-persistence-directory "recentf")
       recentf-max-saved-items 256)
 (recentf-mode 1)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; savehist
@@ -3299,7 +3299,7 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; delete things
 
-(global-set-key (kbd "M-SPC") 'delete-horizontal-space)
+(global-set-key (kbd "M-SPC") 'cycle-spacing)
 (global-set-key (kbd "M-S-SPC") 'delete-blank-lines)
 (global-set-key (kbd "C-d") 'delete-forward-char)
 
