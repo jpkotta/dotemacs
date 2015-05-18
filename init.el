@@ -416,8 +416,7 @@ and so on."
   (visual-line-mode 1)
   (with-library 'flyspell
     (flyspell-mode 1))
-  (with-library 'ac-org-mode
-    (add-to-list 'ac-sources 'ac-source-org)))
+  )
 
 (with-eval-after-load "org"
   (setq-default org-hide-leading-stars t)
