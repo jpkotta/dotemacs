@@ -178,9 +178,14 @@
    '(mouse-flash-position ((t (:background "gray75"))))
    '(secondary-selection ((t (:background "#600040"))))
 
-   '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
    '(ac-completion-face ((t (:foreground "green3"))))
    '(ac-selection-face ((t (:background "gray9" :foreground "magenta"))))
+   '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
+   '(ac-dabbrev-selection-face ((t (:inherit ac-candidate-face))))
+   '(ac-gtags-selection-face ((t (:inherit ac-candidate-face))))
+   '(ac-gtags-candidate-face ((t (:inherit ac-candidate-face))))
+   '(ac-yasnippet-selection-face ((t (:inherit ac-candidate-face))))
+   '(ac-yasnippet-candidate-face ((t (:inherit ac-candidate-face))))
 
    '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
    ))
