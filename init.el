@@ -149,7 +149,7 @@
 (load custom-file 'noerror)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Appearance 
+;;; Appearance
 
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -188,6 +188,12 @@
    '(ac-yasnippet-candidate-face ((t (:inherit ac-candidate-face))))
 
    '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
+   '(font-lock-preprocessor-face ((t (:inherit font-lock-builtin-face))))
+
+   '(diff-refine-change ((t (:weight bold :background "gray24"))))
+   '(diff-refine-added ((t (:inherit diff-refine-change :foreground "green1"))))
+   '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red1"))))
+   '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
    ))
 
 ;; Indicates when you're beyond a column (e.g. 80) and also shows the
@@ -2460,9 +2466,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
         ))
 
 (defun jpk/python-mode-hook ()
-  ;; which-func-mode causes huge performance problems in python-mode
-  (when (boundp 'which-function-mode)
-    (which-function-mode -1))
   (prettify-symbols-mode -1)
   (dolist (x prettify-symbols-python-alist)
     (add-to-list 'prettify-symbols-alist x))
