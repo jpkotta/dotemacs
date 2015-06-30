@@ -354,6 +354,9 @@
 ;; Turning it off speeds up remote X.
 (setq mouse-highlight nil)
 
+;; never shrink windows
+(setq window-min-height most-positive-fixnum)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
 
@@ -1223,11 +1226,6 @@ This function is suitable to add to `find-file-hook'."
 (with-eval-after-load "vc-hg"
   (require 'vc-hg-fixes)
   )
-
-(defadvice vc-log-internal-common (around no-shrink-window activate)
-  (cl-letf (((symbol-function 'shrink-window-if-larger-than-buffer) (lambda () nil)))
-    (ignore-errors
-      ad-do-it)))
 
 (with-eval-after-load "vc-dir"
   
