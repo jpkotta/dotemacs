@@ -168,9 +168,8 @@
    '(fringe ((t (:background "gray10" :foreground "dark green"))))
    '(highlight ((t (:background "gray6"))))
 
-   '(mode-line ((t (:background "gray37" :foreground "grey85" :overline "black"))))
+   '(mode-line ((t (:background "gray37" :foreground "gray85" :overline "black"))))
    '(mode-line-buffer-id ((t (:weight bold))))
-   '(mode-line-inactive ((t (:inherit mode-line :background "grey20" :foreground "grey40" :weight light))))
    '(modelinepos-region ((t (:inverse-video t))))
 
    '(region ((t (:background "#400060"))))
@@ -190,7 +189,7 @@
    '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
    '(font-lock-preprocessor-face ((t (:inherit font-lock-builtin-face))))
 
-   '(diff-refine-change ((t (:weight bold :background "gray24"))))
+   '(diff-refine-changed ((t (:weight bold :background "gray24"))))
    '(diff-refine-added ((t (:inherit diff-refine-change :foreground "green1"))))
    '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red1"))))
    '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
