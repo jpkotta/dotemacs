@@ -354,7 +354,13 @@
 (setq mouse-highlight nil)
 
 ;; never shrink windows
-(setq window-min-height most-positive-fixnum)
+(defvar allow-window-shrinking nil
+  "If non-nil, effectively disable shrinking windows by making `shrink-window-if-larger-than-buffer' a no-op.")
+(advice-add 'shrink-window-if-larger-than-buffer
+            :before-while
+            (lambda (&rest args)
+              "Do nothing if `allow-window-shrinking' is nil."
+              allow-window-shrinking))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
