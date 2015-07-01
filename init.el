@@ -1256,11 +1256,12 @@ This function is suitable to add to `find-file-hook'."
     ad-do-it))
 
 ;; TODO
-
 ;; vc-revert bug
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; diff
+
+(setq diff-switches "-u -r")
 
 (require 'ediff-tweak)
 
@@ -1278,21 +1279,27 @@ This function is suitable to add to `find-file-hook'."
 (autoload 'commit-patch-buffer "commit-patch-buffer.el"
   "Use diff-mode buffers as commits for VC." t)
 
+(with-eval-after-load "diff-mode"
+  (define-key diff-mode-map (kbd "C-c C-k") 'diff-hunk-kill)
+  (define-key diff-mode-map (kbd "C-c C-S-k") 'diff-file-kill)
+  (define-key diff-mode-map (kbd "K") nil) ;; diff-file-kill
+  (define-key diff-mode-map (kbd "M-K") nil) ;; diff-file-kill
+  (define-key diff-mode-map (kbd "C-c C-c") 'commit-patch-buffer)
+  (define-key diff-mode-map (kbd "C-c C-m") 'diff-add-trailing-CR-in-hunk)
+  (define-key diff-mode-map (kbd "C-c C-j") 'diff-remove-trailing-CR-in-hunk)
+  (define-key diff-mode-map (kbd "C-c C-o") 'diff-goto-source)
+  )
+
 (defun jpk/diff-mode-hook ()
-  (local-set-key (kbd "C-c C-k") 'diff-hunk-kill)
-  (local-set-key (kbd "C-c C-S-k") 'diff-file-kill)
-  (local-unset-key (kbd "K")) ;; diff-file-kill
-  (local-unset-key (kbd "M-K")) ;; diff-file-kill
-  (local-set-key (kbd "C-c C-c") 'commit-patch-buffer)
-  (local-set-key (kbd "C-c C-m") 'diff-add-trailing-CR-in-hunk)
-  (local-set-key (kbd "C-c C-j") 'diff-remove-trailing-CR-in-hunk)
-  (local-set-key (kbd "C-c C-o") 'diff-goto-source)
   ;; FIXME why? special-mode-map suppress-keymap
   (local-set-key (kbd "M-1") nil)
   (local-set-key (kbd "M-2") nil)
 
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
+
+  (setq imenu-prev-index-position-function nil)
+  (setq imenu-generic-expression '((nil "^--- .+/\\([^/]+\\)\t" 1)))
   )
 
 (add-hook 'diff-mode-hook 'jpk/diff-mode-hook)
