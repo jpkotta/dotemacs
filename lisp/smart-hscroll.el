@@ -47,13 +47,13 @@
     (when smart-hscroll-cursor-movement-detector-timer 
       (cancel-timer smart-hscroll-cursor-movement-detector-timer))))
 
-(defadvice scroll-left (before smart-hscroll activate)
-  (when smart-hscroll-mode
-    (setq auto-hscroll-mode nil)))
-
-(defadvice scroll-right (before smart-hscroll activate)
-  (when smart-hscroll-mode
-    (setq auto-hscroll-mode nil)))
+(dolist (func '(scroll-left scroll-right))
+  (advice-add func
+              :before
+              (lambda (&rest args)
+                "smart horizontal scrolling"
+                (when smart-hscroll-mode
+                  (setq auto-hscroll-mode nil)))))
 
 (defun scroll-left-8 ()
   "Like `scroll-left' with an argument of 8."

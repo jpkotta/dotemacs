@@ -108,18 +108,15 @@
 (eval-after-load "ediff"
   '(progn
 
-     (defadvice ediff-regions-wordwise (around save-window-config activate)
-       "Save window config before running ediff."
-       (ediff-tweak--save-window-config)
-       (let (ediff-tweak-restore-window-state)
-         ad-do-it))
+     (dolist (func '(ediff-regions-wordwise ediff-regions-linewise))
+       (advice-add func
+                   :around
+                   (lambda (orig &rest args)
+                     "Save window config before running ediff."
+                     (ediff-tweak--save-window-config)
+                     (let (ediff-tweak-restore-window-state)
+                       (apply orig args)))))
 
-     (defadvice ediff-regions-linewise (around save-window-config activate)
-       "Save window config before running ediff."
-       (ediff-tweak--save-window-config)
-       (let (ediff-tweak-restore-window-state)
-         ad-do-it))
-     
      (defun ediff-regions-linewise-this-buffer ()
        "Like `ediff-regions-linewise', but automatically use the current buffer instead of asking."
        (interactive)
@@ -143,48 +140,50 @@
 (defvar ediff-tweak--do-hexl-diff t
   "Stores a trigger for doing diff in `hexl-mode'.")
 
-(defadvice ediff-files-internal (around ediff-files-internal-for-binary-files activate)
-  "Catch the condition when the binary files differ.
+(advice-add 'ediff-files-internal
+            :around
+            (lambda (orig &rest args)
+              "Catch the condition when the binary files differ.
 
 The reason for catching the error out here (when re-thrown from
 the inner advice) is to let the stack continue to unwind before
 we start the new diff otherwise some code in the middle of the
 stack expects some output that isn't there and triggers an
 error."
-  (if ediff-tweak-auto-hexl-diff
-      (let ((file-A (ad-get-arg 0))
-            (file-B (ad-get-arg 1))
-            ediff-tweak--do-hexl-diff)
-        (condition-case err
-            (progn
-              ad-do-it)
-          (error
-           (if (ediff-tweak--do-hexl-diff
-                (let ((buf-A (find-file-noselect file-A))
-                      (buf-B (find-file-noselect file-B)))
-                  (with-current-buffer buf-A
-                    (hexl-mode 1))
-                  (with-current-buffer buf-B
-                    (hexl-mode 1))
-                  (ediff-buffers buf-A buf-B))
-                (error (error-message-string err)))))))
-    ad-do-it))
+              (if ediff-tweak-auto-hexl-diff
+                  (let ((file-A (ad-get-arg 0))
+                        (file-B (ad-get-arg 1))
+                        ediff-tweak--do-hexl-diff)
+                    (condition-case err
+                        (apply orig args)
+                      (error
+                       (if (ediff-tweak--do-hexl-diff
+                            (let ((buf-A (find-file-noselect file-A))
+                                  (buf-B (find-file-noselect file-B)))
+                              (with-current-buffer buf-A
+                                (hexl-mode 1))
+                              (with-current-buffer buf-B
+                                (hexl-mode 1))
+                              (ediff-buffers buf-A buf-B))
+                            (error (error-message-string err)))))))
+                (apply orig args))))
 
-(defadvice ediff-setup-diff-regions (around ediff-setup-diff-regions-for-binary-files activate)
-  "When binary files differ, set the variable `ediff-tweak--do-hexl-diff'."
-  (condition-case err
-      (progn
-        ad-do-it)
-    (error
-     (setq ediff-tweak--do-hexl-diff
-           (and (string-match-p "^Errors in diff output.  Diff output is in.*"
-                                (error-message-string err))
-                (string-match-p "^\\(Binary \\)?[fF]iles .* and .* differ"
-                                (buffer-substring-no-properties
-                                 (line-beginning-position)
-                                 (line-end-position)))
-                (y-or-n-p "The binary files differ, look at the differences in hexl-mode? ")))
-     (error (error-message-string err)))))
+(advice-add 'ediff-setup-diff-regions
+            :around
+            (lambda (orig &rest args)
+              "When binary files differ, set the variable `ediff-tweak--do-hexl-diff'."
+              (condition-case err
+                  (apply orig args)
+                (error
+                 (setq ediff-tweak--do-hexl-diff
+                       (and (string-match-p "^Errors in diff output.  Diff output is in.*"
+                                          (error-message-string err))
+                          (string-match-p "^\\(Binary \\)?[fF]iles .* and .* differ"
+                                          (buffer-substring-no-properties
+                                           (line-beginning-position)
+                                           (line-end-position)))
+                          (y-or-n-p "The binary files differ, look at the differences in hexl-mode? ")))
+                 (error (error-message-string err))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -193,11 +192,14 @@ error."
 (defvar ediff-tweak-copy-diff-silent t
   "If non-nil, do not ask if a previously copied hunk should be changed.")
 
-(defadvice ediff-test-save-region (around always-true activate)
-  (if ediff-tweak-copy-diff-silent
-      (cl-flet ((yes-or-no-p (prompt) t))
-        ad-do-it)
-    ad-do-it))
+(advice-add 'ediff-test-save-region
+            :around
+            (lambda (orig &rest args)
+              "Honor `ediff-tweak-copy-diff-silent'."
+              (if ediff-tweak-copy-diff-silent
+                  (cl-flet ((yes-or-no-p (prompt) t))
+                    (apply orig args))
+                (apply orig args))))
 
 (provide 'ediff-tweak)
 
