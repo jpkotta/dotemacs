@@ -241,23 +241,11 @@
   (buffer-face-set 'fixed-pitch)
   (view-mode))
 
-(defun defadvice-list (funclist class name lambda-expr)
-  "A convenience function to define the same advice on several
-  functions at once.  FUNCLIST is a list of functions.  CLASS is
-  one of `before', `after', or `around'.  NAME is a name for the
-  advice.  LAMBDA-EXPR is a lambda expression that is the body of
-  the advice.  The advice is not protected, is put at the
-  beginning of the functions' advice lists, and is activated
-  immediately."
- (dolist (func funclist)
-    (ad-add-advice func
-                   `(,name
-                     nil ;; protect
-                     t ;; activate
-                     (advice . ,lambda-expr))
-                   class
-                   'first) ;; position
-    (ad-activate func)))
+(defun advice-remove-all (symbol)
+  "Removes all advice from function symbol SYMBOL."
+  (advice-mapc (lambda (advice props)
+                 (advice-remove symbol advice))
+               symbol))
 
 (defun suspend-frame-if-not-gui ()
   "Like `suspend-frame', but does not suspend GUI frames."
@@ -336,13 +324,13 @@
     (select-window (minibuffer-window))))
 
 ;; FIXME: mouse drag breaks it
-(defadvice mouse-set-point (around no-mouse-select-window-if-minibuffer-active activate)
-  (unless (or
-           (active-minibuffer-window)
-           (window-minibuffer-p)
-           (minibuffer-window-active-p (selected-window))
-           )
-    ad-do-it))
+(advice-add 'mouse-set-point
+            :before-until
+            (lambda (&rest args)
+              "no mouse select window if minibuffer active"
+              (or (active-minibuffer-window)
+                 (window-minibuffer-p)
+                 (minibuffer-window-active-p (selected-window)))))
 
 ;; cancel everything, including active minibuffers and recursive edits
 (global-set-key (kbd "C-M-g") 'top-level)
@@ -827,12 +815,15 @@ The numbers are formatted according to the FORMAT string."
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
 
-  ;; hack to keep ispell from constantly restarting.  See
-  ;; http://lists.gnu.org/archive/html/bug-gnu-emacs/2010-05/msg00248.html.
-  (defadvice ispell-init-process (around ispell-root-default-directory activate)
-    (let (default-directory)
-      (cd "/")
-      ad-do-it))
+  ;; ;; hack to keep ispell from constantly restarting.  See
+  ;; ;; http://lists.gnu.org/archive/html/bug-gnu-emacs/2010-05/msg00248.html.
+  ;; (advice-add 'ispell-init-process
+  ;;             :around
+  ;;             (lambda (orig &rest args)
+  ;;               "cd to '/' to prevent problems with vanishing mount points."
+  ;;               (let (default-directory)
+  ;;                 (cd "/")
+  ;;                 (apply orig args))))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1080,9 +1071,12 @@ This function is suitable to add to `find-file-hook'."
 (mouse-avoidance-mode 'cat-and-mouse)
 
 ;; it's really annoying when the frame raises by itself
-(defadvice mouse-avoidance-set-mouse-position (around disable-raise activate)
-  (cl-flet ((raise-frame (&optional frame) t))
-    ad-do-it))
+(advice-add 'mouse-avoidance-set-mouse-position
+            :around
+            (lambda (orig &rest args)
+              "disable raise"
+              (cl-flet ((raise-frame (&optional frame) t))
+                (apply orig args))))
 
 (global-set-key (kbd "<mouse-2>") 'mouse-yank-primary)
 
@@ -1168,34 +1162,39 @@ This function is suitable to add to `find-file-hook'."
   "Never allow windows to be deleted.  This is used in
   around-advice for delete-window.")
 
-(defadvice delete-window (around confirm activate)
-  (if (and (not never-delete-window)
-           (if confirm-delete-window
-               (y-or-n-p "Delete window? ")
-             t))
-      ad-do-it
-    ;; delete-window raises an error if the window shouldn't be
-    ;; deleted
-    (error "Not deleting window")))
+(advice-add 'delete-window
+            :around
+            (lambda (orig &rest args)
+              "Confirm deletion based on `confirm-window-delete' and `never-delete-window'."
+              (if (and (not never-delete-window)
+                     (if confirm-delete-window
+                         (y-or-n-p "Delete window? ")
+                       t))
+                  (apply orig args)
+                ;; delete-window raises an error if the window shouldn't
+                ;; be deleted
+                (error "Not deleting window"))))
 
-(defadvice delete-windows-on (around confirm activate)
-  (if (and (not never-delete-window)
-           (if confirm-delete-window
-               (y-or-n-p "Delete window? ")
-             t))
-      ad-do-it
-    ;; delete-windows-on switches to other-buffer if the window
-    ;; shouldn't be deleted
-    (switch-to-buffer (other-buffer))))
+(advice-add 'delete-windows-on
+            :around
+            (lambda (orig &rest args)
+              "Confirm deletion based on `confirm-window-delete' and `never-delete-window'."
+              (if (and (not never-delete-window)
+                     (if confirm-delete-window
+                         (y-or-n-p "Delete window? ")
+                       t))
+                  (apply orig args)
+                ;; delete-windows-on switches to other-buffer if the window
+                ;; shouldn't be deleted
+                (switch-to-buffer (other-buffer)))))
 
-;; prevent these functions from killing the selected window
-(defadvice-list
-  '(finder-exit View-quit log-edit-done
-                vc-revert vc-rollback)
-  'before 'no-window-delete
-  '(lambda ()
-     (let ((never-delete-window t))
-       'ad-do-it)))
+(dolist (func '(finder-exit View-quit log-edit-done vc-revert vc-rollback))
+  (advice-add func
+              :around 
+              (lambda (orig &rest args)
+                "Inhibit killing selected window."
+                (let ((never-delete-window t))
+                  (apply orig args)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; workgroups for windows
@@ -1251,9 +1250,12 @@ This function is suitable to add to `find-file-hook'."
   )
 
 ;; toggle-read-only prints an annoying message
-(defadvice toggle-read-only (around suppress-vc-message activate)
-  (with-temp-message ""
-    ad-do-it))
+(advice-add 'toggle-read-only
+            :around
+            (lambda (orig &rest args)
+              "Suppress VC message."
+              (with-temp-message ""
+                (apply orig args))))
 
 ;; TODO
 ;; vc-revert bug
@@ -1373,10 +1375,12 @@ This function is suitable to add to `find-file-hook'."
 
 (defvar comint-eob-on-send t
   "Like comint-eol-on-send, but moves to the end of buffer.")
-(defadvice comint-send-input
-  (before move-to-end-of-buffer activate)
-  (when comint-eob-on-send
-    (goto-char (point-max))))
+(advice-add 'comint-send-input
+            :before
+            (lambda (&rest args)
+              "Move to end of buffer when `comint-eob-on-send' is non-nil."
+              (when comint-eob-on-send
+                (goto-char (point-max)))))
 
 ;; used for interactive terminals
 (with-eval-after-load "comint"
@@ -1994,15 +1998,16 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (define-key ibuffer-mode-map
     (kbd "C-<up>") 'ibuffer-backward-filter-group)
 
-  
-  (defadvice-list '(ibuffer-forward-filter-group
-                    ibuffer-backward-filter-group
-                    ibuffer-mark-interactive
-                    ibuffer-toggle-filter-group-1)
-    'after
-    'recenter
-    (lambda () (recenter-no-redraw)))
-  
+  (dolist (func '(ibuffer-forward-filter-group
+                  ibuffer-backward-filter-group
+                  ibuffer-mark-interactive
+                  ibuffer-toggle-filter-group-1))
+    (advice-add func
+                :after
+                (lambda (&rest args)
+                  "Recenter"
+                  (recenter-no-redraw))))
+
   (defun ibuffer-mark-toggle (arg)
     (interactive "P")
     (ibuffer-forward-line 0)
@@ -2030,11 +2035,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'ibuffer-hook 'jpk/ibuffer-hook)
 
 ;; jump to most recent buffer
-(defadvice ibuffer (around ibuffer-point-to-most-recent activate)
-  (let ((recent-buffer-name (buffer-name)))
-    ad-do-it
-    (unless (string-match-p "*Ibuffer*" recent-buffer-name)
-      (ibuffer-jump-to-buffer recent-buffer-name))))
+(advice-add 'ibuffer
+            :around
+            (lambda (orig &rest args)
+              "Move point to most recent."
+              (let ((recent-buffer-name (buffer-name)))
+                (apply orig args)
+                (unless (string-match-p "*Ibuffer*" recent-buffer-name)
+                  (ibuffer-jump-to-buffer recent-buffer-name)))))
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
@@ -2082,9 +2090,12 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; by hl-line mode, so it looks bad when the point is on the line that
 ;; has hi locked words.  This forces it to use overlays too, which is
 ;; a performance hit, but it works with hl-line.
-(defadvice hi-lock-set-pattern (around use-overlays activate)
-  (let ((font-lock-fontified nil))
-    ad-do-it))
+(advice-add 'hi-lock-set-pattern
+            :around
+            (lambda (orig &rest args)
+              "Force use of overlays"
+              (let ((font-lock-fontified nil))
+                (apply orig args))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; prettify-symbols
@@ -2764,19 +2775,20 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (define-key sql-interactive-mode-map (kbd "RET") 'insert-semicolon-and-send-input)
 
   ;;;;
-  
-  (defadvice sql-sqlite (around complete-and-process-file activate)
-    (let (sql-user
-          sql-server
-          insert-default-directory)
-      (setq sql-database (if (and (stringp sql-database)
-                                (file-exists-p sql-database))
-                             sql-database
-                           default-directory))
-      (setq sql-database (read-file-name "SQLite file: "
-                                         (file-name-directory sql-database)
-                                         sql-database))
-      ad-do-it))
+
+  (advice-add 'sql-sqlite
+              :around
+              (lambda (orig &rest args)
+                "Complete and process file."
+                (let (sql-user sql-server insert-default-directory)
+                  (setq sql-database (if (and (stringp sql-database)
+                                            (file-exists-p sql-database))
+                                         sql-database
+                                       default-directory))
+                  (setq sql-database (read-file-name "SQLite file: "
+                                                     (file-name-directory sql-database)
+                                                     sql-database))
+                  (apply orig args))))
 
   (setq sql-sqlite-program "sqlite3")
 
@@ -2904,13 +2916,18 @@ server/database name."
 (defvar undo-tree-visualize-window-state nil
   "Stores the window state before undo-tree-visualize is called,
   so that it can be restored by undo-tree-visualizer-quit")
-(defadvice undo-tree-visualize
-  (before restore-window-layout activate)
-  (setq undo-tree-visualize-window-state (current-window-configuration)))
-(defadvice undo-tree-visualizer-quit
-  (after restore-window-layout activate)
-  (when undo-tree-visualize-window-state
-    (set-window-configuration undo-tree-visualize-window-state)))
+(advice-add 'undo-tree-visualize
+            :before
+            (lambda (&rest args)
+              "Save window layout."
+              (setq undo-tree-visualize-window-state
+                    (current-window-configuration))))
+(advice-add 'undo-tree-visualizer-quit
+            :after
+            (lambda (&rest args)
+              "Restore window layout."
+              (when undo-tree-visualize-window-state
+                (set-window-configuration undo-tree-visualize-window-state))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; isearch
@@ -2933,9 +2950,12 @@ server/database name."
 (define-key isearch-mode-map (kbd "<tab>") 'isearch-complete)
 
 ;; recenter the cursor after finding a match
-(defadvice isearch-search (after isearch-recenter activate)
-  (when isearch-success
-    (recenter-no-redraw)))
+(advice-add 'isearch-search
+            :after
+            (lambda (&rest args)
+              "Recenter"
+              (when isearch-success
+                (recenter-no-redraw))))
 
 ;; make backspace behave in a more intuitive way
 (define-key isearch-mode-map (kbd "<backspace>") 'isearch-del-char)
@@ -2978,15 +2998,21 @@ match.  It should be idempotent."
 
 ;; recenter the error buffer
 ;; previous-error just calls next-error
-(defadvice next-error (after recenter-error-buffer activate)
-  (let ((win (get-buffer-window next-error-last-buffer)))
-    (when win
-      (with-selected-window win
-        (recenter-no-redraw)))))
+(advice-add 'next-error
+            :after
+            (lambda (&rest args)
+              "recenter the error buffer"
+              (let ((win (get-buffer-window next-error-last-buffer)))
+                (when win
+                  (with-selected-window win
+                    (recenter-no-redraw))))))
 
 ;; compilation-previous-error just calls compilation-next-error
-(defadvice compilation-next-error (after recenter-error-buffer activate)
-  (recenter-no-redraw))
+(advice-add 'compilation-next-error
+            :after
+            (lambda (&rest args)
+              "recenter the error buffer"
+              (recenter-no-redraw)))
 
 (global-set-key [remap next-error] (make-repeatable-command 'next-error))
 (global-set-key [remap previous-error] (make-repeatable-command 'previous-error))
@@ -3087,11 +3113,12 @@ The user is prompted at each instance like query-replace."
      nil nil
      (if regexp 'ack-regexp-history 'ack-literal-history)))
 
-  (defadvice ack-next-match (after recenter activate)
-    (recenter-no-redraw))
-
-  (defadvice ack-previous-match (after recenter activate)
-    (recenter-no-redraw))
+  (dolist (func '(ack-next-match ack-previous-match))
+    (advice-add func
+                :after
+                (lambda (&rest args)
+                  "recenter"
+                  (recenter-no-redraw))))
 
   (defun ack-next-file (pos arg)
     (interactive "d\np")
@@ -3444,8 +3471,11 @@ of text."
 
 (global-set-key (kbd "M-Q") 'unfill-paragraph)
 
-(defadvice fill-paragraph (after scroll-to-left activate)
-  (scroll-right (window-hscroll)))
+(advice-add 'fill-paragraph
+            :after
+            "Scroll to the left."
+            (lambda (&rest args)
+              (scroll-right (window-hscroll))))
 
 (defun align-regexp-repeated (start stop regexp)
   "Like align-regexp, but repeated for multiple columns. See
