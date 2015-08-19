@@ -2368,6 +2368,16 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; shell-script
+
+(defun jpk/sh-mode-hook ()
+  (dolist (s '(paragraph-start paragraph-separate))
+    (set s (default-value s)))
+  )
+
+(add-hook 'sh-mode-hook 'jpk/sh-mode-hook)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Perl
 
 (defalias 'perl-mode 'cperl-mode)
