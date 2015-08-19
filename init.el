@@ -362,10 +362,15 @@
 
 (setq ggtags-global-window-height nil
       ggtags-enable-navigation-keys nil)
+
 ;; This works even if ggtags-find-tag-dwim is just marked for
 ;; autoloading but isn't loaded yet.
 (when (commandp (symbol-function 'ggtags-find-tag-dwim))
   (global-set-key (kbd "M-.") 'ggtags-find-tag-dwim))
+
+;; Not sure if this is the best backend, but it works and setting it
+;; stops ggtags-create-tags from asking.
+(setenv "GTAGSLABEL" "ctags")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
