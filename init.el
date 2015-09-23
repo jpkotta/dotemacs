@@ -5,7 +5,9 @@
 ;; Author: Jonathan Kotta <jpkotta@gmail.com>
 
 (message "Loading jpkotta's init.el.")
-(setq init-el-time (current-time)) ;; profile this file's evaluation time
+
+(setq gc-cons-threshold-orig gc-cons-threshold)
+(setq gc-cons-threshold most-positive-fixnum)
 
 ;; this init file uses principles from:
 ;; http://a-nickels-worth.blogspot.com/2007/11/effective-emacs.html
@@ -3617,7 +3619,10 @@ http://www.emacswiki.org/emacs/AlignCommands"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(message "init.el loaded in %0.3fs."
-         (float-time (time-subtract (current-time) init-el-time)))
+(defun jpk/emacs-startup-hook ()
+  (message "init.el loaded in %s." (emacs-init-time))
+  (setq gc-cons-threshold gc-cons-threshold-orig)
+  )
+(add-hook 'emacs-startup-hook 'jpk/emacs-startup-hook)
 
 ;;; init.el ends here
