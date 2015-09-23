@@ -3362,6 +3362,21 @@ point."
 
 (defalias 'delete-vertical-space 'delete-blank-lines)
 
+(defmacro copy-instead-of-kill (&rest body)
+  "Replaces `kill-region' with `kill-ring-save' in BODY."
+  `(cl-letf (((symbol-function 'kill-region)
+              (lambda (beg end &optional region)
+                (kill-ring-save beg end region)
+                (setq this-command 'kill-region))))
+     ,@body))
+
+(defun copy-line (&optional arg)
+  "Like `kill-line', but copies instead of killing."
+  (interactive "P")
+  (copy-instead-of-kill (kill-line arg)))
+
+(global-set-key (kbd "C-S-k") 'copy-line)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
 
