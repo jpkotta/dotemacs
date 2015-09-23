@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: debug
+# key: debug
+# --
+printf("$1: ${2:0x%X}\n", $1); // DEBUG
+$0
