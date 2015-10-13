@@ -2130,6 +2130,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; compile
 
+(put 'compile-command 'safe-local-variable 'stringp)
+
 (defun bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings "
   (if (and
@@ -2339,7 +2341,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (defun jpk/c-mode-hook ()
   (smart-tabs-mode 1)
   (setq tab-width 4)
-  (setup-simple-compile)
   (imenu-add-to-menubar "IMenu")
   (setq comment-start "// "
         comment-end "")

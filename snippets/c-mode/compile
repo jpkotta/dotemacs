@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: compile
+# key: compile
+# expand-env: ((file (if (buffer-file-name) (file-name-nondirectory (buffer-file-name)) (buffer-name))))
+# --
+// -*- compile-command: "gcc -DDEBUG=9 -ansi -Wall -g3 -std=c99 -o ${1:$(file-name-sans-extension yas-text)} ${1:`file`}" -*-
