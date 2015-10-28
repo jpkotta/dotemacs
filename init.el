@@ -364,7 +364,8 @@
 ;;; ggtags
 
 (setq ggtags-global-window-height nil
-      ggtags-enable-navigation-keys nil)
+      ggtags-enable-navigation-keys nil
+      ggtags-update-on-save t)
 
 ;; This works even if ggtags-find-tag-dwim is just marked for
 ;; autoloading but isn't loaded yet.
@@ -747,7 +748,7 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Web Browser
 
-(setq browse-url-browser-function 'browse-url-firefox
+(setq browse-url-browser-function 'browse-url-chromium
       browse-url-new-window-flag t)
 
 (setq url-configuration-directory (concat emacs-persistence-directory "url/"))
@@ -997,6 +998,7 @@ it's probably better to explicitly request a merge."
 (setq save-visited-files-location (concat emacs-persistence-directory
                                           "save-visited-files")
       save-visited-files-ignore-tramp-files t
+      save-visited-files-ignore-directories nil
       save-visited-files-auto-restore t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
