@@ -79,6 +79,7 @@
         ;;highlight-operators
         highlight-quoted
         htmlize
+        ibuffer-projectile
         ido-ubiquitous
         isearch+
         keychain-environment
@@ -1956,6 +1957,15 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (kbd "/ M") 'ibuffer-set-filter-groups-by-mode)
   (define-key ibuffer-mode-map
     (kbd "/ m") 'ibuffer-filter-by-used-mode)
+
+  (with-library 'ibuffer-projectile
+    ;; from ibuffer-projectile
+    (define-key ibuffer-mode-map
+      (kbd "/ P") 'ibuffer-projectile-set-filter-groups)
+    ;; from projectile
+    (define-key ibuffer-mode-map
+      (kbd "/ p") 'ibuffer-filter-by-projectile-files)
+    )
 
   ;; TODO make cycling work with count
   (defun ibuffer-forward-filter-group (&optional count)
