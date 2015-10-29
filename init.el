@@ -1908,8 +1908,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                     (if (eq major-mode 'dired-mode)
                         (expand-file-name dired-directory))
                     ;; so that all non pathnames are at the end
-                    "~"))))
-      (string-lessp (get-pathname a) (get-pathname b))))
+                    ""))))
+      (string< (get-pathname a) (get-pathname b))))
 
   (define-key ibuffer-mode-map
     (kbd "s p") 'ibuffer-do-sort-by-pathname)
@@ -1984,11 +1984,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                   (point) 'ibuffer-filter-group-name
                   nil (point-max)))
       (ibuffer-forward-filter-group (1- count)))
-    (when (= (point) (point-max))
+    (when (eobp)
       (if (not ibuffer-movement-cycle)
           (ibuffer-backward-filter-group)
-      (goto-char (point-min))
-      (ibuffer-forward-filter-group (1- count))))
+        (goto-char (point-min))
+        (ibuffer-forward-filter-group (1- count))))
     (ibuffer-forward-line 0))
 
   ;; TODO make cycling work with count
@@ -2006,12 +2006,15 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                   (point) 'ibuffer-filter-group-name
                   nil (point-min)))
       (ibuffer-backward-filter-group (1- count)))
-    (when (and ibuffer-movement-cycle
-             (= (point) (point-min)))
+    (when (and ibuffer-movement-cycle (bobp))
       (goto-char (point-max))
       (ibuffer-backward-filter-group 1))
     (ibuffer-forward-line 0))
 
+  (define-key ibuffer-mode-map
+    (kbd "<down>") 'ibuffer-forward-line)
+  (define-key ibuffer-mode-map
+    (kbd "<up>") 'ibuffer-backward-line)
   (define-key ibuffer-mode-map
     (kbd "C-<down>") 'ibuffer-forward-filter-group)
   (define-key ibuffer-mode-map
