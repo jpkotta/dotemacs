@@ -21,7 +21,6 @@
 ;;
 ;; ibuffer
 ;; graphlog stuff in vc-hg
-;; pretty-mode
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
@@ -2124,23 +2123,26 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;; prettify-symbols-mode is enabled in major mode hooks.
 ;; Major modes can append more symbols before enabling prettify-symbols-mode.
-(setq prettify-symbols-alist
-      '(("" . ?§)
-        ("<=" . ?≤)
-        (">=" . ?≥)
-        ("alpha" . ?α)
-        ("beta" . ?β)
-        ("gamma" . ?γ)
-        ("delta" . ?Δ)
-        ("epsilon" . ?ε)
-        ("theta" . ?θ)
-        ("lambda" . ?λ)
-        ("mu" . ?μ)
-        ("pi" . ?π)
-        ("phi" . ?φ)
-        ("sigma" . ?σ)
-        ("sqrt" . ?√)
-        ))
+(setq-default
+ prettify-symbols-alist
+ '(("" . ?§)
+   ("<=" . ?≤)
+   (">=" . ?≥)
+   ("alpha" . ?α)
+   ("beta" . ?β)
+   ("gamma" . ?γ)
+   ("delta" . ?Δ)
+   ("epsilon" . ?ε)
+   ("theta" . ?θ)
+   ("lambda" . ?λ)
+   ("mu" . ?μ)
+   ("pi" . ?π)
+   ("phi" . ?φ)
+   ("sigma" . ?σ)
+   ("sqrt" . ?√)
+   ))
+
+(global-prettify-symbols-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; compile
@@ -2342,27 +2344,22 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                                             "-ansi -Wall -g3"))
                      file))))))
 
-(setq prettify-symbols-c-alist
-      '(("!=" . ?≠)
-        ("NULL" . ?∅)
-        ("&&" . ?⋀)
-        ("||" . ?⋁)
-        ("!" . ?¬)
-        ("HUGE_VAL" . ?∞)
-        ("->" . ?→)
-        ("M_PI" . ?π)
-        ))
-
 (defun jpk/c-mode-hook ()
   (smart-tabs-mode 1)
   (setq tab-width 4)
   (imenu-add-to-menubar "IMenu")
   (setq comment-start "// "
         comment-end "")
-  (prettify-symbols-mode -1)
-  (dolist (x prettify-symbols-c-alist)
+  (dolist (x '(("!=" . ?≠)
+               ("NULL" . ?∅)
+               ("&&" . ?⋀)
+               ("||" . ?⋁)
+               ("!" . ?¬)
+               ("HUGE_VAL" . ?∞)
+               ("->" . ?→)
+               ("M_PI" . ?π)
+               ))
     (add-to-list 'prettify-symbols-alist x))
-  (prettify-symbols-mode 1)
   ;;(cpp-highlight-if-0/1)
   ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
   )
@@ -2402,17 +2399,12 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq cperl-invalid-face nil)
 
-(setq prettify-symbols-perl-alist
-      '(("!=" . ?≠)
-        ("->" . ?→)
-        ("=>" . ?⇒)
-        ))
-
 (defun jpk/cperl-mode-hook ()
-  (prettify-symbols-mode -1)
-  (dolist (x prettify-symbols-perl-alist)
+  (dolist (x '(("!=" . ?≠)
+               ("->" . ?→)
+               ("=>" . ?⇒)
+               ))
     (add-to-list 'prettify-symbols-alist x))
-  (prettify-symbols-mode 1)
   (cperl-set-style "BSD")
   )
 
@@ -2499,31 +2491,26 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (diff-mode))
     (switch-to-buffer-other-window output-buffer)))
 
-(setq prettify-symbols-python-alist
-      '(("!=" . ?≠)
-        ("None" . ?∅)
-        ("and" . ?⋀)
-        ("or" . ?⋁)
-        ("!" . ?¬)
-        ("all" . ?∀)
-        ("any" . ?∃)
-        ("**" . ?⁑)
-        ("*" . ?∙)
-        ("**2" . ?²)
-        ("**3" . ?³)
-        ("**n" . ?ⁿ)
-        ("Ellipsis" . ?…)
-        ("..." . ?…)
-        ("in" . ?∈)
-        ("not in" . ?∉)
-        ("sum" . ?∑)
-        ))
-
 (defun jpk/python-mode-hook ()
-  (prettify-symbols-mode -1)
-  (dolist (x prettify-symbols-python-alist)
+  (dolist (x '(("!=" . ?≠)
+               ("None" . ?∅)
+               ("and" . ?⋀)
+               ("or" . ?⋁)
+               ("!" . ?¬)
+               ("all" . ?∀)
+               ("any" . ?∃)
+               ("**" . ?⁑)
+               ("*" . ?∙)
+               ("**2" . ?²)
+               ("**3" . ?³)
+               ("**n" . ?ⁿ)
+               ("Ellipsis" . ?…)
+               ("..." . ?…)
+               ("in" . ?∈)
+               ("not in" . ?∉)
+               ("sum" . ?∑)
+               ))
     (add-to-list 'prettify-symbols-alist x))
-  (prettify-symbols-mode 1)
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 (add-hook 'python-mode-hook 'jpk/prog-mode-hook)
@@ -2576,17 +2563,12 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     verilog-number-font-lock-spec))
   )
 
-(setq prettify-symbols-verilog-alist
-      '(("begin" . ?{)
-        ("end" . ?})
-        ("<=" . ?⇐)
-        ))
-
 (defun jpk/verilog-mode-hook ()
-  (prettify-symbols-mode -1)
-  (dolist (x prettify-symbols-verilog-alist)
+  (dolist (x '(("begin" . ?{)
+               ("end" . ?})
+               ("<=" . ?⇐)
+               ))
     (add-to-list 'prettify-symbols-alist x))
-  (prettify-symbols-mode 1)
   )
 (add-hook 'verilog-mode-hook 'jpk/verilog-mode-hook)
 
@@ -2629,13 +2611,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
   (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
 
-(setq prettify-symbols-lisp-alist
-      '(("/=" . ?≠)
-        ("nil" . ?∅)
-        ("and" . ?⋀)
-        ("or" . ?⋁)
-        ("not" . ?¬)))
-
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
   (local-set-key (kbd "C-M-S-x") 'eval-region)
@@ -2643,10 +2618,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (highlight-quoted-mode 1))
   (with-library 'highlight-operators
     (highlight-operators-mode -1))
-  (prettify-symbols-mode -1)
-  (dolist (x prettify-symbols-lisp-alist)
+  (dolist (x '(("/=" . ?≠)
+               ("nil" . ?∅)
+               ("and" . ?⋀)
+               ("or" . ?⋁)
+               ("not" . ?¬)
+               ))
     (add-to-list 'prettify-symbols-alist x))
-  (prettify-symbols-mode 1)
   )
 
 ;; http://milkbox.net/note/single-file-master-emacs-configuration/
