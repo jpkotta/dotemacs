@@ -9,9 +9,6 @@
 (setq gc-cons-threshold-orig gc-cons-threshold)
 (setq gc-cons-threshold most-positive-fixnum)
 
-;; this init file uses principles from:
-;; http://a-nickels-worth.blogspot.com/2007/11/effective-emacs.html
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TODO
 
@@ -2513,7 +2510,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (add-to-list 'prettify-symbols-alist x))
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
-(add-hook 'python-mode-hook 'jpk/prog-mode-hook)
 
 (defun python-path ()
   "Returns a list of strings containing all the directories in Python's path."
