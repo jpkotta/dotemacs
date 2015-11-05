@@ -2,5 +2,5 @@
 # name: strict
 # key: strict
 # --
-set -o errexit -o nounset -o pipefail
+set -o errexit -o nounset -o pipefail -o errtrace
 IFS=$'\n\t'
