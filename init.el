@@ -79,6 +79,7 @@
         ido-ubiquitous
         isearch+
         keychain-environment
+        list-unicode-display
         lua-mode
         markdown-mode
         mediawiki
@@ -707,23 +708,6 @@ The numbers are formatted according to the FORMAT string."
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8)
-
-(defun list-unicode-display (&optional regexp)
-  "Display a list of unicode characters and their names in a buffer."
-  (interactive "sRegexp (default \".*\"): ")
-  (let* ((regexp (or regexp ".*"))
-         (case-fold-search t)
-         (cmp (lambda (x y) (< (cdr x) (cdr y))))
-         ;; alist like ("name" . code-point)
-         (char-alist (sort (cl-remove-if-not (lambda (x) (string-match regexp (car x)))
-                                             (ucs-names))
-                           cmp)))
-    (with-help-window "*Unicode characters*"
-      (with-current-buffer standard-output
-        (dolist (c char-alist)
-          (insert (format "0x%06X\t" (cdr c)))
-          (insert (cdr c))
-          (insert (format "\t%s\n" (car c))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Daemon/Server
