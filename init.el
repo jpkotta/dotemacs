@@ -167,8 +167,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Appearance
 
+(setq inhibit-startup-screen t
+      initial-scratch-message "")
+
 (menu-bar-mode -1)
 (tool-bar-mode -1)
+
+(setq visible-bell t)
+
+(set-scroll-bar-mode 'right)
+(size-indication-mode 1)
+(column-number-mode 1)
+(transient-mark-mode 1)
+
+(setq truncate-lines t)
+
+(setq font-lock-maximum-decoration t)
 
 (setq default-frame-alist '((vertical-scroll-bars . right)
                             (menu-bar-lines . 0)
@@ -209,6 +223,8 @@
    '(diff-refine-added ((t (:inherit diff-refine-change :foreground "green1"))))
    '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red1"))))
    '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
+
+   '(term ((t (:foreground "lavender blush"))))
    ))
 
 ;; Indicates when you're beyond a column (e.g. 80) and also shows the
@@ -233,14 +249,17 @@
                          (t
                           "[no file]")))))
 
-;; cursor
 (blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
+(global-hl-line-mode 1)
 
 (setq eol-mnemonic-dos "(CRLF)"
       eol-mnemonic-mac "(CR)"
       eol-mnemonic-undecided "(EOL?)"
       eol-mnemonic-unix "(LF)")
+
+(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+(setq-default indicate-empty-lines t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
@@ -725,8 +744,13 @@ The numbers are formatted according to the FORMAT string."
 (set-default-coding-systems 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8)
 
+(setq default-input-method "TeX"
+      read-quoted-char-radix 16)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Daemon/Server
+
+(setq confirm-kill-emacs 'y-or-n-p)
 
 (global-set-key (kbd "C-x C-S-c") 'save-buffers-kill-emacs)
 
@@ -1069,6 +1093,13 @@ This function is suitable to add to `find-file-hook'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Mouse
+
+(setq mouse-1-click-follows-link nil
+      mouse-1-click-in-non-selected-windows nil
+      mouse-drag-copy-region t
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-scroll-amount '(3 ((shift) . 1) ((control))))
+      
 (with-library 'mouse+
   (global-set-key (kbd "<down-mouse-2>") 'mouse-flash-position)
   (global-set-key (kbd "S-<down-mouse-2>") 'mouse-scan-lines))
@@ -1088,6 +1119,19 @@ This function is suitable to add to `find-file-hook'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Windows
+
+(setq-default cursor-in-non-selected-windows nil)
+
+(setq same-window-buffer-names '("*Python*" "*Diff*" "*Apropos*" "*shell*"
+                                 "*mail*" "*inferior-lisp*" "*ielm*" "*scheme*"
+                                 "*Hg outgoing*" "*Hg incoming*")
+      same-window-regexps '("\\*vc-.*\\*"
+                            "\\*rsh-[^-]*\\*\\(\\|<[0-9]*>\\)"
+                            "\\*telnet-.*\\*\\(\\|<[0-9]+>\\)"
+                            "^\\*rlogin-.*\\*\\(\\|<[0-9]+>\\)"
+                            "\\*info\\*\\(\\|<[0-9]+>\\)"
+                            "\\*gud-.*\\*\\(\\|<[0-9]+>\\)"
+                            "\\`\\*Customiz.*\\*\\'"))
 
 (defun split-windows-in-quarters (arg)
   "Configure a frame to have 4 similarly sized windows.  Splits
@@ -1233,6 +1277,8 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
 
+(setq vc-hg-log-switches '("-v"))
+
 (with-eval-after-load "vc-hg"
   (require 'vc-hg-fixes)
   )
@@ -1269,7 +1315,8 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; diff
 
-(setq diff-switches "-u -r")
+(setq diff-switches "-u -r"
+      diff-default-read-only t)
 
 (require 'ediff-tweak)
 
@@ -1311,6 +1358,7 @@ This function is suitable to add to `find-file-hook'."
   )
 
 (add-hook 'diff-mode-hook 'jpk/diff-mode-hook)
+(add-hook 'diff-mode-hook 'diff-make-unified)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commit-patch-buffer is very picky about the patch buffer.
@@ -1374,10 +1422,15 @@ This function is suitable to add to `find-file-hook'."
 (with-library 'diff-hl
   (setq diff-hl-fringe-bmp-function 'diff-hl-fringe-bmp-from-type)
   (global-diff-hl-mode 1)
+  (add-hook 'dired-mode-hook 'diff-hl-dir-mode)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
+
+(setq-default comint-input-ignoredups t
+              comint-prompt-read-only t
+              comint-scroll-to-bottom-on-input 'all)
 
 (defvar comint-eob-on-send t
   "Like comint-eol-on-send, but moves to the end of buffer.")
@@ -1521,8 +1574,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; man pages
 
 (setenv "MANWIDTH" "72")
-(setq woman-fill-column 72)
-(setq woman-cache-filename (concat emacs-persistence-directory "woman.el"))
+(setq woman-use-own-frame nil
+      woman-fill-column 72
+      woman-cache-filename (concat emacs-persistence-directory "woman.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; file functions
@@ -1669,6 +1723,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       'diredp-mouse-find-file-reuse-dir-buffer)
     )
 
+  (setq dired-omit-files "^\\.?#\\|^\\.$\\|^\\.[^.].*$")
   (with-library 'dired-x
     (setq dired-omit-verbose nil)
     (delete ".bin" dired-omit-extensions) 
@@ -1703,6 +1758,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (define-key dired-mode-map (kbd "V") 'dired-do-move)
 
+  (setq wdired-allow-to-change-permissions t)
+  
   (defun wdired-create-parentdirs (file-new)
     (let ((dir (file-name-directory file-new)))
       (unless (file-directory-p dir)
@@ -1889,6 +1946,18 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; IBuffer
+
+(setq ibuffer-default-sorting-mode 'major-mode
+      ibuffer-formats '((mark modified read-only " "
+                              (name 28 28 :left :elide) " "
+                              (size 9 -1 :right) " "
+                              (mode 16 16 :left :elide) " "
+                              filename-and-process)
+                        (mark " " (name 16 -1) " " filename)) 
+      ibuffer-movement-cycle nil
+      ibuffer-saved-filter-groups nil
+      ibuffer-saved-filters nil
+      ibuffer-show-empty-filter-groups nil)
 
 (with-eval-after-load "ibuffer"
   (require 'ibuf-ext)
@@ -2146,6 +2215,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (put 'compile-command 'safe-local-variable 'stringp)
 
+(setq compilation-scroll-output 'first-error)
+
 (defun bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings "
   (if (and
@@ -2184,6 +2255,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generic Programming
+
+(setq jit-lock-stealth-time 5)
+
+(setq-default comment-column 0
+              comment-style 'extra-line)
 
 (defun previous-defun (&optional arg)
   "Like `beginning-of-defun', and also recenters."
@@ -2224,6 +2300,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   ;; for doxygen
   (with-library 'doxymacs
+    (setq doxymacs-command-character "\\")
     (doxymacs-mode 1)
     (doxymacs-font-lock))
 
@@ -2344,6 +2421,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (defun jpk/c-mode-hook ()
   (smart-tabs-mode 1)
   (setq tab-width 4)
+  (setq c-basic-offset 4
+        c-default-style '((java-mode . "java") (awk-mode . "awk") (other . "bsd")))
   (imenu-add-to-menubar "IMenu")
   (setq comment-start "// "
         comment-end "")
@@ -2523,6 +2602,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
+
+(setq matlab-shell-command "octave"
+      matlab-shell-command-switches nil
+      octave-block-offset 4
+      octave-continuation-string "...")
 
 ;; ;; hack for octave mode "end" keyword
 ;; (with-eval-after-load "octave-mod"
@@ -2725,6 +2809,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (add-hook 'text-mode-hook 'jpk/text-mode-hook)
+(add-hook 'text-mode-hook 'text-mode-hook-identify)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; LaTeX (AUCTeX mode)
@@ -2915,6 +3000,7 @@ server/database name."
 
 ;; treat edit history like the tree it is
 (with-library 'undo-tree
+  (setq undo-tree-mode-lighter "")
   (global-undo-tree-mode 1)
   (global-set-key (kbd "C-z") 'undo-tree-undo)
   (global-set-key (kbd "C-S-z") 'undo-tree-redo))
@@ -3362,6 +3448,8 @@ point."
                 (setq this-command 'kill-region))))
      ,@body))
 
+(setq kill-whole-line t)
+
 (defun copy-line (&optional arg)
   "Like `kill-line', but copies instead of killing."
   (interactive "P")
@@ -3371,6 +3459,8 @@ point."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
+
+(setq backward-delete-char-untabify-method nil)
 
 (electric-indent-mode -1)
 
