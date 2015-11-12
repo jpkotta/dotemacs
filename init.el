@@ -1041,6 +1041,12 @@ it's probably better to explicitly request a merge."
 (savehist-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; midnight
+
+(require 'midnight)
+(setq clean-buffer-list-delay-general 2)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
 
 (setq tramp-persistency-file-name (concat emacs-persistence-directory
