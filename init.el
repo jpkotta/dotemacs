@@ -19,6 +19,22 @@
 ;; ibuffer
 ;; graphlog stuff in vc-hg
 
+;; new in 24.4
+;;
+;; read-regexp-defaults-function
+;; cycle-spacing (M-SPC maybe)
+;; rectangle-mark-mode, cua-rectangle-mark-mode
+;; dired-hide-details-mode
+;; icomplete
+;; term-suppress-hard-newline
+;; In VC directory mode, I shows a log of changes that will be received with a pull operation. 
+;; eww
+;; advice-add
+;; define-alternatives
+;; split-string
+;; string-* functions, esp. string-join
+;; prefer-utf-8
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
@@ -1401,11 +1417,11 @@ This function is suitable to add to `find-file-hook'."
               ("C-c C-z"       . term-stop-subjob)
               ("C-c C-x"       . term-send-C-x)
               ("C-z"           . term-stop-subjob)
+              ("C-c C-v"       . term-paste)
               ;; work like urxvt tabbed
               ("<S-down>"      . multi-term)
               ("<S-left>"      . multi-term-prev)
               ("<S-right>"     . multi-term-next)
-              ("C-v"           . term-paste)
               ))
     (add-to-list 'term-bind-key-alist bind))
   )
@@ -1789,7 +1805,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (setq openwith-associations
         (list
          (list (openwith-make-extension-regexp
-                '("mpg" "mpeg" "mp3" "mp4"
+                '("mpg" "mpeg" "mp3" "mp4" "asf"
                   "avi" "wmv" "wav" "mov" "flv"
                   "ogm" "ogg" "mkv"))
                "vlc"
