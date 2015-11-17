@@ -81,7 +81,6 @@
         diff-hl
         diminish
         dired+
-        drag-stuff
         evil-numbers
         expand-region
         figlet
@@ -644,7 +643,6 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
   (with-eval-after-load "auto-complete" (diminish 'auto-complete-mode))
   (with-eval-after-load "doxymacs" (diminish 'doxymacs-mode))
-  (with-eval-after-load "drag-stuff" (diminish 'drag-stuff-mode))
   (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
   (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
   (with-eval-after-load "fixme-mode" (diminish 'fixme-mode))
@@ -3525,14 +3523,6 @@ columns.  Otherwise, move the cursor line arg columns."
                   "move region right by four"
                   (interactive "r")
                   (move-horizontally-dwim beg en 4)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; drag-stuff
-
-;; drag things (words, regions, lines) with arrow keys
-(with-library 'drag-stuff
-  (setq drag-stuff-modifier '(meta shift))
-  (drag-stuff-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
