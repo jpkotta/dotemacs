@@ -126,7 +126,6 @@
         syntax-subword
         undo-tree
         wgrep
-        workgroups
         wrap-region
         yasnippet
         ))
@@ -655,7 +654,6 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
   (with-eval-after-load "ggtags" (diminish 'ggtags-mode))
   (with-eval-after-load "projectile" (diminish 'projectile-mode))
-  (with-eval-after-load "workgroups" (diminish 'workgroups-mode))
   (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
   (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
   )
@@ -1256,34 +1254,6 @@ This function is suitable to add to `find-file-hook'."
                 "Inhibit killing selected window."
                 (let ((never-delete-window t))
                   (apply orig args)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; workgroups for windows
-
-(setq wg-prefix-key (kbd "C-c z")
-      wg-no-confirm t
-      wg-file (concat emacs-persistence-directory "workgroups")
-      wg-use-faces nil
-      wg-switch-on-load nil)
-
-(defun wg-load-default ()
-  "Run `wg-load' on `wg-file'."
-  (interactive)
-  (wg-load wg-file))
-
-(defun wg-save-default ()
-  "Run `wg-save' on `wg-file'."
-  (interactive)
-  (when wg-list
-    (with-temp-message ""
-      (wg-save wg-file))))
-
-(with-library 'workgroups
-  (define-key wg-map (kbd "C-l") 'wg-load-default)
-  (define-key wg-map (kbd "C-s") 'wg-save-default)
-  (workgroups-mode 1)
-  (add-hook 'auto-save-hook 'wg-save-default)
-  (add-hook 'kill-emacs-hook 'wg-save-default))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
