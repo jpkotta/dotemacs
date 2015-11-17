@@ -752,16 +752,7 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Daemon/Server
 
-(setq confirm-kill-emacs 'y-or-n-p)
-
 (global-set-key (kbd "C-x C-S-c") 'save-buffers-kill-emacs)
-
-;; (defun server-edit-or-save-buffers-kill-terminal (arg)
-;;   "Runs `server-edit', and if it did nothing, then runs `save-buffers-kill-terminal'."
-;;   (interactive "P")
-;;   (if (if (boundp 'server-edit) (server-edit) t) ;; returns nil if it marked the buffer as "done"
-;;     (save-buffers-kill-terminal arg)))
-;; (global-set-key (kbd "C-x C-c") 'server-edit-or-save-buffers-kill-terminal)
 (global-set-key (kbd "C-x C-c") 'delete-frame)
 
 (when (daemonp)
