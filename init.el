@@ -18,8 +18,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TODO
 
-;; fix ac-source-yasnippet to work with latest yasnippet
-
 ;; Patches
 ;;
 ;; ibuffer
@@ -792,7 +790,6 @@ The numbers are formatted according to the FORMAT string."
 
 (add-to-list 'load-path (concat user-emacs-directory "ac-sources"))
 (with-library 'auto-complete-config
-  (setq ac-source-yasnippet nil) ;; broken for latest yasnippet
   (ac-config-default))
 
 (with-eval-after-load "auto-complete"
@@ -800,7 +797,6 @@ The numbers are formatted according to the FORMAT string."
   (setq ac-auto-start 3
         ac-auto-show-menu t
         ac-use-quick-help nil
-        ;;ac-quick-help-delay 0.5
         ac-ignore-case nil
         ac-comphist-file (concat emacs-persistence-directory "ac-comphist.dat"))
 
