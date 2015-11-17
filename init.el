@@ -85,7 +85,6 @@
         evil-numbers
         expand-region
         figlet
-        findr
         flex-isearch
         full-ack
         fvwm-mode
@@ -3116,9 +3115,6 @@ match.  It should be idempotent."
 (define-key query-replace-map (kbd "b") 'backup)
 (define-key query-replace-map (kbd "B") 'backup)
 (define-key query-replace-map (kbd "RET") 'act-and-show)
-
-;; Findr - find and operate on files recursively
-(autoload 'findr-query-replace "findr.el" "Replace text in files." t)
 
 (defun query-exchange (string-1 string-2)
   "Exchange string-1 and string-2 interactively.
