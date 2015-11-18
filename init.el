@@ -683,6 +683,60 @@ This can be used as a drop-in replacement for `string-to-number'."
   (global-set-key (kbd "C-c -") (make-repeatable-command 'evil-numbers/dec-at-pt)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; hexl mode
+
+(with-eval-after-load "hexl"
+  (defun hexl-forward-256 (&optional arg)
+    "Move vertically down ARG blocks of 256 bytes (16 lines)."
+    (interactive "p")
+    (setq arg (if (= 0 arg) 1 arg))
+    (ignore-errors
+      (hexl-goto-address (+ (* 256 arg) (hexl-current-address))))
+    (recenter))
+
+  (defun hexl-backward-256 (&optional arg)
+    "Move vertically up ARG blocks of 256 bytes (16 lines)."
+    (interactive "p")
+    (setq arg (if (= 0 arg) 1 arg))
+    (hexl-forward-256 (- arg)))
+
+  (defun hexl-forward-1k (&optional arg)
+    "Move vertically down ARG blocks of 1024 bytes (64 lines)."
+    (interactive "p")
+    (setq arg (if (= 0 arg) 1 arg))
+    (ignore-errors
+      (hexl-goto-address (+ (* 1024 arg) (hexl-current-address))))
+    (recenter))
+
+  (defun hexl-backward-1k (&optional arg)
+    "Move vertically up ARG blocks of 1024 bytes (64 lines)."
+    (interactive "p")
+    (setq arg (if (= 0 arg) 1 arg))
+    (hexl-forward-1k (- arg)))
+
+  (defun hexl-forward-4k (&optional arg)
+    "Move vertically down ARG blocks of 4096 bytes (256 lines)."
+    (interactive "p")
+    (setq arg (if (= 0 arg) 1 arg))
+    (ignore-errors
+      (hexl-goto-address (+ (* 4096 arg) (hexl-current-address))))
+    (recenter))
+
+  (defun hexl-backward-4k (&optional arg)
+    "Move vertically up ARG blocks of 4096 bytes (256 lines)."
+    (interactive "p")
+    (setq arg (if (= 0 arg) 1 arg))
+    (hexl-forward-4k (- arg)))
+
+  (define-key hexl-mode-map (kbd "<next>") 'hexl-forward-256)
+  (define-key hexl-mode-map (kbd "<prior>") 'hexl-backward-256)
+  (define-key hexl-mode-map (kbd "C-<next>") 'hexl-forward-1k)
+  (define-key hexl-mode-map (kbd "C-<prior>") 'hexl-backward-1k)
+  (define-key hexl-mode-map (kbd "C-S-<next>") 'hexl-forward-4k)
+  (define-key hexl-mode-map (kbd "C-S-<prior>") 'hexl-backward-4k)
+  )
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CUA mode
 
 ;; FIXME: Emacs 24.4 has a reasonable rectangle-mark-mode.  Add

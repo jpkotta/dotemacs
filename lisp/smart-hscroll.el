@@ -135,8 +135,6 @@ This should only be bound to mouse buttons 4 and 5."
     (define-key map (kbd "<mouse-7>") 'scroll-left-8)
     (define-key map (kbd "<mouse-6>") 'scroll-right-8)
 
-    (define-key map (kbd "C-<next>") 'scroll-left-8)
-    (define-key map (kbd "C-<prior>") 'scroll-right-8)
     map)
   
   "Keymap for `mouse-hscroll-mode'.")
