@@ -39,6 +39,14 @@
 ;; string-* functions, esp. string-join
 ;; prefer-utf-8
 
+;; ;; override function but retain original definition!
+;; (defun foo ()
+;;   (message "old foo"))
+;; (cl-letf (((symbol-function 'old-foo) (symbol-function 'foo))
+;;           ((symbol-function 'foo) (lambda () (message "new foo"))))
+;;   (foo)
+;;   (old-foo))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
@@ -2239,6 +2247,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
        (string-match "finished" string)
        (not
         (with-current-buffer buffer
+          (goto-char (point-min))
           (search-forward "warning" nil t))))
       (run-with-timer 1 nil
                       (lambda (buf)
