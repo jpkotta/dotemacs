@@ -660,27 +660,23 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
 
-;; make it a bit easier to do hex sequences
-;; could replace string-to-number in most cases
+(setf (symbol-function 'string-to-number-orig)
+      (symbol-function 'string-to-number))
 (defun str2num (str &optional base)
-  "Like string-to-number, but with 'normal' (C-style) prefixes
-for non-decimal strings."
+  "Like `string-to-number', but with C-style prefixes for non-decimal strings.
+This can be used as a drop-in replacement for `string-to-number'."
   (let ((case-fold-search t))
     (cond
      ((string-match "0x[0-9A-F]+" str)
-      (string-to-number (replace-regexp-in-string "0x" "" str)
-                        16))
+      (string-to-number-orig (replace-regexp-in-string "0x" "" str) 16))
      ((string-match "0o[0-7]+" str)
-      (string-to-number (replace-regexp-in-string "0o" "" str)
-                        8))
+      (string-to-number-orig (replace-regexp-in-string "0o" "" str) 8))
      ((string-match "0d[0-9]+" str)
-      (string-to-number (replace-regexp-in-string "0d" "" str)
-                        10))
+      (string-to-number-orig (replace-regexp-in-string "0d" "" str) 10))
      ((string-match "0b[01]+" str)
-      (string-to-number (replace-regexp-in-string "0b" "" str)
-                        2))
+      (string-to-number-orig (replace-regexp-in-string "0b" "" str) 2))
      (t
-      (string-to-number str base)))))
+      (string-to-number-orig str base)))))
 
 (with-library 'evil-numbers
   (global-set-key (kbd "C-c =") (make-repeatable-command 'evil-numbers/inc-at-pt))
@@ -710,10 +706,10 @@ The numbers are formatted according to the FORMAT string."
         (setq format cua--rectangle-seq-format)
       (setq cua--rectangle-seq-format format))
     (cua--rectangle-operation 'clear nil t 1 nil
-                              '(lambda (s e l r)
-                                 (delete-region s e)
-                                 (insert (format format first))
-                                 (setq first (+ first incr)))))
+                              (lambda (s e _l _r)
+                                (delete-region s e)
+                                (insert (format format first))
+                                (setq first (+ first incr)))))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
