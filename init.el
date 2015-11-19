@@ -23,22 +23,6 @@
 ;; ibuffer
 ;; graphlog stuff in vc-hg
 
-;; new in 24.4
-;;
-;; read-regexp-defaults-function
-;; cycle-spacing (M-SPC maybe)
-;; rectangle-mark-mode, cua-rectangle-mark-mode
-;; dired-hide-details-mode
-;; icomplete
-;; term-suppress-hard-newline
-;; In VC directory mode, I shows a log of changes that will be received with a pull operation. 
-;; eww
-;; advice-add
-;; define-alternatives
-;; split-string
-;; string-* functions, esp. string-join
-;; prefer-utf-8
-
 ;; ;; override function but retain original definition!
 ;; (defun foo ()
 ;;   (message "old foo"))
@@ -1477,6 +1461,8 @@ This function is suitable to add to `find-file-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
+(setq term-suppress-hard-newline t)
+
 (with-eval-after-load "multi-term"
   (defun term-send-C-x ()
     "Type C-x in term-mode."
@@ -1600,6 +1586,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (setq woman-use-own-frame nil
       woman-fill-column 72
       woman-cache-filename (concat emacs-persistence-directory "woman.el"))
+(define-key help-map (kbd "C-m") 'woman)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; file functions
@@ -2637,7 +2624,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;   (add-to-list 'octave-end-keywords "end[[:space:]]*\\([%#].*\\|$\\)")
 ;;   (setq octave-block-end-regexp
 ;;         (concat "\\<\\("
-;;                 (mapconcat 'identity octave-end-keywords "\\|")
+;;                 (string-join octave-end-keywords "\\|")
 ;;                 "\\)\\>"))
 ;;   )
 
