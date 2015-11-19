@@ -351,14 +351,14 @@
     (message "") ;; clear the echo area, in case it overwrote the minibuffer
     (select-window (minibuffer-window))))
 
-;; FIXME: mouse drag breaks it
-(advice-add 'mouse-set-point
-            :before-until
-            (lambda (&rest args)
-              "no mouse select window if minibuffer active"
-              (or (active-minibuffer-window)
-                 (window-minibuffer-p)
-                 (minibuffer-window-active-p (selected-window)))))
+(dolist (f '(mouse-set-point mouse-set-region))
+  (advice-add f
+              :before-until
+              (lambda (&rest args)
+                "no mouse select window if minibuffer active"
+                (or (active-minibuffer-window)
+                   (window-minibuffer-p)
+                   (minibuffer-window-active-p (selected-window))))))
 
 ;; cancel everything, including active minibuffers and recursive edits
 (global-set-key (kbd "C-M-g") 'top-level)
