@@ -23,6 +23,24 @@
 ;; ibuffer
 ;; graphlog stuff in vc-hg
 
+;; find-file enhancements
+;;
+;; remap all the fancy stuff to C-x C-F or C-c f or maybe even C-x C-f prefixes
+;; find in project/repo
+;; find related file (.c/.h)
+;; find as root
+;; ffap
+;; find recent
+;; projectile
+;; revert
+
+;; a better way to do global key bindings
+;; http://shallowsky.com/blog/linux/editors/emacs-global-key-bindings.html
+
+;; redo the compilation stuff
+
+;; sphinx-doc should use :type:
+
 ;; ;; override function but retain original definition!
 ;; (defun foo ()
 ;;   (message "old foo"))
@@ -1123,6 +1141,7 @@ This function is suitable to add to `find-file-hook'."
 (add-hook 'dired-mode-hook 'find-file-root-header-warning)
 
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
+;; sudo on remote: /ssh:user@remote|sudo:remote:/path/to/file
 
 ;; In Windows, use the sshx method (it's a cygwinized version of ssh).
 
@@ -1479,7 +1498,7 @@ This function is suitable to add to `find-file-hook'."
               ("C-c C-z"       . term-stop-subjob)
               ("C-c C-x"       . term-send-C-x)
               ("C-z"           . term-stop-subjob)
-              ("C-c C-v"       . term-paste)
+              ("C-c C-y"       . term-paste)
               ;; work like urxvt tabbed
               ("<S-down>"      . multi-term)
               ("<S-left>"      . multi-term-prev)
@@ -1585,7 +1604,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (setenv "MANWIDTH" "72")
 (setq woman-use-own-frame nil
       woman-fill-column 72
-      woman-cache-filename (concat emacs-persistence-directory "woman.el"))
+      woman-cache-filename nil)
 (define-key help-map (kbd "C-m") 'woman)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2520,6 +2539,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     ;; "C:/cygwin/bin/bash.exe" on Windows, because the default shell
     ;; will fuck up the command line.
     (setq pylint-options '("--rcfile=./.pylintrc"
+                           "--jobs=4"
                            "--reports=n"
                            "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
                            "--disable=C,R,locally-disabled"
