@@ -418,6 +418,7 @@
 ;; Not sure if this is the best backend, but it works and setting it
 ;; stops ggtags-create-tags from asking.
 (setenv "GTAGSLABEL" "ctags")
+(setenv "GTAGSCONF" "/usr/share/gtags/gtags.conf")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
@@ -2534,18 +2535,25 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
 
-;; (defun jpk/python-eval-insert-region (beg end)
-;;   (interactive "r")
-;;   (let ((str (if (region-active-p)
-;;                  (buffer-substring-no-properties
-;;                   (region-beginning) (region-end))
-;;                (buffer-substring-no-properties
-;;                 (line-beginning-position) (line-end-position)))))
-;;     (save-excursion
-;;       (beginning-of-line)
-;;       (insert (shell-command-to-string
-;;                (concat "python -c " (shell-quote-argument
-;;                                      (concat "print(repr(" str "))"))))))))
+(defun jpk/python-eval-insert-region (beg end)
+  "Evaluate the region with Python and insert the result.
+If region is inactive, use the entire current line."
+  (interactive "r")
+  (let ((str (if (region-active-p)
+                 (buffer-substring-no-properties
+                  (region-beginning) (region-end))
+               (buffer-substring-no-properties
+                (line-beginning-position) (line-end-position)))))
+    (save-excursion
+      (forward-line)
+      (beginning-of-line)
+      (insert (shell-command-to-string
+               (concat "python -c " (shell-quote-argument
+                                     (concat "print(repr(" str "))"))))))))
+
+(global-set-key (kbd "C-c e p") 'jpk/python-eval-insert-region)
+
+(setq python-indent-offset 4)
 
 (with-eval-after-load "python"
 
@@ -2579,8 +2587,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (define-key python-mode-map (kbd "<backtab>") 'delete-indentation)
   (define-key python-mode-map (kbd "S-TAB") 'delete-indentation)
   (define-key python-mode-map (kbd "C-c C-3") 'python-2to3)
-
-  (setq python-indent-offset 4)
 
   )
 
@@ -2729,7 +2735,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
            (insert (current-kill 0)))))
 
 (global-set-key (kbd "C-c C-e") 'eval-and-replace-last-sexp)
-(global-set-key (kbd "C-c e") 'eval-print-last-sexp)
+(global-set-key (kbd "C-c e e") 'eval-print-last-sexp)
 
 (setq eval-expression-print-length nil) ;; unlimited
 
