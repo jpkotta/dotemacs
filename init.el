@@ -65,7 +65,7 @@
 (with-eval-after-load "info"
   (add-to-list 'Info-additional-directory-list "~/.info"))
 
-;; a place to put various
+;; a place to put persistent data
 (setq emacs-persistence-directory (concat user-emacs-directory "persistence/"))
 (unless (file-exists-p emacs-persistence-directory)
   (make-directory emacs-persistence-directory t))
@@ -749,9 +749,6 @@ This can be used as a drop-in replacement for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CUA mode
 
-;; FIXME: Emacs 24.4 has a reasonable rectangle-mark-mode.  Add
-;; cua-rect functionality to it, and get rid of cua-mode.
-
 (global-set-key (kbd "C-<return>") 'cua-rectangle-mark-mode)
 
 (with-eval-after-load "cua-rect"
@@ -805,6 +802,24 @@ The numbers are formatted according to the FORMAT string."
 
 (setq default-input-method "TeX"
       read-quoted-char-radix 16)
+
+(defun dos2unix ()
+  "Convert a DOS file ('\\r\\n') to Unix ('\\n')"
+  (interactive)
+  (set-buffer-file-coding-system 'undecided-unix t))
+
+(defun force-unix-line-endings ()
+  "Replace all occurances of \\r\\n with \\n."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "\015\012" nil t)
+      (replace-match "\012" nil t))))
+
+(defun unix2dos ()
+  "Convert a Unix ('\n') file to DOS ('\r\n')"
+  (interactive)
+  (set-buffer-file-coding-system 'undecided-dos t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Daemon/Server
@@ -3691,27 +3706,6 @@ http://www.emacswiki.org/emacs/AlignCommands"
   (mouse-hscroll-mode 1)
   (global-set-key (kbd "C->") 'scroll-left-8)
   (global-set-key (kbd "C-<") 'scroll-right-8))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; convert between different EOL modes
-
-(defun dos2unix ()
-  "Convert a DOS file ('\\r\\n') to Unix ('\\n')"
-  (interactive)
-  (set-buffer-file-coding-system 'undecided-unix t))
-
-(defun force-unix-line-endings ()
-  "Replace all occurances of \\r\\n with \\n."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (search-forward "\015\012" nil t)
-      (replace-match "\012" nil t))))
-
-(defun unix2dos ()
-  "Convert a Unix ('\n') file to DOS ('\r\n')"
-  (interactive)
-  (set-buffer-file-coding-system 'undecided-dos t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
