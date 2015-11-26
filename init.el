@@ -56,8 +56,10 @@
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;; set up specific to the local machine
-(load-file (concat user-emacs-directory "lisp/local-init.el"))
-
+(let ((local-init-file (concat user-emacs-directory "lisp/local-init.el")))
+  (when (file-exists-p local-init-file)
+    (load-file local-init-file)))
+    
 ;; this is a place to try out random elisp files
 (add-to-list 'load-path (concat user-emacs-directory "staging"))
 
