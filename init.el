@@ -130,6 +130,7 @@
         save-visited-files
         sqlup-mode
         ssh-config-mode
+        smart-shift
         smart-tabs-mode
         smartscan
         smex
@@ -3574,6 +3575,7 @@ point."
 
 ;; rigidly indent
 ;; see EmacsWiki://MovingRegionHorizontally
+;; FIXME: neither this nor smart-shift respects indent-tabs-mode
 (defun move-horizontally (beg en arg)
   "Move the region defined by (beg en) by arg characters.
 Positive arg means right; negative means left"
@@ -3583,7 +3585,6 @@ Positive arg means right; negative means left"
       (goto-char beg)
       (setq beg-bol (line-beginning-position))
       (goto-char en)
-      ;;(move-beginning-of-line nil)
       (indent-rigidly beg-bol en arg)
       (push-mark beg t t))))
 
@@ -3605,16 +3606,9 @@ columns.  Otherwise, move the cursor line arg columns."
                   "move region right by one"
                   (interactive "r")
                   (move-horizontally-dwim beg en 1)))
-(global-set-key (kbd "C-(")
-                (lambda (beg en)
-                  "move region left by four"
-                  (interactive "r")
-                  (move-horizontally-dwim beg en -4)))
-(global-set-key (kbd "C-)")
-                (lambda (beg en)
-                  "move region right by four"
-                  (interactive "r")
-                  (move-horizontally-dwim beg en 4)))
+
+(with-library 'smart-shift
+  (global-smart-shift-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
