@@ -107,7 +107,6 @@
         htmlize
         ibuffer-projectile
         ido-ubiquitous
-        isearch+
         keychain-environment
         list-unicode-display
         lua-mode
@@ -1091,6 +1090,42 @@ it's probably better to explicitly request a merge."
       save-visited-files-ignore-tramp-files t
       save-visited-files-ignore-directories nil
       save-visited-files-auto-restore t)
+
+(with-eval-after-load "save-visited-files"
+  (defun save-visited-files-restore (&optional location)
+    "Restore all files that were saved by save-visited-files-save."
+    (interactive (list (read-file-name
+                        "Restore visited files from: "
+                        (file-name-directory save-visited-files-location)
+                        (file-name-nondirectory save-visited-files-location))))
+    (let ((files-with-local-vars ())
+          (filename ""))
+      (with-temp-buffer
+        (insert-file-contents (or location save-visited-files-location))
+        (ignore-errors
+          (goto-char (point-min))
+          (dotimes-with-progress-reporter (line (count-lines (point-min) (point-max)))
+              "Restoring previously visited files"
+            (setq filename (buffer-substring-no-properties (line-beginning-position)
+                                                           (line-end-position)))
+            (when (file-exists-p filename)
+              ;; hack-local-variables-confirm is called when there are
+              ;; unsafe local variables.  This is annoying.  Load all
+              ;; such files without local vars (make
+              ;; hack-local-variables-confirm return nil) and then
+              ;; find them again at the end to pick up the vars.
+              (cl-letf (((symbol-function 'hack-local-variables-confirm)
+                         (lambda (&rest args)
+                           (add-to-list 'files-with-local-vars filename)
+                           nil)))
+                (find-file-noselect filename 'nowarn nil nil)))
+            (forward-line))))
+      (dolist (f files-with-local-vars)
+        (find-file-noselect f 'nowarn nil nil)))
+    (setq save-visited-files-already-restored t))
+
+  (put 'compile-command 'safe-local-variable (lambda () nil))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; recentf (recently visited files)
@@ -3091,9 +3126,6 @@ server/database name."
   (interactive "P")
   (let ((recenter-redisplay nil))
     (recenter arg)))
-
-;; minor improvements to isearch
-(require 'isearch+ nil 'noerror)
 
 ;; Allow page up/down, C-l, and anything else that doesn't move the
 ;; point during isearch.
