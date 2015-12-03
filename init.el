@@ -486,8 +486,6 @@ and so on."
 (setq org-ellipsis "…"
       org-src-fontify-natively t
       org-hide-leading-stars t)
-(put 'org-end-of-line 'CUA 'move)
-(put 'org-beginning-of-line 'CUA 'move)
 (put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
 
 (with-eval-after-load "org"
@@ -3349,7 +3347,6 @@ opening parenthesis one level up."
           (forward-char 1)
           (backward-list 1)
           (backward-char 1))))))
-;; (put 'goto-match-paren 'CUA 'move)
 
 (defun bounce-thing-boundary (thing &optional tweak-beginning tweak-end n)
   "Move point to beginning or end of THING.
@@ -3680,7 +3677,6 @@ http://www.emacswiki.org/emacs/AlignCommands"
   (if (bolp)
       (beginning-of-line-text arg)
     (move-beginning-of-line arg)))
-(put 'beginning-of-line-or-text 'CUA 'move)
 
 (defun end-of-line-code ()
   (interactive "^")
@@ -3700,7 +3696,6 @@ http://www.emacswiki.org/emacs/AlignCommands"
   (if (eolp) ;; test me here
       (end-of-line-code)
     (end-of-line)))
-(put 'end-of-line-or-code 'CUA 'move)
 
 ;; scroll the other buffer
 (global-set-key (kbd "S-<next>") 'scroll-other-window)
