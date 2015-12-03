@@ -92,6 +92,7 @@
         diff-hl
         diminish
         dired+
+        edit-list
         evil-numbers
         expand-region
         figlet
@@ -2742,6 +2743,9 @@ If region is inactive, use the entire current line."
 (with-library 'morlock
   (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
   (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
+
+(autoload 'edit-list "edit-list.el"
+  "Edit a lisp list in a buffer." t)
 
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
