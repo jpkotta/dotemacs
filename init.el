@@ -117,6 +117,7 @@
         morlock
         mouse+
         multi-term
+        mwim
         openwith
         paren-face
         ;;php-mode
@@ -2379,8 +2380,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (local-set-key (kbd "C-m") 'newline-and-indent)
-  (local-set-key (kbd "C-a") 'beginning-of-line-or-text)
-  (local-set-key (kbd "C-e") 'end-of-line-or-code)
+  (local-set-key (kbd "C-a") 'mwim-beginning-of-line-or-code)
+  (local-set-key (kbd "C-e") 'mwim-end-of-line-or-code)
   (local-set-key (kbd "C-M-a") 'previous-defun)
   (local-set-key (kbd "C-M-e") 'next-defun)
   )
@@ -3670,32 +3671,6 @@ http://www.emacswiki.org/emacs/AlignCommands"
       redisplay-dont-pause t
       scroll-conservatively most-positive-fixnum
       )
-
-(defun beginning-of-line-or-text (arg)
-  "Move to BOL, or if already there, to the first non-whitespace character."
-  (interactive "^p")
-  (if (bolp)
-      (beginning-of-line-text arg)
-    (move-beginning-of-line arg)))
-
-(defun end-of-line-code ()
-  (interactive "^")
-  (require 'newcomment)
-  (if comment-start-skip
-      (save-match-data
-        (let* ((bolpos (line-beginning-position)))
-          (end-of-line)
-          (if (comment-search-backward bolpos 'noerror)
-              (search-backward-regexp comment-start-skip bolpos 'noerror))
-          (skip-syntax-backward " " bolpos)))
-    (end-of-line)))
-
-(defun end-of-line-or-code ()
-  "Move to EOL, or if already there, to EOL sans comments."
-  (interactive "^")
-  (if (eolp) ;; test me here
-      (end-of-line-code)
-    (end-of-line)))
 
 ;; scroll the other buffer
 (global-set-key (kbd "S-<next>") 'scroll-other-window)
