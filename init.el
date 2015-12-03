@@ -131,6 +131,7 @@
         sqlup-mode
         ssh-config-mode
         smart-tabs-mode
+        smartscan
         smex
         syntax-subword
         undo-tree
@@ -3132,6 +3133,9 @@ match.  It should be idempotent."
 (with-library 'flex-isearch
   (setq flex-isearch-auto 'on-failed)
   (global-flex-isearch-mode 1))
+
+(with-library 'smartscan
+  (smartscan-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
