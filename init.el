@@ -81,7 +81,6 @@
         adaptive-wrap
         anchored-transpose
         auctex
-        aurel
         auto-complete
         backup-walker
         bm
@@ -2804,8 +2803,6 @@ If region is inactive, use the entire current line."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
-
-(setq aurel-download-directory (concat "/tmp/pacaurtmp-" user-real-login-name))
 
 (dolist (x '("PKGBUILD" "\.install\\'"))
   (add-to-list 'auto-mode-alist `(,x . pkgbuild-mode)))
