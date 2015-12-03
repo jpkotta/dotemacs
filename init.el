@@ -483,15 +483,15 @@ and so on."
     (flyspell-mode 1))
   )
 
-(with-eval-after-load "org"
-  (setq-default org-hide-leading-stars t)
-  (add-to-list 'org-mode-hook 'jpk/org-mode-hook)
-  (put 'org-end-of-line 'CUA 'move)
-  (put 'org-beginning-of-line 'CUA 'move)
-  (put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
-  )
+(setq org-ellipsis "…"
+      org-src-fontify-natively t
+      org-hide-leading-stars t)
+(put 'org-end-of-line 'CUA 'move)
+(put 'org-beginning-of-line 'CUA 'move)
+(put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
 
-;; (setq org-src-fontify-natively t)
+(with-eval-after-load "org"
+  (add-to-list 'org-mode-hook 'jpk/org-mode-hook))
 
 ;; remember mode lets you quickly record notes without distracting you
 
