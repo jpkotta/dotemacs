@@ -195,6 +195,7 @@
 (size-indication-mode 1)
 (column-number-mode 1)
 (transient-mark-mode 1)
+(setq set-mark-command-repeat-pop t)
 
 (setq truncate-lines t)
 
@@ -429,12 +430,15 @@
 ;;; Projectile
 
 (with-library 'projectile
-  (setq
-   projectile-cache-file (concat emacs-persistence-directory "projectile.cache")
-   projectile-ack-function 'ack
-   projectile-known-projects-file (concat emacs-persistence-directory "projectile-bookmarks.eld")
-   projectile-tags-command "ctags-exuberant -Re -f \"%s\" %s")
-  ;; If ggtags-mode is on, projectile automatically uses it.
+  (setq projectile-indexing-method 'alien
+        projectile-enable-caching t
+        projectile-cache-file (concat emacs-persistence-directory
+                                      "projectile.cache")
+        projectile-ack-function 'ack
+        projectile-known-projects-file (concat emacs-persistence-directory
+                                               "projectile-bookmarks.eld")
+        ;; If ggtags-mode is on, projectile automatically uses it.
+        projectile-tags-command "ctags-exuberant -Re -f \"%s\" %s")
   (projectile-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -973,21 +977,21 @@ The numbers are formatted according to the FORMAT string."
 ;;; ido - Interactively Do Things
 
 (ido-mode 'both) ;; both buffers and files
-(ido-everywhere t)
+(ido-everywhere 1)
 
-(setq ido-confirm-unique-completion t)
-(setq ido-default-buffer-method 'selected-window)
-(setq ido-default-file-method 'selected-window)
-(setq ido-enable-flex-matching t)
-(setq ido-ignore-buffers '("\\` " "^\\*Completion" "^\\*Ido"))
-(setq ido-max-work-file-list 50)
-(setq ido-rotate-file-list-default nil)
-(setq ido-save-directory-list-file (concat emacs-persistence-directory
-                                           "ido-last"))
-(setq ido-show-dot-for-dired t)
-(setq ido-work-directory-match-only nil)
-(setq ido-auto-merge-work-directories-length -1)
-(setq ido-use-virtual-buffers t)
+(setq ido-confirm-unique-completion t
+      ido-default-buffer-method 'selected-window
+      ido-default-file-method 'selected-window
+      ido-enable-flex-matching t
+      ido-ignore-buffers '("\\` " "^\\*Completion" "^\\*Ido")
+      ido-max-work-file-list 50
+      ido-rotate-file-list-default t
+      ido-save-directory-list-file (concat emacs-persistence-directory
+                                           "ido-last")
+      ido-show-dot-for-dired t
+      ido-work-directory-match-only nil
+      ido-auto-merge-work-directories-length -1
+      ido-use-virtual-buffers t)
 
 (defun ido-initiate-auto-merge-this-buffer ()
   "Calls `ido-initiate-auto-merge' on the current buffer.
@@ -1049,10 +1053,10 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Backup
 
-(setq backup-dir (concat emacs-persistence-directory "backup/")
-      backup-directory-alist `(("." . ,backup-dir)))
-(if (not (file-exists-p backup-dir))
-    (make-directory backup-dir t))
+(let ((dir (concat emacs-persistence-directory "backup/")))
+  (unless (file-directory-p dir)
+    (make-directory dir t))
+  (setq backup-directory-alist `(("." . ,dir))))
 
 (setq make-backup-files t
       vc-make-backup-files t
@@ -1098,7 +1102,8 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; savehist
 
-(setq savehist-file (concat emacs-persistence-directory "history"))
+(setq savehist-file (concat emacs-persistence-directory "history")
+      history-delete-duplicates t)
 (savehist-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1311,7 +1316,7 @@ This function is suitable to add to `find-file-hook'."
                 ;; shouldn't be deleted
                 (switch-to-buffer (other-buffer)))))
 
-(dolist (func '(finder-exit View-quit log-edit-done vc-revert vc-rollback))
+(dolist (func '(View-quit log-edit-done vc-revert vc-rollback))
   (advice-add func
               :around 
               (lambda (orig &rest args)
@@ -2485,6 +2490,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                ("M_PI" . ?π)
                ))
     (add-to-list 'prettify-symbols-alist x))
+  (electric-indent-local-mode 1)
   ;;(cpp-highlight-if-0/1)
   ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
   )
