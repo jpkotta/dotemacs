@@ -423,8 +423,25 @@
 ;; Not sure if this is the best backend, but it works and setting it
 ;; stops ggtags-create-tags from asking.
 (setenv "GTAGSLABEL" "ctags")
-(setenv "GTAGSCONF" "/usr/share/gtags/gtags.conf")
 
+(let ((rcfile "~/.globalrc")
+      (dist-rcfile "/usr/share/gtags/gtags.conf")
+      buf)
+  ;; copy example rc file and edit it like so:
+  ;;
+  ;;  default:\
+  ;; -        :tc=native:
+  ;; +        :tc=native:tc=pygments:
+  (when (and (not (file-exists-p rcfile))
+           (file-exists-p dist-rcfile))
+    (with-temp-file rcfile
+      (insert-file-contents dist-rcfile)
+      (goto-char (point-min))
+      (search-forward "default:\\")
+      (forward-line 1)
+      (end-of-line)
+      (insert "tc=pygments:"))))
+    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
 
