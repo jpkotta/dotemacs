@@ -78,6 +78,8 @@
 (setq jpk-packages
       '(
         ac-dabbrev
+        ac-math
+        ac-octave
         adaptive-wrap
         anchored-transpose
         auctex
@@ -875,7 +877,6 @@ The numbers are formatted according to the FORMAT string."
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 (setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
 
-(add-to-list 'load-path (concat user-emacs-directory "ac-sources"))
 (with-library 'auto-complete-config
   (ac-config-default))
 
