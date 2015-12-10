@@ -94,6 +94,7 @@
         diff-hl
         diminish
         dired+
+        easy-repeat
         edit-list
         evil-numbers
         expand-region
@@ -462,29 +463,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Repeatable Commands
 
-;; From http://groups.google.com/group/gnu.emacs.help/browse_thread/thread/44728fda08f1ec8f?hl=en&tvc=2
-(require 'repeat)
-(defun make-repeatable-command (cmd)
-  "Returns a new command that is a repeatable version of CMD.
-The new command is named CMD-repeat.  CMD should be a quoted
-command.
-
-This allows you to bind the command to a compound keystroke and
-repeat it with just the final key.  For example:
-
-  (global-set-key (kbd \"C-c a\") (make-repeatable-command 'foo))
-
-will create a new command called foo-repeat.  Typing C-c a will
-just invoke foo.  Typing C-c a a a will invoke foo three times,
-and so on."
-  (fset (intern (concat (symbol-name cmd) "-repeat"))
-        `(lambda ,(help-function-arglist cmd) ;; arg list
-           ,(format "A repeatable version of `%s'." (symbol-name cmd)) ;; doc string
-           ,(interactive-form cmd) ;; interactive form
-           ;; see also repeat-message-function
-           (setq last-repeatable-command ',cmd)
-           (repeat nil)))
-  (intern (concat (symbol-name cmd) "-repeat")))
+(with-library 'easy-repeat
+  (dolist (f '(bm-next bm-previous evil-numbers/inc-at-pt evil-numbers/dec-at-pt
+                       gud-next gud-step))
+    (add-to-list 'easy-repeat-command-list f))
+  (easy-repeat-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Org Mode
@@ -715,8 +698,8 @@ This can be used as a drop-in replacement for `string-to-number'."
       (string-to-number-orig str base)))))
 
 (with-library 'evil-numbers
-  (global-set-key (kbd "C-c =") (make-repeatable-command 'evil-numbers/inc-at-pt))
-  (global-set-key (kbd "C-c -") (make-repeatable-command 'evil-numbers/dec-at-pt)))
+  (global-set-key (kbd "C-c =") 'evil-numbers/inc-at-pt)
+  (global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hexl mode
@@ -967,8 +950,8 @@ The numbers are formatted according to the FORMAT string."
   (defvar bm-mode-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "m") 'bm-toggle)
-      (define-key map (kbd "n") (make-repeatable-command 'bm-next))
-      (define-key map (kbd "p") (make-repeatable-command 'bm-previous))
+      (define-key map (kbd "n") 'bm-next)
+      (define-key map (kbd "p") 'bm-previous)
       (define-key map (kbd "L") 'bm-show-all)
       (define-key map (kbd "l") 'bm-show)
       (define-key map (kbd "s") 'bm-save)
@@ -2554,8 +2537,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;; GUD (Grand Unified Debugger)
 
 (with-eval-after-load 'gud
-  (define-key gud-minor-mode-map (kbd "C-c C-n") (make-repeatable-command 'gud-next))
-  (define-key gud-minor-mode-map (kbd "C-c C-s") (make-repeatable-command 'gud-step))
+  (define-key gud-minor-mode-map (kbd "C-c C-n") 'gud-next)
+  (define-key gud-minor-mode-map (kbd "C-c C-s") 'gud-step)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3221,9 +3204,6 @@ match.  It should be idempotent."
             (lambda (&rest args)
               "recenter the error buffer"
               (recenter-no-redraw)))
-
-(global-set-key [remap next-error] (make-repeatable-command 'next-error))
-(global-set-key [remap previous-error] (make-repeatable-command 'previous-error))
 
 (defvar grep-context-lines 2
   "Default number of context lines (non-matching lines before and
