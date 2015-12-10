@@ -843,6 +843,8 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Web Browser
 
+(unless (executable-find "chromium")
+  (setq browse-url-chromium-program "google-chrome"))
 (setq browse-url-browser-function 'browse-url-chromium
       browse-url-new-window-flag t)
 
@@ -3176,7 +3178,16 @@ match.  It should be idempotent."
   (setq flex-isearch-auto 'on-failed)
   (global-flex-isearch-mode 1))
 
+;; binds M-n, M-p, and M-'
 (with-library 'smartscan
+  (dolist (f '(smartscan-symbol-go-forward
+               smartscan-symbol-go-backward
+               smartscan-symbol-replace))
+    (advice-add f
+                :after
+                (lambda (&rest args)
+                  "Recenter"
+                  (recenter-no-redraw))))
   (smartscan-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
