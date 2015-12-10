@@ -101,6 +101,7 @@
         figlet
         flex-isearch
         full-ack
+        fuzzy
         fvwm-mode
         ggtags
         hide-lines
@@ -887,6 +888,7 @@ The numbers are formatted according to the FORMAT string."
   (define-key ac-completing-map (kbd "<backtab>") 'ac-expand-previous)
   (define-key ac-completing-map (kbd "S-TAB") 'ac-expand-previous)
   (define-key ac-completing-map (kbd "C-s") 'ac-isearch)
+  (global-set-key (kbd "C-<tab>") 'auto-complete)
 
   ;; workaround for flyspell-mode
   (ac-flyspell-workaround)
