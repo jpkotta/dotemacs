@@ -3188,7 +3188,7 @@ match.  It should be idempotent."
                 (lambda (&rest args)
                   "Recenter"
                   (recenter-no-redraw))))
-  (smartscan-mode 1))
+  (global-smartscan-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
@@ -3656,6 +3656,7 @@ columns.  Otherwise, move the cursor line arg columns."
                   (interactive "r")
                   (move-horizontally-dwim beg en 1)))
 
+;; binds C-C <arrows>
 (with-library 'smart-shift
   (global-smart-shift-mode 1))
 
