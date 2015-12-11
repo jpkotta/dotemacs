@@ -2389,6 +2389,16 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (setq to-insert (concat to-insert "\n")))
     (insert to-insert)))
 
+(with-eval-after-load "smartscan.el"
+  (dolist (f '(smartscan-symbol-go-forward
+               smartscan-symbol-go-backward
+               smartscan-symbol-replace))
+    (advice-add f
+                :after
+                (lambda (&rest args)
+                  "Recenter"
+                  (recenter-no-redraw)))))
+
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
 
@@ -2432,6 +2442,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (local-set-key (kbd "C-e") 'mwim-end-of-line-or-code)
   (local-set-key (kbd "C-M-a") 'previous-defun)
   (local-set-key (kbd "C-M-e") 'next-defun)
+
+  ;; binds M-n, M-p, and M-'
+  (with-library 'smartscan
+    (smartscan-mode 1))
   )
 
 (add-hook 'prog-mode-hook 'jpk/prog-mode-hook)
@@ -3177,18 +3191,6 @@ match.  It should be idempotent."
 (with-library 'flex-isearch
   (setq flex-isearch-auto 'on-failed)
   (global-flex-isearch-mode 1))
-
-;; binds M-n, M-p, and M-'
-(with-library 'smartscan
-  (dolist (f '(smartscan-symbol-go-forward
-               smartscan-symbol-go-backward
-               smartscan-symbol-replace))
-    (advice-add f
-                :after
-                (lambda (&rest args)
-                  "Recenter"
-                  (recenter-no-redraw))))
-  (global-smartscan-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
