@@ -3677,8 +3677,8 @@ of text."
 
 (advice-add 'fill-paragraph
             :after
-            "Scroll to the left."
             (lambda (&rest args)
+              "Scroll to the left."
               (scroll-right (window-hscroll))))
 
 (defun align-regexp-repeated (start stop regexp)
