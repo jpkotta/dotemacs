@@ -210,6 +210,7 @@
                             (tool-bar-lines . 0)
                             (width . 81)))
 
+(setq custom-safe-themes t)
 (with-library 'calmer-forest-theme
   (load-theme 'calmer-forest 'noconfirm)
   (custom-theme-set-faces
@@ -280,6 +281,10 @@
 
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 (setq-default indicate-empty-lines t)
+
+(setq uniquify-buffer-name-style 'post-forward)
+
+(setq whitespace-style '(newline space-mark tab-mark newline-mark))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
