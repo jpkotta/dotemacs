@@ -3456,6 +3456,9 @@ point."
 (global-set-key (kbd "C-S-<iso-lefttab>") 'bounce-string-or-list)
 (global-set-key (kbd "C-%") 'bounce-string-or-list)
 
+(with-library 'transpose-params 
+  (global-set-key (kbd "C-M-S-t") 'transpose-params))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; expand-region
 
