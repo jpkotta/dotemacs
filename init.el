@@ -94,6 +94,7 @@
         diff-hl
         diminish
         dired+
+        dired-ranger
         easy-repeat
         edit-list
         evil-numbers
@@ -1925,7 +1926,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                               err)))))))))
       errors))
 
-  (require 'wuxch-dired-copy-paste nil 'noerror)
+  (with-library 'dired-ranger
+    (define-key dired-mode-map (kbd "C-c C-c") 'dired-ranger-copy)
+    (define-key dired-mode-map (kbd "C-c C-x") 'dired-ranger-move)
+    (define-key dired-mode-map (kbd "C-c C-v") 'dired-ranger-paste))
   )
 
 (with-eval-after-load 'view-mode
