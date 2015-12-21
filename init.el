@@ -77,7 +77,7 @@
 
 (setq jpk-packages
       '(
-        ac-dabbrev
+        ac-c-headers
         ac-math
         ac-octave
         adaptive-wrap
@@ -232,7 +232,6 @@
    '(ac-completion-face ((t (:foreground "green3"))))
    '(ac-selection-face ((t (:background "gray9" :foreground "magenta"))))
    '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
-   '(ac-dabbrev-selection-face ((t (:inherit ac-selection-face))))
    '(ac-gtags-selection-face ((t (:inherit ac-selection-face))))
    '(ac-gtags-candidate-face ((t (:inherit ac-candidate-face))))
    '(ac-yasnippet-selection-face ((t (:inherit ac-selection-face))))
@@ -900,9 +899,9 @@ The numbers are formatted according to the FORMAT string."
   
   (add-to-list 'ac-modes 'latex-mode)
 
-  (with-library 'ac-dabbrev
-    (add-to-list 'ac-sources 'ac-source-dabbrev))
-
+  (add-to-list 'ac-sources 'ac-source-filename)
+  (setq-default ac-sources ac-sources)
+  
   ;; keybinds
   (define-key ac-completing-map (kbd "C-n") 'ac-next)
   (define-key ac-completing-map (kbd "C-p") 'ac-previous)
@@ -2469,6 +2468,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (local-set-key (kbd "C-M-a") 'previous-defun)
   (local-set-key (kbd "C-M-e") 'next-defun)
 
+  (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
+    (add-to-list 'ac-sources x))
+  
   ;; binds M-n, M-p, and M-'
   (with-library 'smartscan
     (smartscan-mode 1))
@@ -2571,6 +2573,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                ))
     (add-to-list 'prettify-symbols-alist x))
   (electric-indent-local-mode 1)
+  (with-library 'ac-c-headers
+    (add-to-list 'ac-sources 'ac-source-c-headers)
+    (add-to-list 'ac-sources 'ac-source-c-header-symbols 'append))
   ;;(cpp-highlight-if-0/1)
   ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
   )
@@ -2865,16 +2870,20 @@ If region is inactive, use the entire current line."
   (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
   )
 
+(with-library 'auto-complete
+  (add-to-list 'ac-modes 'inferior-emacs-lisp-mode))
+
 (defun jpk/ielm-mode-hook ()
   (with-library 'auto-complete
-    (setq ac-sources '(ac-source-functions
-                       ac-source-variables
-                       ac-source-features
-                       ac-source-symbols
-                       ac-source-words-in-same-mode-buffers))
-    (add-to-list 'ac-modes 'inferior-emacs-lisp-mode)
-    (auto-complete-mode 1)))
+    (dolist (x '(ac-source-functions
+                 ac-source-variables
+                 ac-source-features
+                 ac-source-symbols
+                 ac-source-words-in-same-mode-buffers))
+      (add-to-list 'ac-sources x))))
 (add-hook 'ielm-mode-hook 'jpk/ielm-mode-hook)
+
+(add-hook 'ielm-mode-hook 'jpk/lisp-modes-hook)
 
 (defalias 'emacs-repl 'ielm)
 
@@ -2968,9 +2977,10 @@ If region is inactive, use the entire current line."
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (setq indent-line-function 'LaTeX-indent-line)
   (with-library 'ac-math
-    (add-to-list 'ac-sources '(ac-source-math-unicode
-                               ac-source-math-latex
-                               ac-source-latex-commands)))
+    (dolist (x '(ac-source-math-unicode
+                 ac-source-math-latex
+                 ac-source-latex-commands))
+      (add-to-list 'ac-sources x)))
   (local-set-key [remap next-error] nil)
   (local-set-key [remap previous-error] nil)
   )
