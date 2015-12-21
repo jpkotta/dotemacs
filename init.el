@@ -290,6 +290,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
+(defun jpk/startup ()
+  "Set up emacs the way I like it."
+  (interactive)
+  (let (svfm (and (boundp 'save-visited-files-mode)
+                (not save-visited-files-mode)
+                (y-or-n-p "Restore session? ")))
+    (split-windows-in-quarters)
+    (modify-frame-parameters nil '((fullscreen . maximized)))
+    (when svfm
+      (save-visited-files-mode 1))))
+  
 (when (and (string= system-type "windows-nt")
          (executable-find "bash"))
   (setq shell-file-name (executable-find "bash")))
@@ -451,7 +462,7 @@
       (forward-line 1)
       (end-of-line)
       (insert "tc=pygments:"))))
-    
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
 
@@ -472,7 +483,9 @@
 
 (with-library 'easy-repeat
   (dolist (f '(bm-next bm-previous evil-numbers/inc-at-pt evil-numbers/dec-at-pt
-                       gud-next gud-step))
+                       gud-next gud-step
+                       help-go-back help-go-forward
+                       next-buffer previous-buffer))
     (add-to-list 'easy-repeat-command-list f))
   (easy-repeat-mode 1))
 
@@ -665,6 +678,7 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Diminish
 ;; Hide some minor mode indicators in the modeline.
+
 (with-library 'diminish
   (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
   (with-eval-after-load "auto-complete" (diminish 'auto-complete-mode))
@@ -678,6 +692,7 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
   (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
   )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help
 
@@ -1149,6 +1164,8 @@ it's probably better to explicitly request a merge."
 
 (setq recentf-save-file (concat emacs-persistence-directory "recentf")
       recentf-max-saved-items 256)
+(with-eval-after-load "recentf"
+  (add-to-list 'recentf-exclude 'tramp-file-name-regexp))
 (recentf-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1263,7 +1280,7 @@ This function is suitable to add to `find-file-hook'."
                             "\\*gud-.*\\*\\(\\|<[0-9]+>\\)"
                             "\\`\\*Customiz.*\\*\\'"))
 
-(defun split-windows-in-quarters (arg)
+(defun split-windows-in-quarters (&optional arg)
   "Configure a frame to have 4 similarly sized windows.  Splits
   the selected window with prefix arg."
   (interactive "P")
@@ -1289,12 +1306,6 @@ This function is suitable to add to `find-file-hook'."
 (global-set-key (kbd "M-2") 'other-window)
 ;; default is the unwieldy C-x 4 C-o
 (global-set-key (kbd "<f6>") 'display-buffer)
-
-;; default is C-x <left> and C-x <right>
-(global-set-key (kbd "M-<up>") 'previous-buffer)
-(global-set-key (kbd "M-<down>") 'next-buffer)
-(global-set-key (kbd "C-M-1") 'previous-buffer)
-(global-set-key (kbd "C-M-2") 'next-buffer)
 
 (dolist (func '(buf-move-up
                 buf-move-down
@@ -2645,7 +2656,7 @@ If region is inactive, use the entire current line."
                            "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
                            "--disable=C,R,locally-disabled"
                            ))
-
+    
     (defun pylint2 ()
       (interactive)
       (let ((pylint-command (or (executable-find "pylint2")
@@ -2921,6 +2932,7 @@ If region is inactive, use the entire current line."
               "Doxyfile" ;; Doxygen
               "\\.rules" ;; udev
               "\\.service" "\\.target" "\\.socket" "\\.mount" ;; systemd
+              "\\`inittab\\'"
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
 
