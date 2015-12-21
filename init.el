@@ -986,9 +986,6 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ido - Interactively Do Things
 
-(ido-mode 'both) ;; both buffers and files
-(ido-everywhere 1)
-
 (setq ido-confirm-unique-completion t
       ido-default-buffer-method 'selected-window
       ido-default-file-method 'selected-window
@@ -1001,7 +998,16 @@ The numbers are formatted according to the FORMAT string."
       ido-show-dot-for-dired t
       ido-work-directory-match-only nil
       ido-auto-merge-work-directories-length -1
-      ido-use-virtual-buffers t)
+      ido-use-virtual-buffers t
+      ido-use-filename-at-point 'guess
+      ido-use-url-at-point t
+      ido-ignore-extensions t)
+
+(dolist (e '("-pkg.el" "-autoloads.el"))
+  (add-to-list 'completion-ignored-extensions e))
+
+(ido-mode 'both) ;; both buffers and files
+(ido-everywhere 1)
 
 (defun ido-initiate-auto-merge-this-buffer ()
   "Calls `ido-initiate-auto-merge' on the current buffer.
