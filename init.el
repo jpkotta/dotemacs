@@ -292,13 +292,13 @@
 (defun jpk/startup ()
   "Set up emacs the way I like it."
   (interactive)
-  (let (svfm (and (boundp 'save-visited-files-mode)
+  (let ((svfm (and (boundp 'save-visited-files-mode)
                 (not save-visited-files-mode)
                 (y-or-n-p "Restore session? ")))
     (split-windows-in-quarters)
     (modify-frame-parameters nil '((fullscreen . maximized)))
     (when svfm
-      (save-visited-files-mode 1))))
+      (save-visited-files-mode 1)))))
   
 (when (and (string= system-type "windows-nt")
          (executable-find "bash"))
