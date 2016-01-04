@@ -287,6 +287,12 @@
 (setq whitespace-style '(newline space-mark tab-mark newline-mark))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Ergomovement
+
+(with-library 'ergo-movement-mode
+  (ergo-movement-mode 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
 (defun jpk/startup ()
@@ -3517,11 +3523,6 @@ point."
 ;;; miscellaneous keybindings
 ;; the best way to find the symbol for a key is to run C-h k <key>
 
-;; use M-{ijkl} and C-M-{ijkl} like arrows
-;; integrates with CUA mode so shifted keys extend the region
-(with-library 'ergo-movement-mode
-  (ergo-movement-mode 1))
-
 ;; normally bound to C-<mouse-3>
 (global-set-key (kbd "<down-mouse-3>") 'mouse-popup-menubar-stuff)
 
@@ -3578,11 +3579,6 @@ point."
 (global-set-key (kbd "M-SPC") 'cycle-spacing)
 (global-set-key (kbd "M-S-SPC") 'delete-blank-lines)
 (global-set-key (kbd "C-d") 'delete-forward-char)
-
-(with-library 'ergo-movement-mode
-  (global-set-key (kbd "C-S-d") (make-run-keybind-func "DEL" 'move))
-  (global-set-key (kbd "M-D") (make-run-keybind-func "C-<backspace>" 'move))
-  (global-set-key (kbd "M-d") (make-run-keybind-func "C-<delete>" 'move)))
 
 (defalias 'delete-vertical-space 'delete-blank-lines)
 

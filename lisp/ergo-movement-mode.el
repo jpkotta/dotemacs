@@ -48,12 +48,13 @@
   non-nil, then the new command will extend the region when shift
   is held down."
   (let ((name (concat "call-" key-spec "-keybind")))
-    (fset (intern name)
-          `(lambda ()
-             ,(concat "Call the command bound to " key-spec) ;; doc string
-             (interactive)
-             (call-interactively
-              (key-binding (read-kbd-macro ,key-spec)))))
+    (unless (commandp (intern name))
+      (fset (intern name)
+            `(lambda ()
+               ,(concat "Call the command bound to " key-spec) ;; doc string
+               (interactive)
+               (call-interactively
+                (key-binding (read-kbd-macro ,key-spec))))))
     (when cua-movement
       (put (intern name) 'CUA 'move))
     (intern name)))
@@ -73,7 +74,12 @@
                  ("M-u"   . "DEL")
                  ("M-o"   . "<deletechar>")
                  ("C-M-u" . "C-<backspace>")
-                 ("C-M-o" . "C-<delete>")))
+                 ("C-M-o" . "C-<delete>")
+
+                 ("C-S-d" . "DEL")
+                 ("M-D"   . "C-<backspace>")
+                 ("M-d"   . "C-<delete>")
+                 ))
       (define-key map 
         (read-kbd-macro (car k))
         (make-run-keybind-func (cdr k) t)))
