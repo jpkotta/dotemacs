@@ -23,23 +23,13 @@
 ;; ibuffer
 ;; graphlog stuff in vc-hg
 
-;; find-file enhancements
-;;
-;; remap all the fancy stuff to C-x C-F or C-c f or maybe even C-x C-f prefixes
-;; find in project/repo
-;; find related file (.c/.h)
-;; find as root
-;; ffap
-;; find recent
-;; projectile
-;; revert
-
 ;; a better way to do global key bindings
 ;; http://shallowsky.com/blog/linux/editors/emacs-global-key-bindings.html
 
 ;; redo the compilation stuff
 
 ;; ;; override function but retain original definition!
+;; ;; doesn't seem to work in :around advice
 ;; (defun foo ()
 ;;   (message "old foo"))
 ;; (cl-letf (((symbol-function 'old-foo) (symbol-function 'foo))
@@ -2687,7 +2677,6 @@ If region is inactive, use the entire current line."
   (define-key python-mode-map (kbd "<backtab>") 'delete-indentation)
   (define-key python-mode-map (kbd "S-TAB") 'delete-indentation)
   (define-key python-mode-map (kbd "C-c C-3") 'python-2to3)
-
   )
 
 (when (executable-find "ipython2")
@@ -3230,8 +3219,7 @@ match.  It should be idempotent."
 
 (define-key isearch-mode-map (kbd "<C-backspace>") 'isearch-unfail)
 
-(with-library 'ergo-movement-mode
-  (define-key isearch-mode-map (kbd "M-k") nil))
+(define-key isearch-mode-map (kbd "M-k") nil)
 
 (with-library 'flex-isearch
   (setq flex-isearch-auto 'on-failed)
