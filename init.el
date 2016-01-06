@@ -2860,12 +2860,14 @@ If region is inactive, use the entire current line."
     (highlight-quoted-mode 1))
   (with-library 'highlight-operators
     (highlight-operators-mode -1))
-  (dolist (x '(("/=" . ?≠)
-               ("nil" . ?∅)
-               ("and" . ?⋀)
-               ("or" . ?⋁)
-               ("not" . ?¬)
-               ))
+  (dolist (x (append
+              (default-value 'prettify-symbols-alist)
+              '(("/=" . ?≠)
+                ("nil" . ?∅)
+                ("and" . ?⋀)
+                ("or" . ?⋁)
+                ("not" . ?¬)
+                )))
     (add-to-list 'prettify-symbols-alist x))
   )
 
