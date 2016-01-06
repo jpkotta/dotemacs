@@ -778,6 +778,12 @@ This can be used as a drop-in replacement for `string-to-number'."
 (global-set-key (kbd "C-<return>") 'cua-rectangle-mark-mode)
 
 (with-eval-after-load "cua-rect"
+
+  (defvar cua--sequence-rectangle-first-hist ()
+    "History list for the initial value in `cua-sequence-rectangle'.")
+  (defvar cua--sequence-rectangle-incr-hist ()
+    "History list for the increment in `cua-sequence-rectangle'.")
+
   (defun cua-sequence-rectangle (first incr format)
     "Resequence each line of CUA rectangle starting from FIRST.
 The numbers are formatted according to the FORMAT string."
@@ -785,9 +791,19 @@ The numbers are formatted according to the FORMAT string."
      (list (if current-prefix-arg
                (prefix-numeric-value current-prefix-arg)
              (str2num
-              (read-string "Start value: (0) " nil nil "0")))
+              (read-string "Start value: "
+                           (if cua--sequence-rectangle-first-hist
+                               (car cua--sequence-rectangle-first-hist)
+                             "0")
+                           'cua--sequence-rectangle-first-hist
+                           "0")))
            (str2num
-            (read-string "Increment: (1) " nil nil "1"))
+            (read-string "Increment: "
+                         (if cua--sequence-rectangle-incr-hist
+                             (car cua--sequence-rectangle-incr-hist)
+                           "1")
+                         'cua--sequence-rectangle-incr-hist
+                         "1"))
            (read-string (concat "Format: (" cua--rectangle-seq-format ") "))))
     (if (= (length format) 0)
         (setq format cua--rectangle-seq-format)
