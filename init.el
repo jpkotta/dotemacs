@@ -39,8 +39,6 @@
 
 ;; redo the compilation stuff
 
-;; sphinx-doc should use :type:
-
 ;; ;; override function but retain original definition!
 ;; (defun foo ()
 ;;   (message "old foo"))
@@ -132,6 +130,7 @@
         ;;python-pep8
         rainbow-mode
         save-visited-files
+        sphinx-doc
         sqlup-mode
         ssh-config-mode
         smart-shift
@@ -694,6 +693,7 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
   (with-eval-after-load "ggtags" (diminish 'ggtags-mode))
   (with-eval-after-load "projectile" (diminish 'projectile-mode))
+  (with-eval-after-load "sphinx-doc" (diminish 'sphinx-doc-mode))
   (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
   (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
   )
@@ -2739,6 +2739,8 @@ If region is inactive, use the entire current line."
                ("sum" . ?∑)
                ))
     (add-to-list 'prettify-symbols-alist x))
+  (with-library 'sphinx-doc
+    (sphinx-doc-mode 1))
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 
