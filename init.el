@@ -116,7 +116,9 @@
         ;;php-mode
         pkgbuild-mode
         projectile
+        pydoc-info
         pylint
+        python-info
         ;;python-pep8
         rainbow-mode
         save-visited-files
