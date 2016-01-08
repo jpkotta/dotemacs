@@ -122,13 +122,13 @@
         ;;python-pep8
         rainbow-mode
         save-visited-files
-        sphinx-doc
-        sqlup-mode
-        ssh-config-mode
         smart-shift
         smart-tabs-mode
         smartscan
         smex
+        sphinx-doc
+        sqlup-mode
+        ssh-config-mode
         syntax-subword
         undo-tree
         wgrep
@@ -1117,13 +1117,13 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Autosave
 
-(setq auto-save-dir (concat emacs-persistence-directory "auto-save/")
-      auto-save-list-dir (concat emacs-persistence-directory "auto-save-list/")
-      auto-save-list-file-prefix auto-save-list-dir
-      auto-save-file-name-transforms `((".*" ,auto-save-dir t)))
-(dolist (d (list auto-save-dir auto-save-list-dir))
-  (if (not (file-exists-p d))
+(let ((dir (concat emacs-persistence-directory "auto-save/"))
+      (list-dir (concat emacs-persistence-directory "auto-save-list/")))
+  (dolist (d (list dir list-dir))
+    (unless (file-exists-p d)
       (make-directory d t)))
+  (setq auto-save-list-file-prefix list-dir
+        auto-save-file-name-transforms `((".*" ,dir t))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; save-visited-files
@@ -1197,18 +1197,15 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
 
-(setq tramp-persistency-file-name (concat emacs-persistence-directory
-                                          "tramp")
-      tramp-backup-directory (concat emacs-persistence-directory
-                                     "tramp-backup/")
-      tramp-backup-directory-alist `(("." . ,tramp-backup-directory))
-      tramp-auto-save-directory (concat emacs-persistence-directory
-                                        "tramp-auto-save/")
-      )
-
-(dolist (d (list tramp-auto-save-directory tramp-backup-directory))
-  (if (not (file-exists-p d))
-    (make-directory d t)))
+(let ((backup-dir (concat emacs-persistence-directory "tramp-backup/")))
+  (setq tramp-persistency-file-name (concat emacs-persistence-directory
+                                            "tramp")
+        tramp-backup-directory-alist `(("." . ,backup-dir))
+        tramp-auto-save-directory (concat emacs-persistence-directory
+                                          "tramp-auto-save/"))
+  (dolist (d (list tramp-auto-save-directory backup-dir))
+    (unless (file-exists-p d)
+      (make-directory d t))))
 
 (defface find-file-root-header-face
   '((t (:foreground "white" :background "red3")))
