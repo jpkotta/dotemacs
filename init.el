@@ -2857,8 +2857,6 @@ If region is inactive, use the entire current line."
   (local-set-key (kbd "C-M-S-x") 'eval-region)
   (with-library 'highlight-quoted
     (highlight-quoted-mode 1))
-  (with-library 'highlight-operators
-    (highlight-operators-mode -1))
   (dolist (x (append
               (default-value 'prettify-symbols-alist)
               '(("/=" . ?≠)
