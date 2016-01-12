@@ -137,7 +137,7 @@
         ))
 
 (setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version))
-  
+
 (package-initialize)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -507,14 +507,12 @@
   (with-library 'flyspell
     (flyspell-mode 1))
   )
+(add-hook 'org-mode-hook 'jpk/org-mode-hook)
 
 (setq org-ellipsis "…"
       org-src-fontify-natively t
       org-hide-leading-stars t)
 (put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
-
-(with-eval-after-load "org"
-  (add-to-list 'org-mode-hook 'jpk/org-mode-hook))
 
 ;; remember mode lets you quickly record notes without distracting you
 
@@ -589,38 +587,8 @@ With prefix arg, insert a large ASCII art version.
             "  '-./____-'  \n")
     ))
 
-(defun insert-euro-sign ()
-  (interactive "*")
-  (insert "€"))
-(global-set-key (kbd "C-x 8 E") 'insert-euro-sign)
-(global-set-key (kbd "C-x 8 e") 'insert-euro-sign)
-
-;; Doesn't modify the buffer.  Similar to M-x butterfly.
-;; From http://thread.gmane.org/gmane.emacs.devel/147660/focus=147675
-(defun cat-command ()
-  "A command for cats."
-  (interactive)
-  (require 'animate)
-  (let ((mouse "
-           ___00
-        ~~/____'>
-          \"  \"")
-        (h-pos (floor (/ (window-height) 2)))
-        (contents (buffer-string))
-        (mouse-buffer (generate-new-buffer "*mouse*")))
-    (save-excursion
-      (switch-to-buffer mouse-buffer)
-      (insert contents)
-      (setq truncate-lines t)
-      (animate-string mouse h-pos 0)
-      (dotimes (_ (window-width))
-        (sit-for 0.01)
-        (dotimes (n 3)
-          (goto-char (point-min))
-          (forward-line (+ h-pos n 1))
-          (move-to-column 0)
-          (insert " "))))
-    (kill-buffer mouse-buffer)))
+(global-set-key (kbd "C-x 8 E") "€")
+(global-set-key (kbd "C-x 8 * E") "€")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Date and Time
@@ -1317,40 +1285,6 @@ This function is suitable to add to `find-file-hook'."
 ;; default is the unwieldy C-x 4 C-o
 (global-set-key (kbd "<f6>") 'display-buffer)
 
-(dolist (func '(buf-move-up
-                buf-move-down
-                buf-move-left
-                buf-move-right))
-  (autoload func "buffer-move.el"
-    "Move buffers to different windows." t))
-
-;; (defvar buffer-move-mode-map
-;;   (let ((map (make-keymap)))
-;;     (dolist (e '(("i" . buf-move-up)
-;;                  ("j" . buf-move-left)
-;;                  ("k" . buf-move-down)
-;;                  ("l" . buf-move-right)
-;;                  ("q" . turn-off-buffer-move-mode)))
-;;       (define-key map
-;;         (read-kbd-macro (car e))
-;;         (cdr e)))
-;;     map)
-;;   "Keymap for buffer-move-mode.")
-
-;; (define-minor-mode buffer-move-mode
-;;   ""
-;;   :global t
-;;   :lighter ""
-;;   :keymap buffer-move-mode-map)
-
-;; (defun turn-off-buffer-move-mode ()
-;;   (interactive)
-;;   (buffer-move-mode -1))
-
-;; (defun turn-on-buffer-move-mode ()
-;;   (interactive)
-;;   (buffer-move-mode 1))
-
 ;; Save point position per-window instead of per-buffer.
 (with-library 'winpoint
   (winpoint-mode 1))
@@ -1807,11 +1741,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          (buf (find-file-noselect (locate-file library dirs))))
     (condition-case nil (switch-to-buffer buf) (error (pop-to-buffer buf)))))
 
-(defun find-user-init-file ()
-  "Finds ~/.emacs, or equivalent"
-  (interactive)
-  (find-file user-init-file))
-
 (defun create-directory-if-necessary ()
   "Create the directory tree above `buffer-file-name', if it
   doesn't completely exist yet.  For use in `find-file-hook'."
@@ -1830,7 +1759,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (interactive "p")
   (if (buffer-file-name)
       (save-buffer args)
-    (message "Buffer is not associated with a file.  Use `write-file' instead.")))
+    (error "Buffer is not associated with a file.  Use `write-file' instead.")))
 (global-set-key [remap save-buffer] 'jpk/save-buffer-maybe)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1863,26 +1792,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (setq dired-deletion-confirmer 'y-or-n-p
         dired-dwim-target t)
-
-  (defun dired-do-move (&optional arg)
-    "Similar to `dired-do-rename', but move the file or files to a
-  new directory, whether there's one or many.  Also, when doing
-  completion on the destination, treat it as a directory."
-    (interactive "P")
-    (cl-flet ((dired-mark-read-file-name
-               (prompt dir op-symbol arg files &optional default)
-               (dired-mark-pop-up
-                nil op-symbol files
-                (function read-directory-name)
-                (format prompt (dired-mark-prompt arg files)) dir default)))
-      (if (boundp 'dired-do-move-files)
-          (dired-do-move-files 'move (function dired-rename-file)
-                               "Move" arg dired-keep-marker-rename "Move")
-        ;; seems like this got renamed in emacs 24.
-        (dired-do-create-files 'move (function dired-rename-file)
-                               "Move" arg dired-keep-marker-rename "Move"))))
-
-  (define-key dired-mode-map (kbd "V") 'dired-do-move)
 
   (setq wdired-allow-to-change-permissions t)
   
@@ -2287,13 +2196,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; figlet
-(dolist
-    (func '(figlet
-            figlet-comment
-            figlet-figletify-region
-            figlet-figletify-region-comment))
-  (autoload func "figlet.el"
-    "Figlet interface for Emacs." t))
+
 (with-eval-after-load "figlet.el"
   (add-to-list 'figlet-options "-k") ;; kerning
   )
@@ -3340,75 +3243,14 @@ The user is prompted at each instance like query-replace."
       ack-executable (executable-find "ack-grep")
       ack-prompt-for-directory t)
 
-(autoload 'ack "full-ack.el"
-  "Emacs frontend for ack" t)
-(autoload 'ack-same "full-ack.el"
-  "Emacs frontend for ack" t)
-
-(defun anchor-regexp (re)
-  "Simply wrap RE with `^' and `$', like so: `foo' -> `^foo$'"
-  (when (stringp re) (concat "^" re "$")))
-
 (with-eval-after-load "full-ack.el"
-
-  (defsubst ack-read (regexp)
-    (read-from-minibuffer
-     (if regexp "ack pattern: " "ack literal search: ")
-     (if (featurep 'thingatpt)
-         (let ((str (thing-at-point 'symbol)))
-           (set-text-properties 0 (length str) nil str)
-           str))
-     nil nil
-     (if regexp 'ack-regexp-history 'ack-literal-history)))
-
   (dolist (func '(ack-next-match ack-previous-match))
     (advice-add func
                 :after
                 (lambda (&rest args)
                   "recenter"
                   (recenter-no-redraw))))
-
-  (defun ack-next-file (pos arg)
-    (interactive "d\np")
-    (setq arg (* 2 arg))
-    (unless (get-text-property pos 'ack-file)
-      (setq arg (1- arg)))
-    (assert (> arg 0))
-    (dotimes (i arg)
-      (setq pos (next-single-property-change pos 'ack-file))
-      (unless pos
-        (error "Moved past last file")))
-    (goto-char pos)
-    (recenter-no-redraw)
-    pos)
-
-  (defun ack-previous-file (pos arg)
-    (interactive "d\np")
-    (assert (> arg 0))
-    (dotimes (i (* 2 arg))
-      (setq pos (previous-single-property-change pos 'ack-file))
-      (unless pos
-        (error "Moved back before first file")))
-    (goto-char pos)
-    (recenter-no-redraw)
-    pos)
-
-  (add-to-list 'debug-ignored-errors
-               (anchor-regexp (regexp-opt '("Moved back before first file"
-                                            "Moved past last file"))))
-
-  (define-key ack-mode-map (kbd "TAB") 'ack-next-match)
-  (define-key ack-mode-map (kbd "<backtab>") 'ack-previous-match)
-  (define-key ack-mode-map (kbd "S-TAB") 'ack-previous-match)
-  (define-key ack-mode-map (kbd "N") 'ack-next-file)
-  (define-key ack-mode-map (kbd "P") 'ack-previous-file)
-  (define-key ack-mode-map (kbd "q") 'quit-window)
   )
-
-;; for grep-mode
-(add-to-list 'debug-ignored-errors
-             (anchor-regexp (regexp-opt '("Moved past last grep hit"
-                                          "Moved back before first grep hit"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; locate
