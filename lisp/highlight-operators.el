@@ -51,11 +51,6 @@ This face is only used if `highlight-operators-mode' is turned on."
   :group 'highlight-operators)
 ;;(make-variable-buffer-local 'highlight-operators-regexp)
 
-(defcustom highlight-operators-disabled-modes
-  '(emacs-lisp-mode lisp-mode lisp-interaction-mode inferior-emacs-lisp-mode)
-  "List of major modes to ignore with `global-highlight-operators-mode'"
-  :group 'highlight-operators)
-
 ;;;###autoload
 (define-minor-mode highlight-operators-mode
   "Extra highlighting for operators in programming modes."
@@ -71,10 +66,7 @@ This face is only used if `highlight-operators-mode' is turned on."
 
 ;;;###autoload
 (define-globalized-minor-mode global-highlight-operators-mode
-  highlight-operators-mode
-  (lambda ()
-    (unless (memq major-mode highlight-operators-disabled-modes)
-      (highlight-operators-mode 1)))
+  highlight-operators-mode (lambda () (highlight-operators-mode 1))
   :group 'highlight-operators)
 
 (provide 'highlight-operators)
