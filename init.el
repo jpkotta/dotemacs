@@ -3146,6 +3146,21 @@ match.  It should be idempotent."
   (setq flex-isearch-auto 'on-failed)
   (global-flex-isearch-mode 1))
 
+(defvar isearch-auto-use-region-max-length 24
+  "Upper threshold to automatically use the region in isearch.")
+
+(defun isearch-auto-use-region-advice (&rest args)
+  "Automatically use region as search string unless it's too big or empty."
+  (when (region-active-p)
+    (let* ((b (region-beginning))
+           (e (region-end))
+           (l (- e b)))
+      (when (and (< 0 l) (<= l isearch-auto-use-region-max-length))
+        (add-to-history 'search-ring (buffer-substring-no-properties b e))
+        (deactivate-mark)))))
+(advice-add 'isearch-forward :before #'isearch-auto-use-region-advice)
+(advice-add 'isearch-backward :before #'isearch-auto-use-region-advice)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
 
