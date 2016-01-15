@@ -2589,6 +2589,7 @@ If region is inactive, use the entire current line."
         (pylint)))
 
     (define-key python-mode-map (kbd "C-c C-v") 'pylint2)
+    (define-key python-mode-map (kbd "C-c C-i") 'pylint-insert-ignore-comment)
     )
 
   (define-key python-mode-map (kbd "S-<return>") 'python-send-region-or-line)
