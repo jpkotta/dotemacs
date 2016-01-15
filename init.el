@@ -138,6 +138,7 @@
 
 (setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version))
 
+(setq package-enable-at-startup nil) ;; do not reinitialize after init
 (package-initialize)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -3142,6 +3143,8 @@ match.  It should be idempotent."
 
 (define-key isearch-mode-map (kbd "M-k") nil)
 
+;; TODO minimal flex isearch (setq search-whitespace-regexp ".*?") is
+;; broken by flex-isearch
 (with-library 'flex-isearch
   (setq flex-isearch-auto 'on-failed)
   (global-flex-isearch-mode 1))
