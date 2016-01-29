@@ -2203,21 +2203,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Hi Lock
-
-;; Hi Lock provides on-demand keyword highlighting.  It uses
-;; font-lock-mode to do the work.  Unfortunately, this is overridden
-;; by hl-line mode, so it looks bad when the point is on the line that
-;; has hi locked words.  This forces it to use overlays too, which is
-;; a performance hit, but it works with hl-line.
-(advice-add 'hi-lock-set-pattern
-            :around
-            (lambda (orig &rest args)
-              "Force use of overlays"
-              (let ((font-lock-fontified nil))
-                (apply orig args))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; prettify-symbols
 
 ;; prettify-symbols-mode is enabled in major mode hooks.
