@@ -3182,11 +3182,15 @@ match.  It should be idempotent."
   after the matching line) for `rgrep-context'.")
 
 (defun rgrep-context (arg)
+  "Like `rgrep', but adds a '-C' parameter to get context lines around matches.
+
+Default number of context lines is `grep-context-lines', and can
+be specified with a numeric prefix."
   (interactive "p")
   (setq arg (or arg grep-context-lines))
   (let ((grep-find-template
-         (concat "find <D> <X> -type f <F> -print0 | xargs -0 -e grep <C> -nH -C "
-                 (number-to-string arg) " -e <R>"))
+         (format "find <D> <X> -type f <F> -print0 | xargs -0 -e grep <C> -nH -C %d -e <R>"
+                 arg))
         grep-host-defaults-alist
         current-prefix-arg)
     (call-interactively 'rgrep)))
