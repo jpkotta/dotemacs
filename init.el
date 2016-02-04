@@ -109,6 +109,7 @@
         modeline-posn
         morlock
         mouse+
+        multi-compile
         multi-term
         mwim
         openwith
@@ -2259,7 +2260,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (defun doxygen-compile ()
  (interactive)
  (compile "doxygen 2>&1 1>/dev/null | sed s%`pwd`/%%"))
-(global-set-key (kbd "C-c B") 'doxygen-compile)
+
+(with-eval-after-load "multi-compile"
+  (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-ansi -Wall -g3 -std=c99"))
+               ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))))
+    (add-to-list 'multi-compile-template e))
+
+  (setq multi-compile-alist
+        '((c-mode . (("c-simple" . "gcc -o %file-sans %cflags %file-name")
+                     ("c-simple32" . "gcc -o %file-sans %cflags -m32 %file-name")))
+          (c++-mode . (("c++-simple" . "g++ -o %file-sans %cxxflags %file-name")))))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; fixme-mode
@@ -2434,25 +2445,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'ffap
     (add-to-list 'ffap-c-path "/usr/lib/avr/include/"))
   )
-
-(defun setup-simple-compile ()
-  "Sets compile-command to something like `gcc -o foo foo.c' if
-  there is no Makefile in the directory"
-  (interactive)
-  (when (and buffer-file-name (file-name-nondirectory buffer-file-name))
-    (unless (file-exists-p "Makefile")
-      (set (make-local-variable 'compile-command)
-           (let* ((file (file-name-nondirectory buffer-file-name))
-                  (compiler (if (string-equal "c" (file-name-extension file))
-                                "gcc" "g++")))
-             (format "%s -o %s %s %s %s" ;; "%s -c -o %s.o %s %s %s"
-                     (or (getenv "CC") compiler)
-                     (file-name-sans-extension file)
-                     (or (getenv "CPPFLAGS") "-DDEBUG=9")
-                     (or (getenv "CFLAGS") (if (string= compiler "gcc")
-                                              "-ansi -Wall -g3 -std=c99"
-                                            "-ansi -Wall -g3"))
-                     file))))))
 
 (defun jpk/c-mode-hook ()
   (smart-tabs-mode 1)
