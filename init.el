@@ -298,18 +298,10 @@
     (modify-frame-parameters nil '((fullscreen . maximized)))
     (when svfm
       (save-visited-files-mode 1))))
-  
+
 (when (and (string= system-type "windows-nt")
          (executable-find "bash"))
   (setq shell-file-name (executable-find "bash")))
-
-(defun setup-RAIDE-file ()
-  "View RAIDE files from Eagle."
-  (interactive)
-  (recode-region (point-min) (point-max)
-                 'cp437-dos 'iso-latin-1-dos)
-  (buffer-face-set 'fixed-pitch)
-  (view-mode))
 
 (defun advice-remove-all (symbol)
   "Removes all advice from function symbol SYMBOL."
@@ -1105,42 +1097,6 @@ it's probably better to explicitly request a merge."
       save-visited-files-ignore-tramp-files t
       save-visited-files-ignore-directories nil
       save-visited-files-auto-restore t)
-
-(with-eval-after-load "save-visited-files"
-  (defun save-visited-files-restore (&optional location)
-    "Restore all files that were saved by save-visited-files-save."
-    (interactive (list (read-file-name
-                        "Restore visited files from: "
-                        (file-name-directory save-visited-files-location)
-                        (file-name-nondirectory save-visited-files-location))))
-    (let ((files-with-local-vars ())
-          (filename ""))
-      (with-temp-buffer
-        (insert-file-contents (or location save-visited-files-location))
-        (ignore-errors
-          (goto-char (point-min))
-          (dotimes-with-progress-reporter (line (count-lines (point-min) (point-max)))
-              "Restoring previously visited files"
-            (setq filename (buffer-substring-no-properties (line-beginning-position)
-                                                           (line-end-position)))
-            (when (file-exists-p filename)
-              ;; hack-local-variables-confirm is called when there are
-              ;; unsafe local variables.  This is annoying.  Load all
-              ;; such files without local vars (make
-              ;; hack-local-variables-confirm return nil) and then
-              ;; find them again at the end to pick up the vars.
-              (cl-letf (((symbol-function 'hack-local-variables-confirm)
-                         (lambda (&rest args)
-                           (add-to-list 'files-with-local-vars filename)
-                           nil)))
-                (find-file-noselect filename 'nowarn nil nil)))
-            (forward-line))))
-      (dolist (f files-with-local-vars)
-        (find-file-noselect f 'nowarn nil nil)))
-    (setq save-visited-files-already-restored t))
-
-  (put 'compile-command 'safe-local-variable (lambda () nil))
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; recentf (recently visited files)
@@ -2570,7 +2526,6 @@ If region is inactive, use the entire current line."
     (define-key python-mode-map (kbd "C-c C-i") 'pylint-insert-ignore-comment)
     )
 
-  (define-key python-mode-map (kbd "S-<return>") 'python-send-region-or-line)
   (define-key python-mode-map (kbd "<backtab>") 'delete-indentation)
   (define-key python-mode-map (kbd "S-TAB") 'delete-indentation)
   (define-key python-mode-map (kbd "C-c C-3") 'python-2to3)
@@ -2584,15 +2539,6 @@ If region is inactive, use the entire current line."
         python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
         python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
         python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
-
-(defun python-send-region-or-line (beg en)
-  "Like `python-send-region', but automatically send the current
-  line if region is not active."
-  (interactive "r")
-  (if (use-region-p)
-      (python-send-region beg en)
-    (python-send-region (line-beginning-position)
-                        (line-end-position))))
 
 (defun python-2to3 ()
   "Run 2to3 on the current buffer and put the diff in a new buffer."
