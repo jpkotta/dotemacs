@@ -318,14 +318,6 @@
 
 (global-set-key (kbd "C-x C-z") 'suspend-frame-if-not-gui)
 
-(defun pl-tr (STRING FROM TO)
-  "perlish transpose: similar to STRING =~ tr/FROM/TO/"
-  (replace-regexp-in-string
-   (concat "\[" FROM "\]")
-   (lambda (s)
-     (string (elt TO (cl-search s FROM))))
-   STRING))
-
 ;; Don't create the .#filename files and don't ask about stealing.
 (setq create-lockfiles nil)
 
@@ -334,36 +326,6 @@
   "Make the current window always display this buffer."
   nil " sticky" nil
   (set-window-dedicated-p (selected-window) sticky-buffer-mode))
-
-;; from http://svn.red-bean.com/repos/kfogel/trunk/.emacs
-(defmacro do-on-lines (start end &rest body)
-  "Run BODY at each line start of every line from START to END."
-  (declare (indent defun))
-  `(save-excursion
-     (save-restriction
-       (save-match-data
-         (goto-char ,start)
-         (while (< (point) ,end)
-           (beginning-of-line)
-           ,@body
-           (forward-line 1))))))
-
-;; not used anywhere but interesting
-(defun permutations (bag)
-  "Return a list of all the permutations of the input."
-  ;; If the input is nil, there is only one permutation:
-  ;; nil itself
-  (if (null bag)
-      '(())
-    ;; Otherwise, take an element, e, out of the bag.
-    ;; Generate all permutations of the remaining elements,
-    ;; And add e to the front of each of these.
-    ;; Do this for all possible e to generate all permutations.
-    (cl-mapcan (lambda (e)
-          (mapcar (lambda (p) (cons e p))
-              (permutations
-               (cl-remove e bag :count 1))))
-        bag)))
 
 ;; narrowing makes a region effectively the entire buffer
 ;; useful for not mangling the entire buffer
@@ -511,12 +473,8 @@
 ;; remember mode lets you quickly record notes without distracting you
 
 ;; it's probably best if this is an org-mode file
-(setq remember-data-file (concat user-emacs-directory "remember.org"))
-(global-set-key (kbd "C-c r") 'org-remember)
-
-(defun find-remember-data-file ()
-  (interactive)
-  (find-file remember-data-file))
+(setq remember-data-file (concat emacs-persistence-directory "remember.org"))
+(global-set-key (kbd "C-c r") 'remember)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
@@ -914,16 +872,6 @@ The numbers are formatted according to the FORMAT string."
 (with-eval-after-load "flyspell"
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
-
-  ;; ;; hack to keep ispell from constantly restarting.  See
-  ;; ;; http://lists.gnu.org/archive/html/bug-gnu-emacs/2010-05/msg00248.html.
-  ;; (advice-add 'ispell-init-process
-  ;;             :around
-  ;;             (lambda (orig &rest args)
-  ;;               "cd to '/' to prevent problems with vanishing mount points."
-  ;;               (let (default-directory)
-  ;;                 (cd "/")
-  ;;                 (apply orig args))))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
