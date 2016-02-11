@@ -1704,73 +1704,16 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
         dired-dwim-target t)
 
   (setq wdired-allow-to-change-permissions t)
-  
-  (defun wdired-create-parentdirs (file-new)
-    (let ((dir (file-name-directory file-new)))
-      (unless (file-directory-p dir)
-        (message "Creating dir for file %s" file-new)
-        (make-directory dir t))))
 
-  (defun wdired-do-renames (renames)
-    "Perform RENAMES in parallel."
-    (let ((residue ())
-          (progress nil)
-          (errors 0)
-          (overwrite (or (not wdired-confirm-overwrite) 1)))
-      (while (or renames
-                ;; We've done one round through the renames, we have found
-                ;; some residue, but we also made some progress, so maybe
-                ;; some of the residue were resolved: try again.
-                (prog1 (setq renames residue)
-                  (setq progress nil)
-                  (setq residue nil)))
-        (let* ((rename (pop renames))
-               (file-new (cdr rename)))
-          (cond
-           ((rassoc file-new renames)
-            (error "Trying to rename 2 files to the same name"))
-           ((assoc file-new renames)
-            ;; Renaming to a file name that already exists but will itself be
-            ;; renamed as well.  Let's wait until that one gets renamed.
-            (push rename residue))
-           ((and (assoc file-new residue)
-               ;; Make sure the file really exists: if it doesn't it's
-               ;; not really a conflict.  It might be a temp-file generated
-               ;; specifically to break a circular renaming.
-               (file-exists-p file-new))
-            ;; Renaming to a file name that already exists, needed to be renamed,
-            ;; but whose renaming could not be performed right away.
-            (if (or progress renames)
-                ;; There's still a chance the conflict will be resolved.
-                (push rename residue)
-              ;; We have not made any progress and we've reached the end of
-              ;; the renames, so we really have a circular conflict, and we
-              ;; have to forcefully break the cycle.
-              (message "Circular renaming: using temporary file name")
-              (let ((tmp (make-temp-name file-new)))
-                (push (cons (car rename) tmp) renames)
-                (push (cons tmp file-new) residue))))
-           (t
-            (setq progress t)
-            (let ((file-ori (car rename)))
-              (if wdired-use-interactive-rename
-                  (wdired-search-and-rename file-ori file-new)
-                ;; If dired-rename-file autoloads dired-aux while
-                ;; dired-backup-overwrite is locally bound,
-                ;; dired-backup-overwrite won't be initialized.
-                ;; So we must ensure dired-aux is loaded.
-                (require 'dired-aux)
-                (condition-case err
-                    (let ((dired-backup-overwrite nil))
-                      (wdired-create-parentdirs file-new)
-                      (dired-rename-file file-ori file-new
-                                         overwrite))
-                  (error
-                   (setq errors (1+ errors))
-                   (dired-log (concat "Rename `" file-ori "' to `"
-                                      file-new "' failed:\n%s\n")
-                              err)))))))))
-      errors))
+  (advice-add 'dired-rename-file
+              :before
+              (lambda (&rest args)
+                "Create parent dirs"
+                (let* ((new-name (nth 1 args))
+                       (dir (file-name-directory new-name)))
+                  (unless (file-directory-p dir)
+                    (message "Creating dir for file %s" new-name)
+                    (make-directory dir 'parents)))))
 
   (with-library 'dired-ranger
     (define-key dired-mode-map (kbd "C-c C-c") 'dired-ranger-copy)
