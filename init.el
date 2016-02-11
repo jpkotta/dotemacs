@@ -142,13 +142,17 @@
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
 
-(when (not package-archive-contents)
-  (package-refresh-contents))
-
-(dolist (pkg jpk-packages)
-  (when (and (not (package-installed-p pkg))
-           (assoc pkg package-archive-contents))
-    (package-install pkg)))
+(let ((refreshed nil))
+  (when (not package-archive-contents)
+    (package-refresh-contents)
+    (setq refreshed t))
+  (dolist (pkg jpk-packages)
+    (when (and (not (package-installed-p pkg))
+             (assoc pkg package-archive-contents))
+      (unless refreshed
+        (package-refresh-contents)
+        (setq refreshed t))
+      (package-install pkg))))
 
 (defun package-list-unaccounted-packages ()
   "Like `package-list-packages', but shows only the packages that
