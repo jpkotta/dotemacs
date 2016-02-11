@@ -114,13 +114,11 @@
         mwim
         openwith
         paren-face
-        ;;php-mode
         pkgbuild-mode
         projectile
         pydoc-info
         pylint
         python-info
-        ;;python-pep8
         rainbow-mode
         save-visited-files
         smart-shift
@@ -437,7 +435,8 @@
   (dolist (f '(bm-next bm-previous evil-numbers/inc-at-pt evil-numbers/dec-at-pt
                        gud-next gud-step
                        help-go-back help-go-forward
-                       next-buffer previous-buffer))
+                       next-buffer previous-buffer
+                       other-window other-window-prev))
     (add-to-list 'easy-repeat-command-list f))
   (easy-repeat-mode 1))
 
@@ -1067,6 +1066,7 @@ it's probably better to explicitly request a merge."
 
 (require 'midnight)
 (setq clean-buffer-list-delay-general 2)
+(midnight-delay-set 'midnight-delay "4:00am")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
@@ -1096,6 +1096,7 @@ This function is suitable to add to `find-file-hook'."
                       'face 'find-file-root-header-face))))
 
 (defun find-alternative-file-with-sudo ()
+  "Re-find current buffer's file with /sudo:: tramp method."
   (interactive)
   (let ((bname (expand-file-name (or buffer-file-name
                                     default-directory)))
@@ -1181,15 +1182,14 @@ This function is suitable to add to `find-file-hook'."
       (next-buffer))
     (other-window 1)))
 
-;; default bindings are too long, make single keystrokes
 (defun other-window-prev ()
+  "Inverse of `other-window'."
   (interactive)
   (other-window -1))
+
 (global-set-key (kbd "M-1") 'other-window-prev)
 (global-set-key (kbd "C-x O") 'other-window-prev)
 (global-set-key (kbd "M-2") 'other-window)
-;; default is the unwieldy C-x 4 C-o
-(global-set-key (kbd "<f6>") 'display-buffer)
 
 ;; Save point position per-window instead of per-buffer.
 (with-library 'winpoint
@@ -1348,7 +1348,9 @@ This function is suitable to add to `find-file-hook'."
       (replace-match "" nil nil))))
 
 (defun diff-add-or-remove-trailing-CR-in-hunk (add-not-remove)
-  "Add trailing carriage returns in the current hunk."
+  "Add or remove trailing carriage returns in the current hunk.
+
+If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LFs)."
   (save-excursion
     (diff-beginning-of-hunk)
     (when (diff-unified-hunk-p)
@@ -1372,10 +1374,12 @@ This function is suitable to add to `find-file-hook'."
         (remove-CR-eol start (point))))))
 
 (defun diff-add-trailing-CR-in-hunk ()
+  "Add carriage returns to the line endings of the current diff hunk (EOL = CRLF)."
   (interactive)
   (diff-add-or-remove-trailing-CR-in-hunk t))
 
 (defun diff-remove-trailing-CR-in-hunk ()
+  "Remove carriage returns from the line endings of the current diff hunk (EOL = LF)."
   (interactive)
   (diff-add-or-remove-trailing-CR-in-hunk nil))
 
@@ -1579,7 +1583,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (set-buffer-modified-p nil)
       t)))
 
-(defun copy-buffer-file-name-as-kill(choice)
+(defun copy-buffer-file-name-as-kill (choice)
   "Copy the buffer-file-name to the kill-ring"
   (interactive "cCopy Buffer Name (F) Full, (D) Directory, (N) Name")
   (let ((new-kill-string)
@@ -2207,27 +2211,16 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (beginning-of-defun (- arg))
   (recenter-no-redraw))
 
-(defun insert-comment-bar (arg)
+(defun insert-comment-bar (count)
+  "Insert COUNT comment characters.  COUNT defaults to 72."
   (interactive "*p")
-  (let ((num (if (> arg 1) arg 72))
-        (to-insert ""))
-    (cond
-     ((memq major-mode '(c-mode cc-mode c++-mode java-mode php-mode))
-      (setq to-insert (concat "/*"
-                              (make-string (- num 4) ?*)
-                              "*/")))
-     ((memq major-mode '(emacs-lisp-mode lisp-mode lisp-interaction-mode))
-      (setq to-insert (make-string num ?\;)))
-     ((memq major-mode '(latex-mode))
-      (setq to-insert (make-string num ?%)))
-     (t
-      (setq to-insert (make-string num ?#))))
-
-    (beginning-of-line)
-    (if (looking-at "^[[:space:]]*$")
-        (end-of-line)
-      (setq to-insert (concat to-insert "\n")))
-    (insert to-insert)))
+  (when (<= count 1)
+    (setq count 72))
+  (beginning-of-line)
+  (when (looking-at "^[[:space:]]*$")
+    (end-of-line))
+  (insert (make-string count (string-to-char comment-start)))
+  (insert "\n"))
 
 (with-eval-after-load "smartscan.el"
   (dolist (f '(smartscan-symbol-go-forward
@@ -2459,12 +2452,14 @@ If region is inactive, use the entire current line."
                            ))
     
     (defun pylint2 ()
+      "Run `pylint' with `pylint-command' set to \"pylint2\"."
       (interactive)
       (let ((pylint-command (or (executable-find "pylint2")
                                "pylint")))
         (pylint)))
 
     (defun pylint3 ()
+      "Run `pylint' with `pylint-command' set to \"pylint3\"."
       (interactive)
       (let ((pylint-command (or (executable-find "pylint3")
                                "pylint")))
@@ -2524,16 +2519,6 @@ If region is inactive, use the entire current line."
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
 
-(defun python-path ()
-  "Returns a list of strings containing all the directories in Python's path."
-  (split-string (shell-command-to-string
-                 "python -c 'import sys; sys.stdout.write(\"+++\".join(sys.path))'")
-                "+++"))
-
-(defun find-python-library ()
-  (interactive)
-  (find-file-in-path (python-path) '(".py")))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
 
@@ -2551,12 +2536,7 @@ If region is inactive, use the entire current line."
 ;;                 "\\)\\>"))
 ;;   )
 
-(defun octave-send-buffer ()
-  (interactive)
-  (octave-send-region (point-min) (point-max)))
-
 (defun jpk/octave-mode-hook ()
-  (interactive)
   (local-set-key (kbd "C-c C-s") 'octave-send-buffer)
   (local-set-key (kbd "C-c C-l") 'octave-send-line)
   (local-set-key (kbd "C-c C-r") 'octave-send-region)
@@ -2648,6 +2628,7 @@ If region is inactive, use the entire current line."
 
 ;; http://milkbox.net/note/single-file-master-emacs-configuration/
 (defun imenu-elisp-sections ()
+  "Add an imenu expression to find lines like \";;; foobar\"."
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
 
@@ -2709,19 +2690,6 @@ If region is inactive, use the entire current line."
 (with-library 'htmlize
   (with-library 'htmlize-view
     (htmlize-view-add-to-files-menu)))
-;; fix a bug in htmlize from emacs-goodies-el
-(with-eval-after-load "htmlize"
-  (defun htmlize-face-size (face)
-    ;; The size (height) of FACE, taking inheritance into account.
-    ;; Only works in Emacs 21 and later.
-    (let ((size-list
-           (loop
-            for f = face then (face-attribute f :inherit)
-            until (or (not f) (eq f 'unspecified))
-            for h = (face-attribute f :height)
-            collect (if (eq h 'unspecified) nil h))))
-      (reduce 'htmlize-merge-size (cons nil size-list))))
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
@@ -2969,6 +2937,7 @@ server/database name."
 ;;; isearch
 
 (defun recenter-no-redraw (&optional arg)
+  "Like `recenter', but no redrawing."
   (interactive "P")
   (let ((recenter-redisplay nil))
     (recenter arg)))
@@ -2992,12 +2961,6 @@ server/database name."
 
 ;; make backspace behave in a more intuitive way
 (define-key isearch-mode-map (kbd "<backspace>") 'isearch-del-char)
-
-(defun copy-isearch-match ()
-    (interactive)
-    (copy-region-as-kill isearch-other-end (point)))
-
-(define-key isearch-mode-map (kbd "M-w") 'copy-isearch-match)
 
 (defun isearch-unfail ()
   "Like `isearch-abort', but will not quit isearch.  Effectively,
@@ -3226,8 +3189,10 @@ point."
         (goto-char (car bounds)))))))
 
 (defun bounce-string-or-list ()
+  "Toggle point between the beginning or end of a string, or list if not in a string."
   (interactive)
   (if (> (length (thing-at-point 'string)) 0)
+      ;; FIXME apparently strings aren't things anymore
       (bounce-thing-boundary 'string)
     (goto-match-paren)))
 (global-set-key (kbd "C-S-<iso-lefttab>") 'bounce-string-or-list)
@@ -3380,10 +3345,6 @@ point."
       (indent-line-to last-line-indent)))))
 
 (setq-default indent-line-function 'indent-relative-dwim)
-
-(defun set-tab-width (arg)
-  (interactive "nSet tab width: ")
-  (set-variable 'tab-width arg))
 
 ;; new buffers default to using 4 spaces for indent
 (setq-default tab-width 4
