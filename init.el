@@ -2117,13 +2117,25 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
  (interactive)
  (compile "doxygen 2>&1 1>/dev/null | sed s%`pwd`/%%"))
 
+(defun locate-repo-dir (&optional file-or-dir)
+  "Find the root of the version control repository."
+  (let* ((file-or-dir (or file-or-dir (buffer-file-name) default-directory))
+         (file-dir (if (file-directory-p file-or-dir)
+                       file-or-dir
+                     (file-name-directory file-or-dir)))
+         (root-dir (vc-call-backend (vc-deduce-backend) 'root file-dir)))
+    root-dir))
+
 (with-eval-after-load "multi-compile"
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-ansi -Wall -g3 -std=c99"))
-               ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))))
+               ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))
+               ("%repo-dir" . (locate-repo-dir))))
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
-        '((c-mode . (("c-simple" . "gcc -o %file-sans %cflags %file-name")
+        '((".*" . (("repo" . "make --no-print-directory -C %repo-dir")
+                  ("run" . "make --no-print-directory -C %make-dir")))
+          (c-mode . (("c-simple" . "gcc -o %file-sans %cflags %file-name")
                      ("c-simple32" . "gcc -o %file-sans %cflags -m32 %file-name")))
           (c++-mode . (("c++-simple" . "g++ -o %file-sans %cxxflags %file-name")))))
   )
