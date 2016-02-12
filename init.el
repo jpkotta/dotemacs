@@ -591,6 +591,7 @@ With prefix arg, insert a large ASCII art version.
 ;; FindSubWordsInCamelCase
 
 (with-library 'syntax-subword
+  (setq syntax-subword-skip-spaces 'consistent)
   (global-syntax-subword-mode 1)
   )
 
