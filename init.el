@@ -89,7 +89,6 @@
         expand-region
         figlet
         flex-isearch
-        full-ack
         fuzzy
         fvwm-mode
         ggtags
@@ -131,6 +130,7 @@
         syntax-subword
         undo-tree
         wgrep
+        wgrep-ag
         wrap-region
         yasnippet
         ))
@@ -3054,22 +3054,16 @@ The user is prompted at each instance like query-replace."
 (setq replace-re-search-function 're-search-forward-and-center)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Ack is a better grep
+;;; Ag is a better ack
 
-;; TODO look at easy-mmode-define-navigation
+(with-eval-after-load "ag"
+  (define-key ag-mode-map (kbd "C-x C-q") 'wgrep-change-to-wgrep-mode))
 
-(setq ack-context 1
-      ack-executable (executable-find "ack-grep")
-      ack-prompt-for-directory t)
-
-(with-eval-after-load "full-ack.el"
-  (dolist (func '(ack-next-match ack-previous-match))
-    (advice-add func
-                :after
-                (lambda (&rest args)
-                  "recenter"
-                  (recenter-no-redraw))))
-  )
+(setq ag-highlight-search t)
+(defun jpk/ag-hook ()
+  (setq adaptive-wrap-extra-indent 4)
+  (visual-line-mode 1))
+(add-hook 'ag-mode-hook 'jpk/ag-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; locate
