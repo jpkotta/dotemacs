@@ -93,6 +93,7 @@
         fvwm-mode
         ggtags
         hide-lines
+        ;;highlight-fixme
         highlight-numbers
         ;;highlight-operators
         highlight-quoted
@@ -232,7 +233,6 @@
    '(ac-yasnippet-selection-face ((t (:inherit ac-selection-face))))
    '(ac-yasnippet-candidate-face ((t (:inherit ac-candidate-face))))
 
-   '(font-lock-fixme-face ((t (:foreground "red" :weight bold))))
    '(font-lock-preprocessor-face ((t (:inherit font-lock-builtin-face))))
 
    '(diff-refine-changed ((t (:weight bold :background "gray24"))))
@@ -605,7 +605,6 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "doxymacs" (diminish 'doxymacs-mode))
   (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
   (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
-  (with-eval-after-load "fixme-mode" (diminish 'fixme-mode))
   (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
   (with-eval-after-load "ggtags" (diminish 'ggtags-mode))
   (with-eval-after-load "projectile" (diminish 'projectile-mode))
@@ -2141,15 +2140,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; fixme-mode
+;;; highlight-fixme-mode
 
-;; TODO: improve this to only highlight in comments like fic-mode
-;; TODO: don't use a list of modes, just a hook should be sufficient
-(with-library 'fixme-mode
-  (setq fixme-highlighted-words '("FIXME" "TODO" "BUG" "XXX" "DEBUG"))
-  (dolist (m '(matlab-mode verilog-mode lisp-interaction-mode lisp-mode))
-    (add-to-list 'fixme-modes m))
-  (fixme-mode 1))
+(with-library 'highlight-fixme
+  (add-hook 'prog-mode-hook 'highlight-fixme-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generic Programming
