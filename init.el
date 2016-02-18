@@ -342,13 +342,6 @@
 ;; binding compose-mail useful.
 (global-unset-key (kbd "C-x m"))
 
-(defun minibuffer-refocus ()
-  "Refocus the minibuffer if it is waiting for input."
-  (interactive)
-  (when (active-minibuffer-window)
-    (message "") ;; clear the echo area, in case it overwrote the minibuffer
-    (select-window (minibuffer-window))))
-
 (dolist (f '(mouse-set-point mouse-set-region))
   (advice-add f
               :before-until
@@ -1152,6 +1145,10 @@ This function is suitable to add to `find-file-hook'."
                 (apply orig args))))
 
 (global-set-key (kbd "<mouse-2>") 'mouse-yank-primary)
+
+(with-library 'mouse-copy
+  (global-set-key (kbd "C-<down-mouse-1>") 'mouse-drag-secondary-pasting)
+  (global-set-key (kbd "C-S-<down-mouse-1>") 'mouse-drag-secondary-moving))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Windows
@@ -2221,7 +2218,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   
   (setq adaptive-wrap-extra-indent 1)
 
-  ;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
+  ;;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
 
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (local-set-key (kbd "C-m") 'newline-and-indent)

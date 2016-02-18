@@ -1,8 +1,10 @@
-;;; highlight-operators.el --- a face for operators in programming modes
+;;; highlight-operators.el --- a face for operators in programming modes -*- lexical-binding: t -*-
 
-;; Copyright (C) 2014 Jonathan Kotta
+;; Copyright (C) 2016 Jonathan Kotta
 
+;; Author: Jonathan Kotta <jpkotta@gmail.com>
 ;; Maintainer: Jonathan Kotta <jpkotta@gmail.com>
+;; Version: 0.1
 
 ;; This file is not part of GNU Emacs.
 
