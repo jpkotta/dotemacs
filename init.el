@@ -132,6 +132,7 @@
         undo-tree
         wgrep
         wgrep-ag
+        win-switch
         wrap-region
         yasnippet
         ))
@@ -432,8 +433,7 @@
   (dolist (f '(bm-next bm-previous evil-numbers/inc-at-pt evil-numbers/dec-at-pt
                        gud-next gud-step
                        help-go-back help-go-forward
-                       next-buffer previous-buffer
-                       other-window other-window-prev))
+                       next-buffer previous-buffer))
     (add-to-list 'easy-repeat-command-list f))
   (easy-repeat-mode 1))
 
@@ -1183,14 +1183,27 @@ This function is suitable to add to `find-file-hook'."
       (next-buffer))
     (other-window 1)))
 
-(defun other-window-prev ()
+(defun other-window-prev (arg)
   "Inverse of `other-window'."
-  (interactive)
-  (other-window -1))
+  (interactive "p")
+  (other-window (- (or arg 1))))
 
-(global-set-key (kbd "M-1") 'other-window-prev)
-(global-set-key (kbd "C-x O") 'other-window-prev)
-(global-set-key (kbd "M-2") 'other-window)
+(with-library 'win-switch
+  (setq win-switch-idle-time 0.75
+        win-switch-window-threshold 0)
+  (win-switch-set-wrap-around -1)
+
+  (global-set-key (kbd "C-x o") 'win-switch-dispatch)
+  (global-set-key (kbd "C-x C-o") 'win-switch-dispatch)
+  (global-set-key (kbd "C-x p") (win-switch-dispatch-with 'other-window-prev))
+  (global-set-key (kbd "C-x C-p") (win-switch-dispatch-with 'other-window-prev))
+  
+  (dolist (e '(("M-i" . "up")
+               ("M-k" . "down")
+               ("M-j" . "left")
+               ("M-l" . "right")
+               ("O" . "previous-window")))
+    (win-switch-add-key (read-kbd-macro (car e)) (cdr e))))
 
 ;; Save point position per-window instead of per-buffer.
 (with-library 'winpoint
