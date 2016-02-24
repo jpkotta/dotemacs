@@ -214,6 +214,15 @@
   (custom-theme-set-faces
    'calmer-forest
 
+   '(default
+      ((t (:family
+           "DejaVu Sans Mono"
+           :inherit nil :stipple nil :overline nil :underline nil
+           :background "gray12" :foreground "green"
+           :inverse-video nil :box nil :strike-through nil
+           :slant normal :weight normal :height 100 :width normal
+           :foundry "unknown"))))
+   
    '(fringe ((t (:background "gray10" :foreground "dark green"))))
    '(highlight ((t (:background "gray6"))))
 
@@ -291,16 +300,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
+(defun jpk/bury-some-buffers ()
+  "Bury uninteresting/duplicate buffers."
+  (interactive)
+  (dolist (w (append (window-list) (window-list)))
+    (let* ((buf (window-buffer w))
+           (bufname (buffer-name buf))
+           (all-window-bufs (mapcar 'window-buffer (window-list))))
+      (when (or (string-match "^\\*.*\\*$" bufname)
+               (memq buf (cdr (memq buf all-window-bufs))))
+        (unless (eq w (selected-window))
+          (bury-buffer buf)
+          (switch-to-prev-buffer w 'bury))))))
+
 (defun jpk/startup ()
   "Set up emacs the way I like it."
   (interactive)
   (let ((svfm (and (boundp 'save-visited-files-mode)
-                (not save-visited-files-mode)
-                (y-or-n-p "Restore session? "))))
+                 (not save-visited-files-mode)
+                 (y-or-n-p "Restore session? "))))
     (split-windows-in-quarters)
     (modify-frame-parameters nil '((fullscreen . maximized)))
     (when svfm
-      (save-visited-files-mode 1))))
+      (save-visited-files-mode 1)))
+  (jpk/bury-some-buffers))
 
 (when (and (string= system-type "windows-nt")
          (executable-find "bash"))
@@ -1900,13 +1923,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (define-ibuffer-filter dirname
       "Toggle current view to buffers with in a directory DIRNAME."
-    (:description "directory name"
-                  :reader
-                  (intern
-                   (completing-read "Filter by directory: "
-                                    (get-all-buffer-directories)
-                                    'identity
-                                    t nil nil nil nil)))
+    (:description
+     "directory name"
+     :reader
+     (intern
+      (completing-read "Filter by directory: "
+                       (get-all-buffer-directories)
+                       'identity
+                       t nil nil nil nil)))
     (string= qualifier
              (and (buffer-file-name buf)
                 (file-name-directory (buffer-file-name buf)))))
@@ -3167,7 +3191,7 @@ point."
     "Put selection from buffer into search string."
     (interactive)
     (when (region-active-p)
-      (deactivate-mark))  ;;fully optional, but I don't like unnecessary highlighting
+      (deactivate-mark))  ;; fully optional, but I don't like unnecessary highlighting
     (let ((isearch-case-fold-search nil))
       (isearch-yank-internal (lambda () (mark)))))
 
