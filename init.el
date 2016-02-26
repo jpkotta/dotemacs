@@ -1320,6 +1320,13 @@ This function is suitable to add to `find-file-hook'."
 
 (require 'ediff-tweak)
 
+(advice-add 'ediff-setup-windows
+            :around
+            (lambda (orig &rest args)
+              "Set `allow-windows-shrinking' non-nil for ediff."
+              (let ((allow-window-shrinking t))
+                (apply orig args))))
+
 ;; put the ediff control window in the same frame
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
