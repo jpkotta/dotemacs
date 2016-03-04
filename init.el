@@ -121,6 +121,7 @@
         python-info
         rainbow-mode
         save-visited-files
+        shackle
         smart-shift
         smart-tabs-mode
         smartscan
@@ -1178,17 +1179,6 @@ This function is suitable to add to `find-file-hook'."
 
 (setq-default cursor-in-non-selected-windows nil)
 
-(setq same-window-buffer-names '("*Python*" "*Diff*" "*Apropos*" "*shell*"
-                                 "*mail*" "*inferior-lisp*" "*ielm*" "*scheme*"
-                                 "*Hg outgoing*" "*Hg incoming*")
-      same-window-regexps '("\\*vc-.*\\*"
-                            "\\*rsh-[^-]*\\*\\(\\|<[0-9]*>\\)"
-                            "\\*telnet-.*\\*\\(\\|<[0-9]+>\\)"
-                            "^\\*rlogin-.*\\*\\(\\|<[0-9]+>\\)"
-                            "\\*info\\*\\(\\|<[0-9]+>\\)"
-                            "\\*gud-.*\\*\\(\\|<[0-9]+>\\)"
-                            "\\`\\*Customiz.*\\*\\'"))
-
 (defun split-windows-in-quarters (&optional arg)
   "Configure a frame to have 4 similarly sized windows.  Splits
   the selected window with prefix arg."
@@ -1232,47 +1222,15 @@ This function is suitable to add to `find-file-hook'."
 (with-library 'winpoint
   (winpoint-mode 1))
 
-;; I hate it when my windows get deleted.
-(defvar confirm-delete-window nil
-  "Ask the user before deleting a window.  This is used in
-  around-advice for delete-window.")
-(defvar never-delete-window nil
-  "Never allow windows to be deleted.  This is used in
-  around-advice for delete-window.")
-
-(advice-add 'delete-window
-            :around
-            (lambda (orig &rest args)
-              "Confirm deletion based on `confirm-window-delete' and `never-delete-window'."
-              (if (and (not never-delete-window)
-                     (if confirm-delete-window
-                         (y-or-n-p "Delete window? ")
-                       t))
-                  (apply orig args)
-                ;; delete-window raises an error if the window shouldn't
-                ;; be deleted
-                (error "Not deleting window"))))
-
-(advice-add 'delete-windows-on
-            :around
-            (lambda (orig &rest args)
-              "Confirm deletion based on `confirm-window-delete' and `never-delete-window'."
-              (if (and (not never-delete-window)
-                     (if confirm-delete-window
-                         (y-or-n-p "Delete window? ")
-                       t))
-                  (apply orig args)
-                ;; delete-windows-on switches to other-buffer if the window
-                ;; shouldn't be deleted
-                (switch-to-buffer (other-buffer)))))
-
-(dolist (func '(View-quit log-edit-done vc-revert vc-rollback))
-  (advice-add func
-              :around 
-              (lambda (orig &rest args)
-                "Inhibit killing selected window."
-                (let ((never-delete-window t))
-                  (apply orig args)))))
+(with-library 'shackle
+  (setq shackle-default-rule '(:inhibit-window-quit t)
+        shackle-rules
+        '((Man-mode :select t)
+          (completion-list-mode :regexp t :inhibit-window-quit nil :select t)
+          (help-mode :select nil :popup t :ignore t)
+          (("*vc-incoming*" "*vc-outgoing*") :same t)
+          ))
+  (shackle-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
