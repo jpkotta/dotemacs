@@ -3320,28 +3320,38 @@ Positive arg means right; negative means left"
       (indent-rigidly beg-bol en arg)
       (push-mark beg t t))))
 
-(defun move-horizontally-dwim (beg en arg)
-  "If there is an active region, move the whole region arg
-columns.  Otherwise, move the cursor line arg columns."
-  (interactive "r")
+(defun move-left-1 (beg en &optional arg)
+  "Move the active region or the current line ARG columns to the left."
+  (interactive "*r\np")
   (if (use-region-p)
       (move-horizontally beg en arg)
     (move-horizontally (line-beginning-position) (line-end-position) arg)))
 
-(global-set-key (kbd "C-9")
-                (lambda (beg en)
-                  "move region left by one"
-                  (interactive "r")
-                  (move-horizontally-dwim beg en -1)))
-(global-set-key (kbd "C-0")
-                (lambda (beg en)
-                  "move region right by one"
-                  (interactive "r")
-                  (move-horizontally-dwim beg en 1)))
+(defun move-right-1 (beg en &optional arg)
+  "Move the active region or the current line ARG columns to the right."
+  (interactive "*r\np")
+  (move-left-1 beg en (- arg)))
 
-;; binds C-C <arrows>
-(with-library 'smart-shift
-  (global-smart-shift-mode 1))
+(require 'smart-shift nil 'noerror)
+(defun move-left-dwim (beg en &optional arg)
+  "Move the active region or the current line The Right Number of columns to the left."
+  (interactive "*r\np")
+  (let ((shift (or (and (boundp 'smart-shift-indentation-level)
+                     smart-shift-indentation-level)
+                  (and (functionp 'smart-shift-infer-indentation-level)
+                     (smart-shift-infer-indentation-level))
+                  tab-width)))
+    (move-left-1 beg en (* arg shift))))
+
+(defun move-right-dwim (beg en &optional arg)
+  "Move the active region or the current line The Right Number of columns to the right."
+  (interactive "*r\np")
+  (move-left-dwim beg en (- arg)))
+   
+(global-set-key (kbd "C-0") 'move-left-1)
+(global-set-key (kbd "C-9") 'move-right-1)
+(global-set-key (kbd "C-)") 'move-left-dwim)
+(global-set-key (kbd "C-(") 'move-right-dwim)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
