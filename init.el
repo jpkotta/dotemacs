@@ -83,6 +83,8 @@
         diff-hl
         diminish
         dired+
+        dired-imenu
+        dired-narrow
         dired-ranger
         easy-repeat
         edit-list
@@ -1691,6 +1693,15 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       'diredp-mouse-find-file-reuse-dir-buffer)
     )
 
+  (require 'dired-imenu nil 'noerror)
+
+  (with-library 'dired-narrow
+    (define-key dired-mode-map (kbd "/") 'dired-narrow)
+    (define-key dired-mode-map (kbd "C-x n n") 'dired-narrow)
+    (define-key dired-mode-map (kbd "C-x n r") 'dired-narrow-regexp)
+    (define-key dired-mode-map (kbd "C-x n f") 'dired-narrow-fuzzy)
+    (define-key dired-mode-map (kbd "C-x n w") 'revert-buffer))
+  
   (setq dired-omit-files "^\\.?#\\|^\\.$\\|^\\.[^.].*$")
   (with-library 'dired-x
     (setq dired-omit-verbose nil)
