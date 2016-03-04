@@ -69,6 +69,7 @@
         ac-math
         ac-octave
         adaptive-wrap
+        ag
         anchored-transpose
         auctex
         auto-complete
@@ -89,7 +90,7 @@
         expand-region
         figlet
         flex-isearch
-        fuzzy
+        fuzzy ;; for auto-complete
         fvwm-mode
         ggtags
         hide-lines
@@ -3302,9 +3303,6 @@ point."
   (smart-tabs-advice cperl-indent-line cperl-indent-level)
   (smart-tabs-advice c-indent-line     c-basic-offset)
   (smart-tabs-advice c-indent-region   c-basic-offset)
-  (with-library 'php-mode
-    (smart-tabs-advice php-cautious-indent-region c-basic-offset)
-    (smart-tabs-advice php-cautious-indent-line c-basic-offset))
   )
 
 ;; shift-tab should undo what tab does
