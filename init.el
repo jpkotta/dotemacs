@@ -1899,6 +1899,24 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (kbd "/ p") 'ibuffer-filter-by-projectile-files)
     )
 
+  (define-ibuffer-filter unsaved
+      "Only show unsaved buffers backed by a real file."
+    (:description "Unsaved")
+    (and (buffer-file-name buf)
+       (buffer-modified-p buf)))
+
+  (defun ibuffer-set-filter-groups-by-unsaved ()
+    "Set the current filter groups to filter by `buffer-modified-p'."
+    (interactive) 
+    (setq ibuffer-filter-groups
+          `(("Unsaved" . ((unsaved . t)))))
+    (ibuffer-update nil t))
+  
+  (define-key ibuffer-mode-map
+    (kbd "/ 8") 'ibuffer-filter-by-unsaved)
+  (define-key ibuffer-mode-map
+    (kbd "/ *") 'ibuffer-set-filter-groups-by-unsaved)
+  
   ;; TODO make cycling work with count
   (defun ibuffer-forward-filter-group (&optional count)
     "Move point forwards by COUNT filtering groups."
