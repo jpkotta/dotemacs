@@ -7,3 +7,4 @@ persistence
 url
 
 lisp/local-init.el
+lisp/lisp-autoloads.el

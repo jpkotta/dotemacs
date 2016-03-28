@@ -40,20 +40,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
-;; add my elisp files to the load path
-(add-to-list 'load-path (concat user-emacs-directory "lisp"))
+(defvar extra-lisp-directory (concat user-emacs-directory "lisp/")
+  "Directory for Emacs lisp files that are not part of Emacs or in packages.")
+(add-to-list 'load-path extra-lisp-directory)
+(let ((autoload-file (concat extra-lisp-directory "lisp-autoloads.el")))
+  (when (not (file-exists-p autoload-file))
+    (require 'package)
+    (package-generate-autoloads "lisp" extra-lisp-directory))
+  (load-file autoload-file))
 
 ;; set up specific to the local machine
-(let ((local-init-file (concat user-emacs-directory "lisp/local-init.el")))
+(let ((local-init-file (concat extra-lisp-directory "local-init.el")))
   (when (file-exists-p local-init-file)
     (load-file local-init-file)))
-    
-;; this is a place to try out random elisp files
-(add-to-list 'load-path (concat user-emacs-directory "staging"))
 
 ;; info directory
 (with-eval-after-load "info"
-  (add-to-list 'Info-additional-directory-list "~/.info"))
+  (add-to-list 'Info-additional-directory-list "~/.info/"))
 
 ;; a place to put persistent data
 (setq emacs-persistence-directory (concat user-emacs-directory "persistence/"))
@@ -140,7 +143,7 @@
         yasnippet
         ))
 
-(setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version))
+(setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version "/"))
 
 (setq package-enable-at-startup nil) ;; do not reinitialize after init
 (package-initialize)
