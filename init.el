@@ -1184,12 +1184,12 @@ it's probably better to explicitly request a merge."
 (with-library 'winpoint
   (winpoint-mode 1))
 
+(setq help-window-select 'never)
 (with-library 'shackle
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
         '((Man-mode :select t)
           (completion-list-mode :regexp t :inhibit-window-quit nil :select t)
-          (help-mode :select nil :popup t :ignore t)
           (("*vc-incoming*" "*vc-outgoing*") :same t)
           ))
   (shackle-mode 1))
