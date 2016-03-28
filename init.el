@@ -89,6 +89,7 @@
         dired-imenu
         dired-narrow
         dired-ranger
+        ;;dired-toggle-sudo
         easy-repeat
         edit-list
         evil-numbers
@@ -1108,42 +1109,12 @@ it's probably better to explicitly request a merge."
     (unless (file-exists-p d)
       (make-directory d t))))
 
-(defface find-file-root-header-face
-  '((t (:foreground "white" :background "red3")))
-  "*Face use to display header-lines for files opened as root.")
-
-(defun find-file-root-header-warning ()
-  "*Display a warning in header line of the current buffer.
-This function is suitable to add to `find-file-hook'."
-  (when (string-equal
-         (file-remote-p (or buffer-file-name default-directory) 'user)
-         "root")
-    (setq header-line-format
-          (propertize "--- WARNING: EDITING FILE AS ROOT! %-"
-                      'face 'find-file-root-header-face))))
-
-(defun find-alternative-file-with-sudo ()
-  "Re-find current buffer's file with /sudo:: tramp method."
-  (interactive)
-  (let ((bname (expand-file-name (or buffer-file-name
-                                    default-directory)))
-        (pt (point))
-        (ws (window-start)))
-    (setq bname (or (file-remote-p bname 'localname)
-                   (concat "/sudo::" bname)))
-    (cl-letf (((symbol-function 'server-buffer-done)
-               (lambda (buffer &optional for-killing)
-                 nil)))
-      (find-alternate-file bname))
-    (goto-char pt)
-    (set-window-start (selected-window) ws)))
+(with-eval-after-load "tramp"
+  (add-to-list 'tramp-default-proxies-alist
+               '(".*" "\\`.+\\'" "/ssh:%h:")))
 
 ;; normally this is bound to find-file-read-only
-;; use M-x read-only-mode instead
-(global-set-key (kbd "C-x C-r") 'find-alternative-file-with-sudo)
-
-(add-hook 'find-file-hook 'find-file-root-header-warning)
-(add-hook 'dired-mode-hook 'find-file-root-header-warning)
+(global-set-key (kbd "C-x C-r") 'dired-toggle-sudo)
 
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
 ;; sudo on remote: /ssh:user@remote|sudo:remote:/path/to/file
