@@ -108,7 +108,7 @@
         ibuffer-projectile
         ido-ubiquitous
         keychain-environment
-        list-unicode-display
+        ;;list-unicode-display
         lua-mode
         markdown-mode
         mediawiki
