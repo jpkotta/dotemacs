@@ -1000,7 +1000,7 @@ it's probably better to explicitly request a merge."
   "If the buffer has a file, insert the base name of that file.
   Otherwise insert the buffer name.  With prefix argument, insert
   the full file name."
-  (interactive "P")
+  (interactive "*P")
   (let* ((buffer (window-buffer (minibuffer-selected-window)))
          (file-path-maybe (buffer-file-name buffer)))
     (insert (if file-path-maybe
@@ -1298,14 +1298,14 @@ it's probably better to explicitly request a merge."
 ;; operate on the whole diff buffer
 
 (defun insert-CR-eol (b e)
-  (interactive "r")
+  (interactive "*r")
   (save-restriction 
     (narrow-to-region b e)
     (while (re-search-forward "\\([^]\\)$" nil t)
       (replace-match "\\1" nil nil))))
 
 (defun remove-CR-eol (b e)
-  (interactive "r")
+  (interactive "*r")
   (save-restriction 
     (narrow-to-region b e)
     (while (re-search-forward "$" nil t)
@@ -1339,12 +1339,12 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
 
 (defun diff-add-trailing-CR-in-hunk ()
   "Add carriage returns to the line endings of the current diff hunk (EOL = CRLF)."
-  (interactive)
+  (interactive "*")
   (diff-add-or-remove-trailing-CR-in-hunk t))
 
 (defun diff-remove-trailing-CR-in-hunk ()
   "Remove carriage returns from the line endings of the current diff hunk (EOL = LF)."
-  (interactive)
+  (interactive "*")
   (diff-add-or-remove-trailing-CR-in-hunk nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1390,7 +1390,7 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
 (with-eval-after-load "multi-term"
   (defun term-send-C-x ()
     "Type C-x in term-mode."
-    (interactive)
+    (interactive "*")
     (term-send-raw-string "\C-x"))
   
   (dolist
@@ -2330,7 +2330,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (defun jpk/python-eval-insert-region (beg end)
   "Evaluate the region with Python and insert the result.
 If region is inactive, use the entire current line."
-  (interactive "r")
+  (interactive "*r")
   (let ((str (if (region-active-p)
                  (buffer-substring-no-properties
                   (region-beginning) (region-end))
@@ -2661,7 +2661,7 @@ If region is inactive, use the entire current line."
 ;; more cleanly.
 (defun insert-semicolon-and-send-input (&optional no-newline artificial)
   "Like `comint-send-input', but inserts a semicolon first."
-  (interactive)
+  (interactive "*")
   (save-excursion
     (let ((pmark (process-mark (get-buffer-process (current-buffer)))))
       (when (> (point) (marker-position pmark))
@@ -3147,7 +3147,7 @@ point."
 (defun downcase-region-or-word ()
   "Downcase the current word if the region is inactive, otherwise
   downcase the region."
-  (interactive)
+  (interactive "*")
   (let ((deactivate-mark nil))
     (if (use-region-p)
         (downcase-region (region-beginning) (region-end))
@@ -3159,7 +3159,7 @@ point."
 (defun upcase-region-or-word ()
   "Upcase the current word if the region is inactive, otherwise
   upcase the region."
-  (interactive)
+  (interactive "*")
   (let ((deactivate-mark nil))
     (if (use-region-p)
         (upcase-region (region-beginning) (region-end))
@@ -3171,7 +3171,7 @@ point."
 (defun capitalize-region-or-word ()
   "Capitalize the current word if the region is inactive, otherwise
   capitalize the region."
-  (interactive)
+  (interactive "*")
   (let ((deactivate-mark nil))
     (if (use-region-p)
         (capitalize-region (region-beginning) (region-end))
@@ -3223,7 +3223,7 @@ point."
  tab-width, not tab-stop-list) after the previous indent, or the
  beginning of the line.  Repeatedly calling this function cycles
  between these 3 actions."
-  (interactive)
+  (interactive "*")
 
   (let ((last-line-indent 0)
         (next-indent 0))
@@ -3319,7 +3319,7 @@ Positive arg means right; negative means left"
 (defun unfill-paragraph ()
   "Takes a multi-line paragraph and makes it into a single line
 of text."
-  (interactive)
+  (interactive "*")
   (let ((fill-column (point-max)))
     (fill-paragraph nil)))
 
