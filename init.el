@@ -1999,27 +1999,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; *scratch*
-;; if *scratch* is killed, recreate it
+;;; immortal-scratch
 
-(defun make-scratch-buffer ()
-  (interactive)
-  (with-current-buffer (get-buffer-create "*scratch*")
-    (with-temp-message ""
-      (lisp-interaction-mode))))
-
-(defun scratch-respawns-when-killed ()
-  (interactive)
-  (if (not (string= (buffer-name (current-buffer)) "*scratch*"))
-      t ;; return t so the caller may kill it
-    (let ((kill-buffer-query-functions kill-buffer-query-functions))
-      (remove-hook 'kill-buffer-query-functions 'scratch-respawns-when-killed)
-      (set-buffer (get-buffer-create "*scratch*"))
-      (kill-buffer (current-buffer)))
-    (make-scratch-buffer)
-    nil)) ;; return nil so the caller doesn't try to kill it
-
-(add-hook 'kill-buffer-query-functions 'scratch-respawns-when-killed)
+(setq immortal-scratch-switch-to-respawned-scratch t)
+(immortal-scratch-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; figlet
