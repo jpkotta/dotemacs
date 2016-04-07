@@ -2078,6 +2078,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          (root-dir (vc-call-backend (vc-deduce-backend) 'root file-dir)))
     root-dir))
 
+(setq multi-compile-history-file
+      (concat emacs-persistence-directory "multi-compile.cache"))
 (with-eval-after-load "multi-compile"
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-ansi -Wall -g3 -std=c99"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))
