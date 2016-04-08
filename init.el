@@ -169,10 +169,10 @@
   cleaning out unwanted packages."
   (interactive)
   (package-show-package-list
-   (cl-remove-if-not (lambda (x) (and (not (memq x jpk-packages))
-                               (not (package-built-in-p x))
-                               (package-installed-p x)))
-                     (mapcar 'car package-archive-contents))))
+   (cl-remove-if (lambda (x) (or (memq x jpk-packages)
+                           (package-built-in-p x)
+                           (not (package-installed-p x))))
+                 (mapcar 'car package-archive-contents))))
 
 (defmacro with-library (feature &rest body)
   "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
