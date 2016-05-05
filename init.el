@@ -83,6 +83,7 @@
         calmer-forest-theme
         csharp-mode
         csv-mode
+        define-word
         diff-hl
         diminish
         dired+
@@ -107,6 +108,7 @@
         htmlize
         ibuffer-projectile
         ido-ubiquitous
+        ;;immortal-scratch
         keychain-environment
         ;;list-unicode-display
         lua-mode
@@ -494,7 +496,8 @@
 
 (setq org-ellipsis "…"
       org-src-fontify-natively t
-      org-hide-leading-stars t)
+      org-hide-leading-stars t
+      org-hide-emphasis-markers t)
 (put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
 
 ;; remember mode lets you quickly record notes without distracting you
