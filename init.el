@@ -2385,7 +2385,12 @@ If region is inactive, use the entire current line."
       "Run `pylint' with `pylint-command' set to \"pylint2\"."
       (interactive)
       (let ((pylint-command (or (executable-find "pylint2")
-                               "pylint")))
+                               "pylint"))
+            (pylint-options (append
+                             pylint-options
+                             (list (format "--indent-string='%s'"
+                                           (make-string python-indent-offset ?\ ))))))
+        
         (pylint)))
 
     (defun pylint3 ()
