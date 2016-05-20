@@ -100,6 +100,7 @@
         fuzzy ;; for auto-complete
         fvwm-mode
         ggtags
+        hgrc-mode
         hide-lines
         highlight-numbers
         highlight-operators
