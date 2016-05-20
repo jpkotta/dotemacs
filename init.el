@@ -1112,11 +1112,9 @@ it's probably better to explicitly request a merge."
     (unless (file-exists-p d)
       (make-directory d t))))
 
-(setq tramp-copy-size-limit nil) ; for Edison
-
-;; (with-eval-after-load "tramp"
-;;   (add-to-list 'tramp-default-proxies-alist
-;;                '(".*" "\\`.+\\'" "/ssh:%h:")))
+(with-eval-after-load "tramp"
+  (add-to-list 'tramp-default-proxies-alist
+               '(".*" "\\`.+\\'" "/ssh:%h:")))
 
 ;; normally this is bound to find-file-read-only
 (global-set-key (kbd "C-x C-r") 'dired-toggle-sudo)
@@ -1725,35 +1723,35 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 (add-hook 'dired-before-readin-hook 'jpk/dired-before-readin-hook)
 
-;; (setq dired-listing-switches (concat dired-listing-switches " --group-directories-first"))
+(setq dired-listing-switches (concat dired-listing-switches " --group-directories-first"))
 
-;; (with-library 'openwith
-;;   (setq openwith-associations
-;;         (list
-;;          (list (openwith-make-extension-regexp
-;;                 '("mpg" "mpeg" "mp3" "mp4" "asf"
-;;                   "avi" "wmv" "wav" "mov" "flv"
-;;                   "ogm" "ogg" "mkv"))
-;;                "vlc"
-;;                '(file))
-;;          (list (openwith-make-extension-regexp
-;;                 '("xbm" "pbm" "pgm" "ppm" "pnm"
-;;                   "png" "gif" "bmp" "tif" "jpeg" "jpg"
-;;                   "svg"))
-;;                "geeqie"
-;;                '(file))
-;;          (list (openwith-make-extension-regexp
-;;                 '("doc" "xls" "ppt" "odt" "ods" "odg" "odp"))
-;;                "libreoffice"
-;;                '(file))
-;;          '("\\.lyx" "lyx" (file))
-;;          '("\\.chm" "kchmviewer" (file))
-;;          (list (openwith-make-extension-regexp
-;;                 '("pdf" "ps" "ps.gz" "dvi"))
-;;                "okular"
-;;                '(file))
-;;          ))
-;;   (openwith-mode 1))
+(with-library 'openwith
+  (setq openwith-associations
+        (list
+         (list (openwith-make-extension-regexp
+                '("mpg" "mpeg" "mp3" "mp4" "asf"
+                  "avi" "wmv" "wav" "mov" "flv"
+                  "ogm" "ogg" "mkv"))
+               "vlc"
+               '(file))
+         (list (openwith-make-extension-regexp
+                '("xbm" "pbm" "pgm" "ppm" "pnm"
+                  "png" "gif" "bmp" "tif" "jpeg" "jpg"
+                  "svg"))
+               "geeqie"
+               '(file))
+         (list (openwith-make-extension-regexp
+                '("doc" "xls" "ppt" "odt" "ods" "odg" "odp"))
+               "libreoffice"
+               '(file))
+         '("\\.lyx" "lyx" (file))
+         '("\\.chm" "kchmviewer" (file))
+         (list (openwith-make-extension-regexp
+                '("pdf" "ps" "ps.gz" "dvi"))
+               "okular"
+               '(file))
+         ))
+  (openwith-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; image-mode
@@ -1921,17 +1919,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (kbd "/ 8") 'ibuffer-filter-by-unsaved)
   (define-key ibuffer-mode-map
     (kbd "/ *") 'ibuffer-set-filter-groups-by-unsaved)
-
-  ;; (defun list-unsaved-buffers (_)
-  ;;   (ibuffer nil "*Unsaved*" '((unsaved . t)))
-  ;;   (switch-to-buffer "*Unsaved*")
-  ;;   (keyboard-quit))
   
-  ;; (add-to-list 'save-some-buffers-action-alist
-  ;;              (list ?l
-  ;;                    #'list-unsaved-buffers
-  ;;                    "list all unsaved buffers"))
-
   ;; TODO make cycling work with count
   (defun ibuffer-forward-filter-group (&optional count)
     "Move point forwards by COUNT filtering groups."
@@ -2622,16 +2610,8 @@ If region is inactive, use the entire current line."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
 
-;; TODO:
-;;
-;; add a namcap function
-;; use updpkgsums to update the sums
-
 (dolist (x '("PKGBUILD" "\.install\\'"))
   (add-to-list 'auto-mode-alist `(,x . pkgbuild-mode)))
-
-(with-eval-after-load "pkgbuild-mode"
-  (define-key pkgbuild-mode-map (kbd "C-c C-v") 'pkgbuild-namcap))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
