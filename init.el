@@ -3349,7 +3349,16 @@ of text."
   (let ((fill-column (point-max)))
     (fill-paragraph nil)))
 
-(global-set-key (kbd "M-Q") 'unfill-paragraph)
+(defun fill-or-unfill-paragraph ()
+  "Toggle between `fill-paragraph' and `unfill-paragraph'."
+  (interactive "*")
+  (if (eq last-command 'fill-or-unfill-paragraph)
+      (progn
+        (setq this-command nil)
+        (call-interactively 'unfill-paragraph))
+    (call-interactively 'fill-paragraph)))
+
+(global-set-key (kbd "M-q") 'fill-or-unfill-paragraph)
 
 (advice-add 'fill-paragraph
             :after
