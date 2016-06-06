@@ -141,6 +141,7 @@
         sqlup-mode
         ssh-config-mode
         syntax-subword
+        systemd-mode
         undo-tree
         wgrep
         wgrep-ag
@@ -2644,11 +2645,8 @@ If region is inactive, use the entire current line."
 ;;; config files
 
 (dolist (re '("\\.list\\'" ;; apt sources files
-              "\\.hgignore" "\\.?hgrc" ;; mercurial files
               "Doxyfile" ;; Doxygen
-              "\\.rules" ;; udev
-              "\\.service" "\\.target" "\\.socket" "\\.mount" ;; systemd
-              "\\`inittab\\'"
+              "\\.rules\\'" ;; udev
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
 
