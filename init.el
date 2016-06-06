@@ -77,6 +77,7 @@
         auctex
         auto-complete
         backup-walker
+        bitbake
         bm
         boxquote
         buffer-move
@@ -2316,6 +2317,15 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Make
 (add-to-list 'auto-mode-alist '("Makefile" . makefile-gmake-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; bitbake
+
+;; also: .conf and .inc
+(add-to-list 'auto-mode-alist
+             '("\\.bb\\(append\\|class\\)?\\'" . bitbake-mode))
+(add-to-list 'auto-mode-alist
+             '("\\.inc\\'" . bitbake-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C#
