@@ -105,6 +105,7 @@
         highlight-numbers
         highlight-operators
         highlight-quoted
+        hl-todo
         htmlize
         ibuffer-projectile
         ido-ubiquitous
@@ -2116,11 +2117,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; highlight-fixme-mode
+;;; hl-todo
 
-(with-library 'highlight-fixme
-  (add-hook 'prog-mode-hook 'highlight-fixme-mode))
-
+(with-library 'hl-todo
+  (setq hl-todo-keyword-faces
+        (mapcar (lambda (w) (cons w "red"))
+                '("TODO" "FIXME" "KLUDGE" "XXX" "DEBUG")))
+  (add-hook 'prog-mode-hook 'hl-todo-mode))
+  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generic Programming
 
