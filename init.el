@@ -109,6 +109,7 @@
         hl-todo
         htmlize
         ibuffer-projectile
+        ibuffer-tramp
         ido-ubiquitous
         immortal-scratch
         keychain-environment
@@ -1947,6 +1948,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (kbd "/ 8") 'ibuffer-filter-by-unsaved)
   (define-key ibuffer-mode-map
     (kbd "/ *") 'ibuffer-set-filter-groups-by-unsaved)
+
+  (with-library 'ibuffer-tramp
+    (define-key ibuffer-mode-map
+      (kbd "/ T") 'ibuffer-tramp-set-filter-groups-by-tramp-connection))
   
   ;; TODO make cycling work with count
   (defun ibuffer-forward-filter-group (&optional count)
