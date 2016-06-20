@@ -4,7 +4,6 @@
 
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, dired
-;; Package-Version: 20151109.206
 ;; Created: 2011-07-06
 ;; Last changed: 2015-11-09 11:03:27
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
@@ -27,13 +26,15 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'files)
 (require 'tramp)
 (require 'dired)
 
 (defface dired-toggle-sudo-header-face
   '((t (:foreground "white" :background "red3")))
-  "*Face use to display header-lines for files opened as root.")
+  "*Face use to display header-lines for files opened as root."
+  :group 'tramp)
 
 (defun dired-toggle-sudo-set-header ()
   "*Display a warning in header line of the current buffer.
@@ -96,12 +97,6 @@ unless SUDO-USER is provided."
       (find-alternate-file fname))
     (goto-char save-point)
     (set-window-start (selected-window) save-window-start)))
-
-(cl-letf (((symbol-function 'server-buffer-done)
-           (lambda (buffer &optional for-killing) nil))
-          ((symbol-function 'server-kill-buffer-query-function)
-           (lambda () t)))
-  (run-hook-with-args-until-failure 'kill-buffer-query-functions))
 
 ;;;###autoload
 (defun dired-toggle-sudo (&optional sudo-user)
