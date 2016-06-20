@@ -448,9 +448,8 @@
 (when (commandp (symbol-function 'ggtags-find-tag-dwim))
   (global-set-key (kbd "M-.") 'ggtags-find-tag-dwim))
 
-;; Not sure if this is the best backend, but it works and setting it
-;; stops ggtags-create-tags from asking.
-(setenv "GTAGSLABEL" "ctags")
+;; stops ggtags-create-tags from asking
+(setenv "GTAGSLABEL" "default")
 
 (let ((rcfile "~/.globalrc")
       (dist-rcfile "/usr/share/gtags/gtags.conf")
@@ -524,8 +523,8 @@
 (setq org-ellipsis "…"
       org-src-fontify-natively t
       org-hide-leading-stars t
-      org-hide-emphasis-markers t)
-(put 'org-fontify-emphasized-text 'safe-local-variable 'booleanp)
+      org-hide-emphasis-markers t
+      org-fontify-emphasized-text nil)
 
 ;; remember mode lets you quickly record notes without distracting you
 
@@ -1140,9 +1139,9 @@ it's probably better to explicitly request a merge."
     (unless (file-exists-p d)
       (make-directory d t))))
 
-(with-eval-after-load "tramp"
-  (add-to-list 'tramp-default-proxies-alist
-               '(".*" "\\`.+\\'" "/ssh:%h:")))
+(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
+(setq tramp-copy-size-limit nil) ; for Edison
 
 ;; normally this is bound to find-file-read-only
 (global-set-key (kbd "C-x C-r") 'dired-toggle-sudo)
@@ -1751,8 +1750,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (toggle-truncate-lines 1)
   )
 (add-hook 'dired-before-readin-hook 'jpk/dired-before-readin-hook)
-
-(setq dired-listing-switches (concat dired-listing-switches " --group-directories-first"))
 
 (with-library 'openwith
   (setq openwith-associations
