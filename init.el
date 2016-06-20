@@ -84,7 +84,7 @@
         calmer-forest-theme
         csharp-mode
         csv-mode
-        define-word
+        dictionary
         diff-hl
         diminish
         dired+
@@ -405,6 +405,29 @@
               "Do nothing if `allow-window-shrinking' is nil."
               allow-window-shrinking))
 
+;; https://www.masteringemacs.org/article/fixing-mark-commands-transient-mark-mode
+(defun push-mark-no-activate ()
+  "Pushes `point' to `mark-ring' and does not activate the region
+   Equivalent to \\[set-mark-command] when \\[transient-mark-mode] is disabled"
+  (interactive)
+  (push-mark (point) t nil)
+  (message "Pushed mark to ring"))
+(global-set-key (kbd "C-`") 'push-mark-no-activate)
+
+(defun jump-to-mark ()
+  "Jumps to the local mark, respecting the `mark-ring' order.
+  This is the same as using \\[set-mark-command] with the prefix argument."
+  (set-mark-command 1))
+(global-set-key (kbd "M-`") 'jump-to-mark)
+
+(defun exchange-point-and-mark-no-activate ()
+  "Identical to \\[exchange-point-and-mark] but will not activate the region."
+  (interactive)
+  (exchange-point-and-mark)
+  (deactivate-mark nil))
+(global-set-key [remap exchange-point-and-mark]
+                'exchange-point-and-mark-no-activate)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
 
@@ -647,6 +670,7 @@ With prefix arg, insert a large ASCII art version.
 ;;; Help
 
 (setq message-log-max 10000)
+(global-set-key (kbd "C-h C-f") 'find-function)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
@@ -1723,6 +1747,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; word wrap looks terrible in dired buffers
 (defun jpk/dired-before-readin-hook ()
   (visual-line-mode 0)
+  (toggle-truncate-lines 1)
   )
 (add-hook 'dired-before-readin-hook 'jpk/dired-before-readin-hook)
 
@@ -2546,8 +2571,7 @@ If region is inactive, use the entire current line."
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
-(global-set-key (kbd "C-c C-e") 'eval-and-replace-last-sexp)
-(global-set-key (kbd "C-c e e") 'eval-print-last-sexp)
+(global-set-key (kbd "C-c e") 'eval-and-replace-last-sexp)
 
 (setq eval-expression-print-length nil) ;; unlimited
 
