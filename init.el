@@ -122,7 +122,6 @@
         morlock
         mouse+
         multi-compile
-        multi-term
         mwim
         openwith
         paren-face
@@ -132,6 +131,7 @@
         pylint
         python-info
         rainbow-mode
+        sane-term
         save-visited-files
         shackle
         smart-shift
@@ -1417,30 +1417,110 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
 
 (setq term-suppress-hard-newline t)
 
-(with-eval-after-load "multi-term"
+(with-eval-after-load "term"
+  (defun term-send-reverse-search-history ()
+    "Search history reverse."
+    (interactive)
+    (term-send-raw-string "\C-r"))
+
+  (defun term-send-esc ()
+    "Send ESC in term mode."
+    (interactive)
+    (term-send-raw-string "\e"))
+
+  (defun term-send-return ()
+    "Use term-send-raw-string \"\C-m\" instead term-send-input.
+Because term-send-input have bug that will duplicate input when you C-a and C-m in terminal."
+    (interactive)
+    (term-send-raw-string "\C-m"))
+
+  (defun term-send-backward-kill-word ()
+    "Backward kill word in term mode."
+    (interactive)
+    (term-send-raw-string "\C-w"))
+
+  (defun term-send-forward-kill-word ()
+    "Kill word in term mode."
+    (interactive)
+    (term-send-raw-string "\ed"))
+
+  (defun term-send-backward-word ()
+    "Move backward word in term mode."
+    (interactive)
+    (term-send-raw-string "\eb"))
+
+  (defun term-send-forward-word ()
+    "Move forward word in term mode."
+    (interactive)
+    (term-send-raw-string "\ef"))
+
+  (defun term-send-reverse-search-history ()
+    "Search history reverse."
+    (interactive)
+    (term-send-raw-string "\C-r"))
+
+  (defun term-send-quote ()
+    "Quote the next character in term-mode.
+Similar to how `quoted-insert' works in a regular buffer."
+    (interactive)
+    (term-send-raw-string "\C-v"))
+
+  (defun term-send-M-x ()
+    "Type M-x in term-mode."
+    (interactive)
+    (term-send-raw-string "\ex"))
+
   (defun term-send-C-x ()
     "Type C-x in term-mode."
     (interactive "*")
     (term-send-raw-string "\C-x"))
-  
-  (dolist
-      (bind '(("C-<right>"     . term-send-forward-word)
-              ("C-<left>"      . term-send-backward-word)
+
+    (dolist
+      (bind '(;; from multi-term
+              ("C-z" . nil)
+              ("C-x" . nil)
+              ("C-c" . nil)
+              ("C-h" . nil)
+              ("C-y" . nil)
+              ("<ESC>" . nil)
+              ("C-c C-c" . term-interrupt-subjob)
+              ("C-c C-e" . term-send-esc)
+              ("C-p" . previous-line)
+              ("C-n" . next-line)
+              ("C-s" . isearch-forward)
+              ("C-r" . isearch-backward)
+              ("C-m" . term-send-return)
+              ;;("C-y" . term-paste)
+              ("M-f" . term-send-forward-word)
+              ("M-b" . term-send-backward-word)
+              ("M-o" . term-send-backspace)
+              ("M-p" . term-send-up)
+              ("M-n" . term-send-down)
+              ("M-M" . term-send-forward-kill-word)
+              ("M-N" . term-send-backward-kill-word)
+              ("<C-backspace>" . term-send-backward-kill-word)
+              ("M-r" . term-send-reverse-search-history)
+              ("M-," . term-send-raw)
+              ("M-." . comint-dynamic-complete)
+
+              ;; personal
+              ("C-<right>" . term-send-forward-word)
+              ("C-<left>" . term-send-backward-word)
               ("C-<backspace>" . term-send-backward-kill-word)
-              ("C-<delete>"    . term-send-forward-kill-word)
-              ("C-k"           . term-send-raw)
-              ("C-y"           . term-send-raw)
-              ("C-c C-z"       . term-stop-subjob)
-              ("C-c C-x"       . term-send-C-x)
-              ("C-z"           . term-stop-subjob)
-              ("C-c C-y"       . term-paste)
-              ;; work like urxvt tabbed
-              ("<S-down>"      . multi-term)
-              ("<S-left>"      . multi-term-prev)
-              ("<S-right>"     . multi-term-next)
-              ))
-    (add-to-list 'term-bind-key-alist bind))
-  )
+              ("C-<delete>" . term-send-forward-kill-word)
+              ("C-k" . term-send-raw)
+              ("C-y" . term-send-raw)
+              ("C-c C-z" . term-stop-subjob)
+              ("C-c C-x" . term-send-C-x)
+              ("C-z" . term-stop-subjob)
+              ("C-c C-y" . term-paste)
+              ("C-c C-u" . universal-argument)
+              ("<S-down>" . sane-term-create)
+              ("<S-left>" . sane-term-prev)
+              ("<S-right>" . sane-term-next)))
+    (define-key term-raw-map
+      (read-kbd-macro (car bind)) (cdr bind)))
+    )
 
 (defun jpk/term-mode-hook ()
   (setq cua--ena-cua-keys-keymap nil)
@@ -1448,7 +1528,7 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
     (yas-minor-mode 0)))
 (add-hook 'term-mode-hook 'jpk/term-mode-hook)
 
-(global-set-key (kbd "C-c t") 'multi-term-prev)
+(global-set-key (kbd "C-c t") 'sane-term)
 
 (defun shell-command-from-region (&optional arg output-buffer error-buffer)
   "Run the current line as a shell command.  If the region is
