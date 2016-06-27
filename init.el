@@ -59,7 +59,7 @@
   (add-to-list 'Info-additional-directory-list "~/.info/"))
 
 ;; a place to put persistent data
-(setq emacs-persistence-directory (concat user-emacs-directory "persistence/"))
+(setq emacs-persistence-directory (concat user-emacs-directory "var/"))
 (unless (file-exists-p emacs-persistence-directory)
   (make-directory emacs-persistence-directory t))
 
