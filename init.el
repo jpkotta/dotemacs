@@ -451,23 +451,21 @@
 ;; stops ggtags-create-tags from asking
 (setenv "GTAGSLABEL" "default")
 
+(defun ggtags-create-tags-pygments ()
+  "Like `ggtags-create-tags', but use pygments backend."
+  (interactive)
+  (let ((orig-label (getenv "GTAGSLABEL")))
+    (setenv "GTAGSLABEL" "pygments")
+    (ignore-errors
+      (call-interactively 'ggtags-create-tags))
+    (setenv "GTAGSLABEL" orig-label)))
+
+;; GTAGSLABEL has no effect unless there's a ~/.globalrc
 (let ((rcfile "~/.globalrc")
-      (dist-rcfile "/usr/share/gtags/gtags.conf")
-      buf)
-  ;; copy example rc file and edit it like so:
-  ;;
-  ;;  default:\
-  ;; -        :tc=native:
-  ;; +        :tc=native:tc=pygments:
+      (dist-rcfile "/usr/share/gtags/gtags.conf"))
   (when (and (not (file-exists-p rcfile))
            (file-exists-p dist-rcfile))
-    (with-temp-file rcfile
-      (insert-file-contents dist-rcfile)
-      (goto-char (point-min))
-      (search-forward "default:\\")
-      (forward-line 1)
-      (end-of-line)
-      (insert "tc=pygments:"))))
+    (copy-file dist-rcfile rcfile)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
