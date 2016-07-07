@@ -3520,6 +3520,7 @@ of text."
 ;; adaptive word wrap
 
 (with-library 'adaptive-wrap
+  (put 'adaptive-wrap-extra-indent 'safe-local-variable 'integerp)
   (setq-default adaptive-wrap-extra-indent 2)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
   )
