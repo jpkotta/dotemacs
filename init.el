@@ -1645,18 +1645,24 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (defun rename-file-and-buffer (new-name)
   "Rename the current buffer and file it is visiting to NEW-NAME."
-  (interactive "sNew name: ")
+  (interactive
+   (list
+    (let ((current-name (buffer-file-name (current-buffer))))
+      (if current-name
+          (setq current-name (file-name-nondirectory current-name))
+        (error "Buffer is not visiting a file!"))
+      (read-string "New name: " current-name nil current-name))))
   (let ((cur-name (buffer-file-name)))
-    (if (not (and cur-name (file-exists-p cur-name)))
-        (message "Buffer is not visiting a file!")
-      (cond
-       ((vc-backend cur-name)
-        (vc-rename-file cur-name new-name))
-       (t
-        (rename-file cur-name new-name t)
-        (rename-buffer new-name)
-        (set-visited-file-name new-name t t)
-        (set-buffer-modified-p nil))))))
+    (cond
+     ((and nil ;; causing too many problems
+         (vc-backend cur-name)
+         (y-or-n-p "Use vc-rename-file? "))
+      (vc-rename-file cur-name new-name))
+     (t
+      (rename-file cur-name new-name t)
+      (rename-buffer new-name)
+      (set-visited-file-name new-name t t)
+      (set-buffer-modified-p nil)))))
 
 (defun move-buffer-file (dir)
   "Move both current buffer and file it's visiting to DIR."
