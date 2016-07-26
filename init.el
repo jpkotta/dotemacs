@@ -420,6 +420,7 @@
 (defun jump-to-mark ()
   "Jumps to the local mark, respecting the `mark-ring' order.
   This is the same as using \\[set-mark-command] with the prefix argument."
+  (interactive)
   (set-mark-command 1))
 (global-set-key (kbd "M-`") 'jump-to-mark)
 
@@ -1239,7 +1240,7 @@ it's probably better to explicitly request a merge."
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
         '((Man-mode :select t)
-          (completion-list-mode :regexp t :inhibit-window-quit nil :select t)
+          (completion-list-mode :inhibit-window-quit nil :align 'below :size 0.3)
           (("*vc-incoming*" "*vc-outgoing*") :same t)
           ))
   (shackle-mode 1))
@@ -2528,27 +2529,8 @@ If region is inactive, use the entire current line."
                            "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
                            "--disable=C,R,locally-disabled"
                            ))
-    
-    (defun pylint2 ()
-      "Run `pylint' with `pylint-command' set to \"pylint2\"."
-      (interactive)
-      (let ((pylint-command (or (executable-find "pylint2")
-                               "pylint"))
-            (pylint-options (append
-                             pylint-options
-                             (list (format "--indent-string='%s'"
-                                           (make-string python-indent-offset ?\ ))))))
-        
-        (pylint)))
 
-    (defun pylint3 ()
-      "Run `pylint' with `pylint-command' set to \"pylint3\"."
-      (interactive)
-      (let ((pylint-command (or (executable-find "pylint3")
-                               "pylint")))
-        (pylint)))
-
-    (define-key python-mode-map (kbd "C-c C-v") 'pylint2)
+    (define-key python-mode-map (kbd "C-c C-v") 'pylint)
     (define-key python-mode-map (kbd "C-c C-i") 'pylint-insert-ignore-comment)
     )
 
