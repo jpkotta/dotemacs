@@ -80,6 +80,7 @@
         bitbake
         bm
         boxquote
+        browse-kill-ring
         buffer-move
         calmer-forest-theme
         csharp-mode
@@ -147,6 +148,7 @@
         wgrep
         wgrep-ag
         wrap-region
+        ;;yankpad
         yasnippet
         ))
 
@@ -3377,6 +3379,14 @@ point."
   (copy-instead-of-kill (kill-line arg)))
 
 (global-set-key (kbd "C-S-k") 'copy-line)
+
+(with-library 'browse-kill-ring
+  (advice-add 'yank-pop :around
+              (lambda (orig &rest args)
+                "Run `browse-kill-ring' if last command was not `yank'."
+                (if (eq last-command 'yank)
+                    (apply orig args)
+                  (browse-kill-ring)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
