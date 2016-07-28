@@ -3275,12 +3275,15 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Yasnippet (Yet Another Template Mode)
 
-(with-library 'yasnippet
+(with-eval-after-load "yasnippet"
   (setq yas-prompt-functions (cons 'yas-ido-prompt
                                    (remove 'yas-ido-prompt
                                            yas-prompt-functions)))
+  (define-key yas-minor-mode-map (kbd "TAB") nil)
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
   (yas-global-mode 1)
   )
+(global-set-key (kbd "C-c y") 'yas-insert-snippet)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; miscellaneous keybindings
