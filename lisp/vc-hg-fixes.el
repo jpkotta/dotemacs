@@ -1,4 +1,55 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; fix super slow `hg stat -A`
+
+(defun vc-hg-state (file)
+  "Hg-specific version of `vc-state'."
+  (let*
+      ((status nil)
+       (default-directory (file-name-directory file))
+       (out
+        (with-output-to-string
+          (with-current-buffer
+              standard-output
+            (setq status
+                  (condition-case nil
+                      ;; Ignore all errors.
+		      (let ((process-environment
+			     ;; Avoid localization of messages so we
+			     ;; can parse the output.  Disable pager.
+			     (append
+			      (list "TERM=dumb" "LANGUAGE=C" "HGPLAIN=1")
+			      process-environment)))
+			(if (file-remote-p file)
+			    (process-file
+			     "env" nil t nil
+			     "HGPLAIN=1" vc-hg-program
+			     "--config" "alias.status=status"
+			     "--config" "defaults.status="
+			     "status" (file-relative-name file))
+			  (process-file
+			   vc-hg-program nil t nil
+			   "--config" "alias.status=status"
+			   "--config" "defaults.status="
+			   "status" (file-relative-name file))))
+                    ;; Some problem happened.  E.g. We can't find an `hg'
+                    ;; executable.
+                    (error nil)))))))
+    (when (eq 0 status)
+        (when (and (null (string-match ".*: No such file or directory$" out))
+                 (not (string= "" out)))
+          (let ((state (aref out 0)))
+            (cond
+             ((eq state ?=) 'up-to-date)
+             ((eq state ?A) 'added)
+             ((eq state ?M) 'edited)
+             ((eq state ?I) 'ignored)
+             ((eq state ?R) 'removed)
+             ((eq state ?!) 'missing)
+             ((eq state ??) 'unregistered)
+             ((eq state ?C) 'up-to-date) ;; Older mercurial versions use this.
+             (t 'up-to-date)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; graphlog stuff
 
 (setq vc-log-short-style nil)

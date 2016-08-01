@@ -1250,6 +1250,8 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
 
+(setq vc-handled-backends '(Git Hg SVN))
+
 (setq vc-hg-log-switches '("-v"))
 
 (with-eval-after-load "vc-hg"
