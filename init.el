@@ -144,7 +144,7 @@
         sqlup-mode
         ssh-config-mode
         syntax-subword
-        systemd-mode
+        systemd
         undo-tree
         wgrep
         wgrep-ag
@@ -1876,7 +1876,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                "geeqie"
                '(file))
          (list (openwith-make-extension-regexp
-                '("doc" "xls" "ppt" "odt" "ods" "odg" "odp"))
+                '("doc" "docx" "xls" "ppt" "odt" "ods" "odg" "odp"))
                "libreoffice"
                '(file))
          '("\\.lyx" "lyx" (file))
