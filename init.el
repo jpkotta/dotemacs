@@ -99,6 +99,7 @@
         expand-region
         figlet
         flex-isearch
+        flyspell-correct
         fuzzy ;; for auto-complete
         fvwm-mode
         ggtags
@@ -922,14 +923,15 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Flyspell
 
-;; TODO: wrap flyspell-auto-correct-word with ido
-
 ;; TODO: http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
 (setq ispell-program-name "aspell")
 
 (with-eval-after-load "flyspell"
   (setq flyspell-use-meta-tab nil)
   (define-key flyspell-mode-map (kbd "M-TAB") nil)
+
+  (with-library 'flyspell-correct-ido
+    (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-word-generic))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
