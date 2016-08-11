@@ -238,7 +238,7 @@
            :inverse-video nil :box nil :strike-through nil
            :slant normal :weight normal :height 100 :width normal
            :foundry "unknown"))))
-   
+
    '(fringe ((t (:background "gray10" :foreground "dark green"))))
    '(highlight ((t (:background "gray6"))))
 
@@ -557,7 +557,7 @@ With prefix arg, insert a large ASCII art version.
  /   \         /   \
 (  O  )       (  O  )
  \___/         \___/
-       ======= 
+       =======
 "
   (interactive "*P")
   (if (not arg)
@@ -574,14 +574,14 @@ With prefix arg, insert a large ASCII art version.
 (defun insert-awesome-face (arg)
   "Insert a happy face (☻).
 With prefix arg, insert a large ASCII art version.
-  __     __   
- /  o   /  o  
-|____| |____| 
-              
-------------- 
+  __     __
+ /  o   /  o
+|____| |____|
+
+-------------
 |            )
- \    ,-----, 
-  '-./____-'  
+ \    ,-----,
+  '-./____-'
 "
   (interactive "*P")
   (if (not arg)
@@ -752,7 +752,7 @@ This can be used as a drop-in replacement for `string-to-number'."
   (define-key hexl-mode-map (kbd "C-S-<next>") 'hexl-forward-4k)
   (define-key hexl-mode-map (kbd "C-S-<prior>") 'hexl-backward-4k)
   )
-  
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CUA mode
 
@@ -889,12 +889,12 @@ The numbers are formatted according to the FORMAT string."
 
   (add-to-list 'ac-dictionary-files "~/.ispell_american")
   (add-to-list 'ac-dictionary-files "~/.aspell.en.pws")
-  
+
   (add-to-list 'ac-modes 'latex-mode)
 
   (add-to-list 'ac-sources 'ac-source-filename)
   (setq-default ac-sources ac-sources)
-  
+
   ;; keybinds
   (define-key ac-completing-map (kbd "C-n") 'ac-next)
   (define-key ac-completing-map (kbd "C-p") 'ac-previous)
@@ -1162,7 +1162,7 @@ it's probably better to explicitly request a merge."
       mouse-drag-copy-region t
       mouse-wheel-progressive-speed nil
       mouse-wheel-scroll-amount '(3 ((shift) . 1) ((control))))
-      
+
 (with-library 'mouse+
   (global-set-key (kbd "<down-mouse-2>") 'mouse-flash-position)
   (global-set-key (kbd "S-<down-mouse-2>") 'mouse-scan-lines))
@@ -1259,7 +1259,7 @@ it's probably better to explicitly request a merge."
   )
 
 (with-eval-after-load "vc-dir"
-  
+
   (defun vc-dir-toggle ()
     "Toggle the mark on a file in `vc-dir-mode'."
     (interactive)
@@ -1354,14 +1354,14 @@ it's probably better to explicitly request a merge."
 
 (defun insert-CR-eol (b e)
   (interactive "*r")
-  (save-restriction 
+  (save-restriction
     (narrow-to-region b e)
     (while (re-search-forward "\\([^]\\)$" nil t)
       (replace-match "\\1" nil nil))))
 
 (defun remove-CR-eol (b e)
   (interactive "*r")
-  (save-restriction 
+  (save-restriction
     (narrow-to-region b e)
     (while (re-search-forward "$" nil t)
       (replace-match "" nil nil))))
@@ -1766,8 +1766,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
              (y-or-n-p (format "Directory %s does not exist.  Create it? " dirname)))
       (make-directory dirname t))))
 
-(add-hook 'find-file-hook 'create-directory-if-necessary)
-(add-hook 'before-save-hook 'create-directory-if-necessary)
+(add-hook 'find-file-not-found-functions #'create-directory-if-necessary)
 
 (defun jpk/save-buffer-maybe (&optional args)
   "Like `save-buffer' but just prints a message if the buffer has no file."
@@ -1782,7 +1781,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (with-eval-after-load "dired"
   (setq image-dired-dir (concat emacs-persistence-directory "image-dired/"))
-  
+
   (define-key dired-mode-map (kbd "C-s") 'dired-isearch-filenames)
   (define-key dired-mode-map (kbd "C-M-s") 'dired-isearch-filenames-regexp)
 
@@ -1801,11 +1800,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (define-key dired-mode-map (kbd "C-x n r") 'dired-narrow-regexp)
     (define-key dired-mode-map (kbd "C-x n f") 'dired-narrow-fuzzy)
     (define-key dired-mode-map (kbd "C-x n w") 'revert-buffer))
-  
+
   (setq dired-omit-files "^\\.?#\\|^\\.$\\|^\\.[^.].*$")
   (with-library 'dired-x
     (setq dired-omit-verbose nil)
-    (delete ".bin" dired-omit-extensions) 
+    (delete ".bin" dired-omit-extensions)
     (define-key dired-mode-map (kbd "C-c C-o") 'dired-omit-mode)
     (add-hook 'dired-mode-hook 'dired-omit-mode))
 
@@ -1854,7 +1853,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (define-key view-mode-map (kbd "p") 'dired-view-prev)
 
   )
-  
+
 ;; word wrap looks terrible in dired buffers
 (defun jpk/dired-before-readin-hook ()
   (visual-line-mode 0)
@@ -1957,7 +1956,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                               (size 9 -1 :right) " "
                               (mode 16 16 :left :elide) " "
                               filename-and-process)
-                        (mark " " (name 16 -1) " " filename)) 
+                        (mark " " (name 16 -1) " " filename))
       ibuffer-movement-cycle nil
       ibuffer-saved-filter-groups nil
       ibuffer-saved-filters nil
@@ -2047,11 +2046,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (defun ibuffer-set-filter-groups-by-unsaved ()
     "Set the current filter groups to filter by `buffer-modified-p'."
-    (interactive) 
+    (interactive)
     (setq ibuffer-filter-groups
           `(("Unsaved" . ((unsaved . t)))))
     (ibuffer-update nil t))
-  
+
   (define-key ibuffer-mode-map
     (kbd "/ 8") 'ibuffer-filter-by-unsaved)
   (define-key ibuffer-mode-map
@@ -2060,7 +2059,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (with-library 'ibuffer-tramp
     (define-key ibuffer-mode-map
       (kbd "/ T") 'ibuffer-tramp-set-filter-groups-by-tramp-connection))
-  
+
   ;; TODO make cycling work with count
   (defun ibuffer-forward-filter-group (&optional count)
     "Move point forwards by COUNT filtering groups."
@@ -2223,7 +2222,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
 
 (setq compilation-read-command nil) ;; only prompt when compile is run with prefix
- 
+
 (global-set-key (kbd "C-c b") 'compile)
 (global-set-key (kbd "C-x ~") 'previous-error)
 
@@ -2264,7 +2263,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
         (mapcar (lambda (w) (cons w "red"))
                 '("TODO" "FIXME" "KLUDGE" "XXX" "DEBUG")))
   (add-hook 'prog-mode-hook 'hl-todo-mode))
-  
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generic Programming
 
@@ -2338,7 +2337,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   ;; highlight operators like '+' and '&'
   (with-library 'highlight-operators
     (highlight-operators-mode 1))
-  
+
   (setq adaptive-wrap-extra-indent 1)
 
   ;;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
@@ -2352,7 +2351,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
     (add-to-list 'ac-sources x))
-  
+
   ;; binds M-n, M-p, and M-'
   (with-library 'smartscan
     (smartscan-mode 1))
@@ -2825,7 +2824,7 @@ If region is inactive, use the entire current line."
         (unless (save-excursion (search-backward ";" (line-beginning-position) 'noerror))
           (insert ";")))))
   (comint-send-input no-newline artificial))
- 
+
 (defun jpk/sql-mode-hook ()
   (setq adaptive-wrap-extra-indent 2)
   (visual-line-mode 1)
@@ -2835,7 +2834,7 @@ If region is inactive, use the entire current line."
 
   (with-library 'sqlup-mode
     (sqlup-mode 1))
-  
+
   (sql-highlight-ansi-keywords))
 
 (with-eval-after-load "sql"
@@ -2952,13 +2951,13 @@ server/database name."
     (save-window-excursion
       (shell-command (concat cmd table-a) table-a-buf)
       (shell-command (concat cmd table-b) table-b-buf))
-    
+
     (with-current-buffer table-b-buf
       (goto-char (point-min))
       (re-search-forward "^INSERT INTO")
       (while (re-search-forward (regexp-quote table-b))
         (replace-match table-a nil nil)))
-    
+
     (if (and (> (buffer-size table-a-buf) 0)
            (> (buffer-size table-b-buf) 0))
         (ediff-buffers table-a-buf table-b-buf)
@@ -3257,7 +3256,7 @@ point."
 (global-set-key (kbd "C-S-<iso-lefttab>") 'bounce-string-or-list)
 (global-set-key (kbd "C-%") 'bounce-string-or-list)
 
-(with-library 'transpose-params 
+(with-library 'transpose-params
   (global-set-key (kbd "C-M-S-t") 'transpose-params))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3380,6 +3379,8 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
 
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
 (setq backward-delete-char-untabify-method nil)
 
 (electric-indent-mode -1)
@@ -3473,7 +3474,7 @@ Positive arg means right; negative means left"
   "Move the active region or the current line The Right Number of columns to the right."
   (interactive "*r\np")
   (move-left-dwim beg en (- arg)))
-   
+
 (global-set-key (kbd "C-0") 'move-left-1)
 (global-set-key (kbd "C-9") 'move-right-1)
 (global-set-key (kbd "C-)") 'move-left-dwim)
