@@ -1966,68 +1966,18 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (require 'ibuf-ext)
   (require 'ibuf-macs)
 
-  (define-ibuffer-sorter pathname
-    "Sort by pathname"
-    (:description "path")
-    (cl-flet ((get-pathname
-               (data)
-               (with-current-buffer (car data)
-                 (or buffer-file-name
-                    (if (eq major-mode 'dired-mode)
-                        (expand-file-name dired-directory))
-                    ;; so that all non pathnames are at the end
-                    ""))))
-      (string< (get-pathname a) (get-pathname b))))
-
-  (define-key ibuffer-mode-map
-    (kbd "s p") 'ibuffer-do-sort-by-pathname)
-
-  (defun get-all-buffer-directories ()
-    "Return a list of all directories that have at least one
-       file being visited."
-    (interactive)
-    (let (l)
-      (dolist (e (sort (mapcar 'file-name-directory
-                               (remove-if-not 'identity
-                                              (mapcar 'buffer-file-name
-                                                      (buffer-list))))
-                       'string<))
-        (unless (string= (car l) e)
-          (setq l (cons e l))))
-      l))
-
-  (define-ibuffer-filter dirname
-      "Toggle current view to buffers with in a directory DIRNAME."
-    (:description
-     "directory name"
-     :reader
-     (intern
-      (completing-read "Filter by directory: "
-                       (get-all-buffer-directories)
-                       'identity
-                       t nil nil nil nil)))
-    (string= qualifier
-             (and (buffer-file-name buf)
-                (file-name-directory (buffer-file-name buf)))))
-
-  (defun ibuffer-set-filter-groups-by-directory ()
-    "Set the current filter groups to filter by directory."
-    (interactive)
-    (setq ibuffer-filter-groups
-          (mapcar (lambda (dir)
-                    (cons (format "%s" dir) `((dirname . ,dir))))
-                  (get-all-buffer-directories)))
-    (ibuffer-update nil t))
-
-  (define-key ibuffer-mode-map
-    (kbd "/ D") 'ibuffer-set-filter-groups-by-directory)
-  (define-key ibuffer-mode-map
-    (kbd "/ d") 'ibuffer-filter-by-dirname)
-
   (define-key ibuffer-mode-map
     (kbd "/ M") 'ibuffer-set-filter-groups-by-mode)
   (define-key ibuffer-mode-map
     (kbd "/ m") 'ibuffer-filter-by-used-mode)
+
+  (with-library 'ibuffer-directory
+    (define-key ibuffer-mode-map
+      (kbd "s p") 'ibuffer-do-sort-by-directory)
+    (define-key ibuffer-mode-map
+      (kbd "/ D") 'ibuffer-set-filter-groups-by-directory)
+    (define-key ibuffer-mode-map
+      (kbd "/ d") 'ibuffer-filter-by-directory))
 
   (with-library 'ibuffer-projectile
     ;; from ibuffer-projectile
@@ -2035,26 +1985,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (kbd "/ P") 'ibuffer-projectile-set-filter-groups)
     ;; from projectile
     (define-key ibuffer-mode-map
-      (kbd "/ p") 'ibuffer-filter-by-projectile-files)
-    )
+      (kbd "/ p") 'ibuffer-filter-by-projectile-files))
 
-  (define-ibuffer-filter unsaved
-      "Only show unsaved buffers backed by a real file."
-    (:description "Unsaved")
-    (and (buffer-file-name buf)
-       (buffer-modified-p buf)))
-
-  (defun ibuffer-set-filter-groups-by-unsaved ()
-    "Set the current filter groups to filter by `buffer-modified-p'."
-    (interactive)
-    (setq ibuffer-filter-groups
-          `(("Unsaved" . ((unsaved . t)))))
-    (ibuffer-update nil t))
-
-  (define-key ibuffer-mode-map
-    (kbd "/ 8") 'ibuffer-filter-by-unsaved)
-  (define-key ibuffer-mode-map
-    (kbd "/ *") 'ibuffer-set-filter-groups-by-unsaved)
+  (with-library 'ibuffer-unsaved
+    (define-key ibuffer-mode-map
+      (kbd "/ 8") 'ibuffer-filter-by-unsaved)
+    (define-key ibuffer-mode-map
+      (kbd "/ *") 'ibuffer-set-filter-groups-by-unsaved))
 
   (with-library 'ibuffer-tramp
     (define-key ibuffer-mode-map
