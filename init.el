@@ -2229,7 +2229,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (beginning-of-line)
   (when (looking-at "^[[:space:]]*$")
     (end-of-line))
-  (insert (make-string count (string-to-char comment-start)))
+  (let ((comment-start (if (stringp comment-start)
+                           comment-start
+                         "# ")))
+    (insert (make-string count (string-to-char comment-start))))
   (insert "\n"))
 
 (with-eval-after-load "smartscan.el"
@@ -2401,6 +2404,34 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
              '("\\.bb\\(append\\|class\\)?\\'" . bitbake-mode))
 (add-to-list 'auto-mode-alist
              '("\\.inc\\'" . bitbake-mode))
+
+(defun jpk/bitbake-mode-hook ()
+  (setq indent-line-function #'indent-relative-dwim)
+  (local-set-key (kbd "C-M-;") #'insert-comment-bar)
+  (local-set-key (kbd "C-a") #'mwim-beginning-of-line-or-code)
+  (local-set-key (kbd "C-e") #'mwim-end-of-line-or-code)
+
+  (with-library "hl-todo"
+    (hl-todo-mode 1))
+
+  ;; highlight numeric literals
+  (with-library 'highlight-numbers
+    (highlight-numbers-mode 1))
+
+  ;; FIXME DRY
+  ;; highlight brackets
+  (with-library 'paren-face
+    (setq paren-face-regexp (regexp-opt '("[" "]" "(" ")" "{" "}")))
+    (set-face-attribute 'parenthesis nil :foreground "cyan3")
+    (paren-face-mode 1))
+
+  ;; highlight operators like '+' and '&'
+  (with-library 'highlight-operators
+    (highlight-operators-mode 1))
+
+  (setq adaptive-wrap-extra-indent 1)
+)
+(add-hook 'bitbake-mode-hook #'jpk/bitbake-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C#
