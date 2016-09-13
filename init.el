@@ -161,7 +161,7 @@
              '("melpa" . "http://melpa.org/packages/"))
 
 (let ((refreshed nil))
-  (when (not package-archive-contents)
+  (unless package-archive-contents
     (package-refresh-contents)
     (setq refreshed t))
   (dolist (pkg jpk-packages)
@@ -533,6 +533,15 @@
 ;; it's probably best if this is an org-mode file
 (setq remember-data-file (concat emacs-persistence-directory "remember.org"))
 (global-set-key (kbd "C-c r") 'remember)
+
+;; ;; babel
+;; (org-babel-do-load-languages 'org-babel-load-languages
+;;                              '((sh . t)
+;;                                (emacs-lisp . t)
+;;                                (python . t)))
+;; (setq org-confirm-babel-evaluate nil
+;;       org-src-fontify-natively t
+;;       org-src-tab-acts-natively t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
@@ -1025,7 +1034,6 @@ it's probably better to explicitly request a merge."
 
 (defun jpk/ido-minibuffer-setup-hook ()
   ;; disallow wrapping of the minibuffer
-  (make-local-variable 'truncate-lines)
   (setq truncate-lines t))
 (add-hook 'ido-minibuffer-setup-hook 'jpk/ido-minibuffer-setup-hook)
 
@@ -1790,6 +1798,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (toggle-diredp-find-file-reuse-dir 1)
     (define-key dired-mode-map (kbd "<mouse-2>")
       'diredp-mouse-find-file-reuse-dir-buffer)
+    (define-key dired-mode-map (kbd "f") 'diredp-up-directory-reuse-dir-buffer)
     )
 
   (require 'dired-imenu nil 'noerror)
@@ -1857,7 +1866,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; word wrap looks terrible in dired buffers
 (defun jpk/dired-before-readin-hook ()
   (visual-line-mode 0)
-  (toggle-truncate-lines 1)
+  (setq truncate-lines t)
   )
 (add-hook 'dired-before-readin-hook 'jpk/dired-before-readin-hook)
 
@@ -2729,9 +2738,10 @@ If region is inactive, use the entire current line."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
 
-(dolist (re '("\\.list\\'" ;; apt sources files
-              "Doxyfile" ;; Doxygen
-              "\\.rules\\'" ;; udev
+(dolist (re '("\\.list\\'"
+              "Doxyfile"
+              "\\.rules\\'"
+              "\\`fstab\\'"
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
 
