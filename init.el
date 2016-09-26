@@ -2415,12 +2415,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
              '("\\.inc\\'" . bitbake-mode))
 
 (defun jpk/bitbake-mode-hook ()
+  (setq comment-start "#"
+        comment-stop "") ;; FIXME upstream
   (setq indent-line-function #'indent-relative-dwim)
   (local-set-key (kbd "C-M-;") #'insert-comment-bar)
   (local-set-key (kbd "C-a") #'mwim-beginning-of-line-or-code)
   (local-set-key (kbd "C-e") #'mwim-end-of-line-or-code)
 
-  (with-library "hl-todo"
+  (with-library 'hl-todo
     (hl-todo-mode 1))
 
   ;; highlight numeric literals
