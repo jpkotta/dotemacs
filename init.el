@@ -26,8 +26,6 @@
 ;; a better way to do global key bindings
 ;; http://shallowsky.com/blog/linux/editors/emacs-global-key-bindings.html
 
-;; redo the compilation stuff
-
 ;; ;; override function but retain original definition!
 ;; ;; doesn't seem to work in :around advice
 ;; (defun foo ()
@@ -36,6 +34,8 @@
 ;;           ((symbol-function 'foo) (lambda () (message "new foo"))))
 ;;   (foo)
 ;;   (old-foo))
+
+;; rectangle-mark-mode
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
@@ -155,7 +155,6 @@
 
 (setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version "/"))
 
-(setq package-enable-at-startup nil) ;; do not reinitialize after init
 (package-initialize)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -222,7 +221,9 @@
                             (menu-bar-lines . 0)
                             (background-mode . dark)
                             (tool-bar-lines . 0)
-                            (width . 81)))
+                            (width . 81)
+                            (scroll-bar-height . 5)
+                            (scroll-bar-width . 10)))
 
 (setq custom-safe-themes t)
 (with-library 'calmer-forest-theme
@@ -281,7 +282,7 @@
                         (or (file-remote-p default-directory 'user)
                             user-real-login-name)
                         (or (file-remote-p default-directory 'host)
-                            (car (split-string system-name "\\.")))
+                            (car (split-string (system-name) "\\.")))
                         (buffer-name)
                         (cond
                          (buffer-file-truename
@@ -817,9 +818,8 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Clipboard
 
-(setq x-select-enable-clipboard t
-      x-select-enable-primary nil
-      x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)
+(setq select-enable-clipboard t
+      select-enable-primary nil
       select-active-regions t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -864,6 +864,9 @@ The numbers are formatted according to the FORMAT string."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Web Browser
+
+(setq eww-search-prefix "https://google.com/search?q=")
+(setq shr-color-visible-luminance-min 70)
 
 (unless (executable-find "chromium")
   (setq browse-url-chromium-program "google-chrome"))
@@ -3531,7 +3534,7 @@ of text."
 (global-set-key (kbd "S-<prior>") 'scroll-other-window-down)
 
 (with-library 'smart-hscroll
-  (smart-hscroll-mode 1)
+  ;;(smart-hscroll-mode 1) ;; interferes with rectangle-mark-mode
   (mouse-hscroll-mode 1)
   (global-set-key (kbd "C->") 'scroll-left-8)
   (global-set-key (kbd "C-<") 'scroll-right-8))

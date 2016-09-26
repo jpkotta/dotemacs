@@ -69,7 +69,7 @@
          ;; Here's (part of) the default font-lock-keywords for
          ;; vc-hg-log-view-mode.  I can't figure out how to get this
          ;; programmatically, so a manual way to get this is:
-         ;; 
+         ;;
          ;;     emacs -q
          ;;     open a file/dir under hg version control
          ;;     C-x v L
@@ -103,7 +103,7 @@
 (defun jpk/fix-log-view-re ()
   (setq log-view-message-re
         (replace-regexp-in-string "^\\^" hg-graphlog-re log-view-message-re nil t))
-  (setq log-view-file-re 
+  (setq log-view-file-re
         (replace-regexp-in-string "^\\^" hg-graphlog-re log-view-file-re nil t))
   )
 
@@ -176,25 +176,6 @@ changeset that affected the currently considered file(s)."
                  (list (log-view-current-file))
                log-view-vc-fileset))
      to fr)))
-
-;; this version works better for a single rev's diff
-(defun vc-hg-diff (files &optional oldvers newvers buffer)
-  "Get a difference report using hg between two revisions of FILES."
-  (let* ((firstfile (car files))
-         (working (and firstfile (vc-working-revision firstfile))))
-    (when (and (equal oldvers working) (not newvers))
-      (setq oldvers nil))
-    (when (and (not oldvers) newvers)
-      (setq oldvers working))
-    (apply #'vc-hg-command (or buffer "*vc-diff*") nil files "diff"
-           (append
-            (vc-switches 'hg 'diff)
-            (when oldvers
-              (if newvers
-                  (if (string-equal oldvers newvers)
-                      (list "-c" oldvers)
-                    (list "-r" oldvers "-r" newvers))
-                (list "-r" oldvers)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; misc
