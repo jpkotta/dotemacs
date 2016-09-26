@@ -66,7 +66,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 
-(setq jpk-packages
+(setq package-selected-packages
       '(
         ac-c-headers
         ac-math
@@ -164,7 +164,7 @@
   (unless package-archive-contents
     (package-refresh-contents)
     (setq refreshed t))
-  (dolist (pkg jpk-packages)
+  (dolist (pkg package-selected-packages)
     (when (and (not (package-installed-p pkg))
              (assoc pkg package-archive-contents))
       (unless refreshed
@@ -174,11 +174,11 @@
 
 (defun package-list-unaccounted-packages ()
   "Like `package-list-packages', but shows only the packages that
-  are installed and are not in `jpk-packages'.  Useful for
+  are installed and are not in `package-selected-packages'.  Useful for
   cleaning out unwanted packages."
   (interactive)
   (package-show-package-list
-   (cl-remove-if (lambda (x) (or (memq x jpk-packages)
+   (cl-remove-if (lambda (x) (or (memq x package-selected-packages)
                            (package-built-in-p x)
                            (not (package-installed-p x))))
                  (mapcar 'car package-archive-contents))))
