@@ -159,28 +159,20 @@
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
 
-(let ((refreshed nil))
-  (unless package-archive-contents
-    (package-refresh-contents)
-    (setq refreshed t))
-  (dolist (pkg package-selected-packages)
-    (when (and (not (package-installed-p pkg))
-             (assoc pkg package-archive-contents))
-      (unless refreshed
-        (package-refresh-contents)
-        (setq refreshed t))
-      (package-install pkg))))
-
-(defun package-list-unaccounted-packages ()
-  "Like `package-list-packages', but shows only the packages that
-  are installed and are not in `package-selected-packages'.  Useful for
-  cleaning out unwanted packages."
+(defun jpk/install-selected-packages ()
   (interactive)
-  (package-show-package-list
-   (cl-remove-if (lambda (x) (or (memq x package-selected-packages)
-                           (package-built-in-p x)
-                           (not (package-installed-p x))))
-                 (mapcar 'car package-archive-contents))))
+  (if (not (called-interactively-p))
+      (cl-letf (((symbol-function 'y-or-n-p)
+                 (lambda (prompt) t)))
+        (when (null package-archive-contents)
+          (package-refresh-contents))
+        (package-autoremove)
+        (package-install-selected-packages))
+    (package-refresh-contents)
+    (package-autoremove)
+    (package-install-selected-packages)))
+
+(jpk/install-selected-packages)
 
 (defmacro with-library (feature &rest body)
   "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
