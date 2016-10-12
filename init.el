@@ -1153,7 +1153,8 @@ it's probably better to explicitly request a merge."
     (unless (file-exists-p d)
       (make-directory d t))))
 
-(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+(with-eval-after-load 'tramp
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
 
 (setq tramp-copy-size-limit nil) ; for Edison
 
@@ -2111,8 +2112,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; immortal-scratch
 
-(setq immortal-scratch-switch-to-respawned-scratch t)
-(immortal-scratch-mode 1)
+(with-library 'immortal-scratch
+  (setq immortal-scratch-switch-to-respawned-scratch t)
+  (immortal-scratch-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; figlet
