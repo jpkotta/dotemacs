@@ -819,7 +819,7 @@ The numbers are formatted according to the FORMAT string."
 ;;; Clipboard
 
 (setq select-enable-clipboard t
-      select-enable-primary nil
+      select-enable-primary t
       select-active-regions t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1787,6 +1787,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (save-buffer args)
     (error "Buffer is not associated with a file.  Use `write-file' instead.")))
 (global-set-key [remap save-buffer] 'jpk/save-buffer-maybe)
+
+(global-set-key (kbd "C-x k") #'kill-this-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
