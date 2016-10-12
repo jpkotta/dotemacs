@@ -1136,9 +1136,10 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; midnight
 
-(require 'midnight)
-(setq clean-buffer-list-delay-general 2)
-(midnight-delay-set 'midnight-delay "4:00am")
+(with-library 'midnight
+  (setq clean-buffer-list-delay-general 2)
+  (midnight-delay-set 'midnight-delay "04:00")
+  (midnight-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
