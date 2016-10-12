@@ -3063,13 +3063,6 @@ match.  It should be idempotent."
                   (with-selected-window win
                     (recenter-no-redraw))))))
 
-;; compilation-previous-error just calls compilation-next-error
-(advice-add 'compilation-next-error
-            :after
-            (lambda (&rest args)
-              "recenter the error buffer"
-              (recenter-no-redraw)))
-
 (defvar grep-context-lines 2
   "Default number of context lines (non-matching lines before and
   after the matching line) for `rgrep-context'.")
