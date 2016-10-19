@@ -37,7 +37,7 @@
 Letters do not insert themselves; instead, they are commands.
 
 \\{unicode-table-mode-map}")
-  
+
 (defun unicode-table-describe-char ()
   "Do `describe-char' to the character in a row of a `unicode-table-mode' buffer."
   (interactive)

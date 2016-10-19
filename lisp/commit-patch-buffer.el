@@ -1,4 +1,4 @@
-;; Copyright 2003-2006 Jim Radford <radford@bleackbean.org> 
+;; Copyright 2003-2006 Jim Radford <radford@bleackbean.org>
 ;;                 and David Caldwell <david@porkrind.org>, All Rights Reserved.
 ;; This code can be distributed under the terms of the GNU Public License
 ;; Version: 2.1
@@ -12,9 +12,9 @@
   (let* ((patch-files (with-temp-buffer
                         (let ((lsdiff (current-buffer)))
                           (when (eq 0 (with-current-buffer buffer
-                                        (call-process-region (point-min) (point-max) 
+                                        (call-process-region (point-min) (point-max)
                                                              "lsdiff" nil lsdiff nil)))
-                            (split-string (buffer-string)))))) 
+                            (split-string (buffer-string))))))
          (f patch-files) visiting-buffers)
     (while (car f)
       (let ((buf (find-buffer-visiting (car f))))
@@ -27,18 +27,18 @@
         (let ((patch (make-temp-file "commit-buffer" nil))
               (comment (buffer-string))
               (output-buffer (get-buffer-create "*commit-patch*")))
-          (unwind-protect 
+          (unwind-protect
               (progn
                 (with-current-buffer ,buffer
                   (write-region (point-min) (point-max) patch))
                 (with-current-buffer output-buffer
                   (erase-buffer)
-                  (let* ((default-directory ,directory) 
+                  (let* ((default-directory ,directory)
                          (status (call-process "commit-patch" nil
                                                output-buffer 'display
                                                "-m" comment patch)))
                     (if (not (eq status 0))
-                        (progn 
+                        (progn
                           (window-buffer (display-buffer output-buffer))
                           (message "Commit patch failed with a status of '%S' (%S)." status patch))
                       (mapc (lambda (buf) (with-current-buffer buf
@@ -48,7 +48,7 @@
                                             ;; get updated, so we do it by hand.
                                             (run-hooks 'find-file-hooks)))
                             ',visiting-buffers)
-                      (message "Patched and commited %S file(s) and reverted %S." 
+                      (message "Patched and commited %S file(s) and reverted %S."
                                ,(length patch-files) ,(length visiting-buffers))
                       ;; bury the patch buffer
                       (replace-buffer-in-windows ,buffer)))))

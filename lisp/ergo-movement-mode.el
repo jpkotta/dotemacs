@@ -65,7 +65,7 @@
                  ("M-l"   . "<right>")
                  ("M-i"   . "<up>")
                  ("M-k"   . "<down>")
-                 
+
                  ("C-M-j" . "C-<left>")
                  ("C-M-l" . "C-<right>")
                  ("C-M-i" . "C-<up>")
@@ -80,7 +80,7 @@
                  ("M-D"   . "C-<backspace>")
                  ("M-d"   . "C-<delete>")
                  ))
-      (define-key map 
+      (define-key map
         (read-kbd-macro (car k))
         (make-run-keybind-func (cdr k) t)))
     map)
@@ -96,12 +96,12 @@ keyboard.
 
     M-    u i o   =   <backspace>   <up>     <delete>
           j k l   =   <left>        <down>   <right>
-                      
+
     C-M-  u i o   =   C-<backspace> C-<up>   C-<delete>
           j k l   =   C-<left>      C-<down> C-<right>
 
 The original bindings of the above movement commands are kept
-untouched. The new bindings override other commands though. 
+untouched. The new bindings override other commands though.
 \\{ergo-movement-mode-map}"
 
   :global t

@@ -7,8 +7,8 @@
 ;; Version: 0.64
 ;; Last-Updated: Thu Oct 27 01:19:00 2005
 ;; Keywords: printing
-;; Compatibility: 
-;; 
+;; Compatibility:
+;;
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -36,9 +36,9 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;; Commentary: 
-;; 
+;;
+;;; Commentary:
+;;
 ;;  This file shows the current buffer in your web browser with all
 ;;  the colors it has. The purpose is mainly to make it possible to
 ;;  easily print what you see in Emacs in colors on different
@@ -51,15 +51,15 @@
 ;;
 ;;  Then just call `htmlize-view-buffer' to show the current buffer in
 ;;  your web browser.
-;; 
-;; 
+;;
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;; Change log:
-;; 
-;; 
+;;
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;; Code:
 
 

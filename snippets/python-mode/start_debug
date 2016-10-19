@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: # vvv DEBUG vvv 
+# name: # vvv DEBUG vvv
 # key: #dv
 # binding: direct-keybinding
 # expand-env: ((some-var some-value))

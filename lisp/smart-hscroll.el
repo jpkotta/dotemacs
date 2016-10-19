@@ -33,18 +33,18 @@
   :init-value nil
   :lighter nil
   :global t
-  
+
   (when smart-hscroll-mode
     (setq smart-hscroll-auto-hscroll-mode-saved auto-hscroll-mode)
     (save-current-buffer
       (dolist (buf (buffer-list))
         (set-buffer buf)
         (setq hscroll-point-previous (point))))
-    (setq smart-hscroll-cursor-movement-detector-timer 
+    (setq smart-hscroll-cursor-movement-detector-timer
           (run-with-idle-timer 0.1 t 'smart-hscroll-detect-cursor-movement)))
   (unless smart-hscroll-mode
     (setq auto-hscroll-mode smart-hscroll-auto-hscroll-mode-saved)
-    (when smart-hscroll-cursor-movement-detector-timer 
+    (when smart-hscroll-cursor-movement-detector-timer
       (cancel-timer smart-hscroll-cursor-movement-detector-timer))))
 
 (dolist (func '(scroll-left scroll-right))
@@ -136,7 +136,7 @@ This should only be bound to mouse buttons 4 and 5."
     (define-key map (kbd "<mouse-6>") 'scroll-right-8)
 
     map)
-  
+
   "Keymap for `mouse-hscroll-mode'.")
 
 (define-minor-mode mouse-hscroll-mode
