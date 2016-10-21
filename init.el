@@ -604,34 +604,18 @@ With prefix arg, insert a large ASCII art version.
 (global-set-key (kbd "C-x 8 E") "€")
 (global-set-key (kbd "C-x 8 * E") "€")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Date and Time
-
-(defvar insert-time-format "%H:%M:%S"
-  "*Format for `insert-time', see `format-time-string' for syntax.")
-
-(defvar insert-date-format "%Y-%m-%d"
-  "*Format for `insert-date', see `format-time-string' for syntax.")
-
-(defun insert-time-str (fmt)
-  "Insert a formatted timestamp string in the buffer.  See
-  `format-time-string' for syntax of FMT."
-  (insert (format-time-string fmt (current-time))))
-
-(defun insert-time ()
-  "Insert the current time in the buffer."
-  (interactive "*")
-  (insert-time-str insert-time-format))
-
-(defun insert-date ()
-  "Insert the current date in the buffer."
-  (interactive "*")
-  (insert-time-str insert-date-format))
-
-(defun insert-date-and-time ()
+(defun insert-date/time ()
   "Insert the current date and time in the buffer."
   (interactive "*")
-  (insert-time-str (concat insert-date-format " " insert-time-format)))
+  (let* ((fmt-alist '(("time" "%T")
+                      ("date" "%F")
+                      ("datetime" "%F %T")
+                      ("iso" "%FT%T%z")))
+         (type (completing-read "Type: "
+                                (mapcar 'car fmt-alist)
+                                nil t nil nil "datetime"))
+         (fmt (cadr (assoc type fmt-alist))))
+    (insert (format-time-string fmt (current-time)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ssh
