@@ -2050,7 +2050,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                 :after
                 (lambda (&rest args)
                   "Recenter"
-                  (recenter-no-redraw))))
+                  (recenter))))
 
   (defun ibuffer-mark-toggle (arg)
     (interactive "P")
@@ -2208,13 +2208,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   "Like `beginning-of-defun', and also recenters."
   (interactive "^p")
   (beginning-of-defun arg)
-  (recenter-no-redraw))
+  (recenter))
 
 (defun next-defun (&optional arg)
   "Like `beginning-of-defun' with a negative arg, and also recenters."
   (interactive "^p")
   (beginning-of-defun (- arg))
-  (recenter-no-redraw))
+  (recenter))
 
 (defun insert-comment-bar (count)
   "Insert COUNT comment characters.  COUNT defaults to 72."
@@ -2238,7 +2238,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                 :after
                 (lambda (&rest args)
                   "Recenter"
-                  (recenter-no-redraw)))))
+                  (recenter)))))
 
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
@@ -2966,12 +2966,6 @@ server/database name."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; isearch
 
-(defun recenter-no-redraw (&optional arg)
-  "Like `recenter', but no redrawing."
-  (interactive "P")
-  (let ((recenter-redisplay nil))
-    (recenter arg)))
-
 ;; Allow page up/down, C-l, and anything else that doesn't move the
 ;; point during isearch.
 (setq isearch-allow-scroll t)
@@ -2987,7 +2981,7 @@ server/database name."
             (lambda (&rest args)
               "Recenter"
               (when isearch-success
-                (recenter-no-redraw))))
+                (recenter))))
 
 ;; make backspace behave in a more intuitive way
 (define-key isearch-mode-map (kbd "<backspace>") 'isearch-del-char)
@@ -3047,7 +3041,7 @@ match.  It should be idempotent."
               (let ((win (get-buffer-window next-error-last-buffer)))
                 (when win
                   (with-selected-window win
-                    (recenter-no-redraw))))))
+                    (recenter))))))
 
 (defvar grep-context-lines 2
   "Default number of context lines (non-matching lines before and
@@ -3105,14 +3099,14 @@ The user is prompted at each instance like query-replace."
 (defun search-forward-and-center (string &optional bound noerror count)
   "Just like `search-forward', but centers the point in the window."
   (let ((ret (search-forward string bound noerror count)))
-    (recenter-no-redraw)
+    (recenter)
     ret))
 (setq replace-search-function 'search-forward-and-center)
 
 (defun re-search-forward-and-center (regexp &optional bound noerror count)
   "Just like `re-search-forward', but centers the point in the window."
   (let ((ret (re-search-forward regexp bound noerror count)))
-    (recenter-no-redraw)
+    (recenter)
     ret))
 (setq replace-re-search-function 're-search-forward-and-center)
 
