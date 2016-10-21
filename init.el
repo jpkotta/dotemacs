@@ -1394,6 +1394,29 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
   (diff-add-or-remove-trailing-CR-in-hunk nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; smerge-mode
+
+(setq smerge-command-prefix (read-kbd-macro "C-c c"))
+
+(defun smerge-help ()
+  "Describe keybindings for `smerge-mode'."
+  (interactive)
+  (with-temp-buffer
+    (smerge-mode 1) ;; ensure smerge-mode-map is active
+    (describe-bindings smerge-command-prefix)))
+
+(defun smerge-quick-keys ()
+  "Set `smerge-basic-map' as the transient keymap.
+This effectively makes `smerge-command-prefix' unnecessary."
+  (interactive)
+  (set-transient-map smerge-basic-map t))
+
+(add-hook 'smerge-mode-hook 'smerge-quick-keys)
+
+(with-eval-after-load "smerge-mode"
+  (define-key smerge-basic-map (kbd "h") 'smerge-help))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; diff-hl
 
 (with-library 'diff-hl
