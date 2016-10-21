@@ -527,14 +527,16 @@
 (setq remember-data-file (concat emacs-persistence-directory "remember.org"))
 (global-set-key (kbd "C-c r") 'remember)
 
-;; ;; babel
-;; (org-babel-do-load-languages 'org-babel-load-languages
-;;                              '((sh . t)
-;;                                (emacs-lisp . t)
-;;                                (python . t)))
-;; (setq org-confirm-babel-evaluate nil
-;;       org-src-fontify-natively t
-;;       org-src-tab-acts-natively t)
+;; babel
+(org-babel-do-load-languages 'org-babel-load-languages
+                             '((sh . t)
+                               (emacs-lisp . t)
+                               (python . t)
+                               (sql . t)))
+(setq org-confirm-babel-evaluate nil
+      org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-babel-python-command "python -ic ''")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
