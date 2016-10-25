@@ -846,8 +846,12 @@ The numbers are formatted according to the FORMAT string."
 (setq eww-search-prefix "https://google.com/search?q=")
 (setq shr-color-visible-luminance-min 70)
 
-(unless (executable-find "chromium")
-  (setq browse-url-chromium-program "google-chrome"))
+;; default is "chromium"
+(catch 'break
+  (dolist  (e '("google-chrome-beta" "google-chrome" "google-chrome-stable"))
+    (when (executable-find e)
+      (setq browse-url-chromium-program e)
+      (throw 'break t))))
 (setq browse-url-browser-function 'browse-url-chromium
       browse-url-new-window-flag t)
 
