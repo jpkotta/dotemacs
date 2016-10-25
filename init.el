@@ -125,6 +125,7 @@
         mouse+
         multi-compile
         mwim
+        ob-ipython
         openwith
         paren-face
         pkgbuild-mode
@@ -533,6 +534,7 @@
                              '((sh . t)
                                (emacs-lisp . t)
                                (python . t)
+                               (ipython . t)
                                (sql . t)))
 (setq org-confirm-babel-evaluate nil
       org-src-fontify-natively t
