@@ -528,6 +528,7 @@
 (global-set-key (kbd "C-c r") 'remember)
 
 ;; babel
+;; http://www.howardism.org/Technical/Emacs/literate-devops.html
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((sh . t)
                                (emacs-lisp . t)
@@ -2230,6 +2231,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq-default comment-column 0
               comment-style 'extra-line)
+
+(global-set-key (kbd "M-;") 'comment-line
 
 (defun previous-defun (&optional arg)
   "Like `beginning-of-defun', and also recenters."
