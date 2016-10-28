@@ -2234,7 +2234,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (setq-default comment-column 0
               comment-style 'extra-line)
 
-(global-set-key (kbd "M-;") 'comment-line
+(global-set-key (kbd "M-;") 'comment-line)
 
 (defun previous-defun (&optional arg)
   "Like `beginning-of-defun', and also recenters."
