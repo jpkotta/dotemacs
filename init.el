@@ -3371,16 +3371,25 @@ point."
 
 (electric-indent-mode -1)
 
+(global-set-key (kbd "C-m") #'newline-and-indent)
+
 (defun indent-relative-dwim ()
-  "Indent the current line to either: the beginning of last
- preceding line with text, the next tab stop (as determined by
- tab-width, not tab-stop-list) after the previous indent, or the
- beginning of the line.  Repeatedly calling this function cycles
- between these 3 actions."
+  "Indent current line based on previous line; cycle between alternate indents
+
+Indents the current line to the same level as the previous line.
+
+If called repeatedly, cycle the indent as follows:
+    same as previous line
+    one tab-width more than previous
+    one tab-width less than previous
+    beginning of line
+    same as previous, etc."
+
   (interactive "*")
 
   (let ((last-line-indent 0)
-        (next-indent 0))
+        (next-indent 0)
+        (prev-indent 0))
 
     (save-excursion
       (save-match-data
@@ -3391,15 +3400,23 @@ point."
           (goto-char (match-beginning 0))
           (setq last-line-indent (current-column)))))
     (setq next-indent (* (1+ (/ last-line-indent tab-width)) tab-width))
+    (setq prev-indent (max 0 (* (1- (/ last-line-indent tab-width)) tab-width)))
 
-    (cond
-     ((= (current-column) last-line-indent)
-      (unless (eq this-command 'newline-and-indent)
-        (indent-line-to next-indent)))
-     ((= (current-column) next-indent)
-      (indent-line-to 0))
-     (t
-      (indent-line-to last-line-indent)))))
+    (save-excursion
+      (beginning-of-line-text)
+      (cond
+       ((= (current-column) last-line-indent)
+        (unless (eq this-command 'newline-and-indent)
+          (indent-line-to next-indent)))
+       ((= (current-column) next-indent)
+        (indent-line-to prev-indent))
+       ((= (current-column) prev-indent)
+        (indent-line-to 0))
+       (t
+        (indent-line-to last-line-indent))))
+
+    (when (or (bolp) (looking-back "^[[:space:]]+"))
+      (beginning-of-line-text))))
 
 (setq-default indent-line-function 'indent-relative-dwim)
 
