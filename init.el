@@ -94,6 +94,7 @@
         dired-narrow
         dired-ranger
         ;;dired-toggle-sudo
+        dts-mode
         easy-repeat
         edit-list
         evil-numbers
@@ -2765,6 +2766,11 @@ If region is inactive, use the entire current line."
               "\\`fstab\\'"
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; dts (flattened device tree)
+
+(add-to-list 'auto-mode-alist '("\\.its\\'" . dts-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; text-mode
