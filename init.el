@@ -74,6 +74,7 @@
         adaptive-wrap
         ag
         anchored-transpose
+        atomic-chrome
         auctex
         auto-complete
         backup-walker
