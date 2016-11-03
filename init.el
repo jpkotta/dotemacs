@@ -119,6 +119,7 @@
         keychain-environment
         ;;list-unicode-display
         lua-mode
+        magit
         markdown-mode
         mediawiki
         mic-paren
@@ -1283,6 +1284,8 @@ it's probably better to explicitly request a merge."
               "Suppress VC message."
               (with-temp-message ""
                 (apply orig args))))
+
+(global-set-key (kbd "C-x g") #'magit-status)
 
 ;; TODO
 ;; vc-revert bug
