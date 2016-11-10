@@ -25,7 +25,7 @@
 			 "--config" "alias.status=status"
 			 "--config" "defaults.status="
 			 ;;"status" "-A" (file-relative-name file)))
-             "status" (file-relative-name file)))
+             "status" "-marduc" (file-relative-name file)))
                     ;; Some problem happened.  E.g. We can't find an `hg'
                     ;; executable.
                     (error nil)))))))
