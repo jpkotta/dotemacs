@@ -84,8 +84,8 @@
   (interactive)
   (setq ibuffer-filter-groups
         (mapcar (lambda (dir)
-                  (cons "%s" `((directory . ,dir))))
-                (get-all-buffer-directories)))
+                  (cons dir `((directory . ,dir))))
+                (ibuffer-directory--get-all-buffer-directories)))
   (ibuffer-update nil t))
 
 (provide 'ibuffer-directory)
