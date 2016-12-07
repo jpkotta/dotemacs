@@ -117,7 +117,7 @@ If called with `universal-argument' (C-u), ask for username.
                         (read-string "Username: ")
                       sudo-user)))
     (when fname
-      (setq fname (dired-toggle-sudo-internal fname sudo-user))
+      (setq fname (dired-toggle-sudo--internal fname sudo-user))
       (dired-toggle-sudo--find fname))))
 
 (provide 'dired-toggle-sudo)
