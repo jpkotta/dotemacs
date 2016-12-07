@@ -42,28 +42,29 @@
 (require 'ibuf-ext)
 (require 'ibuf-macs)
 
-(define-ibuffer-sorter directory
-  "Sort by directory"
-  (:description "directory")
-  (cl-flet ((get-directory
-             (data)
-             (with-current-buffer (car data)
-               (or buffer-file-name
-                  (when (eq major-mode 'dired-mode)
-                    (expand-file-name dired-directory))
-                  ;; so that all non directories are at the end
-                  ""))))
-    (string< (get-directory a) (get-directory b))))
+(defun ibuffer-directory--buffer-directory (buffer)
+  "Get buffer's directory if a regular file or dired buffer, nil otherwise."
+  (with-current-buffer buffer
+    (or (when (buffer-file-name)
+         (file-name-directory (buffer-file-name)))
+       (when (eq major-mode 'dired-mode)
+         (expand-file-name dired-directory))
+       nil)))
 
 (defun ibuffer-directory--get-all-buffer-directories ()
   "Return a list of all directories that have at least one file being visited."
   (interactive)
-  (let ((dirnames (mapcar #'buffer-file-name (buffer-list))))
+  (let ((dirnames (mapcar #'ibuffer-directory--buffer-directory (buffer-list))))
     (setq dirnames (remove-if-not #'identity dirnames))
-    (setq dirnames (mapcar #'file-name-directory dirnames))
     (setq dirnames (sort dirnames #'string<))
     (setq dirnames (remove-duplicates dirnames :test #'string=))
     dirnames))
+
+(define-ibuffer-sorter directory
+  "Sort by directory"
+  (:description "directory")
+  (string< (ibuffer-directory--buffer-directory (car a))
+           (ibuffer-directory--buffer-directory (car b))))
 
 (define-ibuffer-filter directory
     "Toggle current view to buffers with in a directory DIRECTORY."
@@ -73,12 +74,11 @@
    (intern
     (completing-read "Filter by directory: "
                      (ibuffer-directory--get-all-buffer-directories)
-                     'identity
+                     #'identity
                      t nil nil nil nil)))
-  (string= qualifier
-           (and (buffer-file-name buf)
-              (file-name-directory (buffer-file-name buf)))))
+  (string= qualifier (ibuffer-directory--buffer-directory buf)))
 
+;;;###autoload
 (defun ibuffer-set-filter-groups-by-directory ()
   "Set the current filter groups to filter by directory."
   (interactive)
