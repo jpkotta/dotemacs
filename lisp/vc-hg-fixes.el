@@ -7,6 +7,9 @@
   (let*
       ((status nil)
        (default-directory (file-name-directory file))
+       ;; Don't check ignored files if file is a directory.  This can
+       ;; be extremely slow if there are a lot of ignored files
+       (opts (if (file-directory-p file) "-marduc" "-A"))
        (out
         (with-output-to-string
           (with-current-buffer
@@ -24,8 +27,7 @@
 			 vc-hg-program nil t nil
 			 "--config" "alias.status=status"
 			 "--config" "defaults.status="
-			 ;;"status" "-A" (file-relative-name file)))
-             "status" "-marduc" (file-relative-name file)))
+             "status" opts (file-relative-name file)))
                     ;; Some problem happened.  E.g. We can't find an `hg'
                     ;; executable.
                     (error nil)))))))
