@@ -26,16 +26,17 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'files)
 (require 'tramp)
 (require 'dired)
+(require 'cl-lib)
 
 (defface dired-toggle-sudo-header-face
   '((t (:foreground "white" :background "red3")))
   "*Face use to display header-lines for files opened as root."
   :group 'tramp)
 
+;;;###autoload
 (defun dired-toggle-sudo-set-header ()
   "*Display a warning in header line of the current buffer.
 This function is suitable to add to `find-file-hook' and `dired-file-hook'."
@@ -49,58 +50,55 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
 (add-hook 'find-file-hook 'dired-toggle-sudo-set-header)
 (add-hook 'dired-mode-hook 'dired-toggle-sudo-set-header)
 
-(when nil
-  (dolist (x '(("/ssh:gwuser@gateway|ssh:user@remote|sudo:root@remote:/etc/fstab"
-                . "/ssh:gwuser@gateway|ssh:user@remote:/etc/fstab")
-               ("/ssh:gwuser@gateway|ssh:user@remote:/etc/fstab"
-                . "/ssh:gwuser@gateway|ssh:user@remote|sudo:root@remote:/etc/fstab")
-               ("/ssh:user@remote:/etc/fstab"
-                . "/ssh:user@remote|sudo:root@remote:/etc/fstab")
-               ("/ssh:user@remote|sudo:root@remote:/etc/fstab"
-                . "/ssh:user@remote:/etc/fstab")
-               ("/sudo::/etc/fstab"
-                . "/etc/fstab")
-               ("/etc/fstab"
-                . "/sudo::/etc/fstab")))
-    (let ((test (dired-toggle-sudo--internal (car x)))
-          (known-good (cdr x)))
-      (unless (string= test known-good)
-        (message "%s != %s" test known-good)))))
-
 (defun dired-toggle-sudo--internal (path &optional sudo-user)
   "Convert PATH to its sudoed version. root is used by default
 unless SUDO-USER is provided."
-  (if (not (tramp-tramp-file-p path))
-      ;; local, no sudo
-      (tramp-make-tramp-file-name "sudo" sudo-user nil path)
-    (with-parsed-tramp-file-name path nil
-      (if (not (string= method "sudo"))
-          ;; add sudo
-          (tramp-make-tramp-file-name
-           "sudo" sudo-user host localname
-           (let ((tramp-postfix-host-format tramp-postfix-hop-format)
-                 (tramp-prefix-format nil))
-             (tramp-make-tramp-file-name
-              method user host "" hop)))
-        ;; already has sudo, remove
-        (if hop
-            ;; remove sudo (last hop)
+  (let ((path (expand-file-name path)))
+    (if (not (tramp-tramp-file-p path))
+        ;; local, no sudo
+        (tramp-make-tramp-file-name "sudo" sudo-user nil path)
+      (with-parsed-tramp-file-name path nil
+        (if (not (string= method "sudo"))
+            ;; add sudo
             (tramp-make-tramp-file-name
-             nil nil nil localname (replace-regexp-in-string "|$" "" hop))
-          ;; just use localname
-          localname)))))
+             "sudo" sudo-user host localname
+             (let ((tramp-postfix-host-format tramp-postfix-hop-format)
+                   (tramp-prefix-format nil))
+               (tramp-make-tramp-file-name
+                method user host "" hop)))
+          ;; already has sudo, remove
+          (if hop
+              ;; remove sudo (last hop)
+              (tramp-make-tramp-file-name
+               nil nil nil localname (replace-regexp-in-string "|$" "" hop))
+            ;; just use localname
+            localname))))))
 
-(defun dired-toggle-sudo--find (fname)
-  "Create a new buffer for file name FNAME."
-  (let ((save-point (point))
-        (save-window-start (window-start)))
-    (cl-letf (((symbol-function 'server-buffer-done)
-               (lambda (buffer &optional for-killing) nil))
-              ((symbol-function 'server-kill-buffer-query-function)
-               (lambda () t)))
-      (find-alternate-file fname))
-    (goto-char save-point)
-    (set-window-start (selected-window) save-window-start)))
+;; simple tests
+(when t
+  (let (orig known-good xform fail)
+    (dolist (x `(("/ssh:gwuser@gateway|ssh:user@remote|sudo:root@remote:/etc/fstab"
+                  . "/ssh:gwuser@gateway|ssh:user@remote:/etc/fstab")
+                 ("/ssh:gwuser@gateway|ssh:user@remote:/etc/fstab"
+                  . "/ssh:gwuser@gateway|ssh:user@remote|sudo:remote:/etc/fstab")
+                 ("/ssh:user@remote:/etc/fstab"
+                  . "/ssh:user@remote|sudo:remote:/etc/fstab")
+                 ("/ssh:user@remote|sudo:root@remote:/etc/fstab"
+                  . "/ssh:user@remote:/etc/fstab")
+                 ("/sudo::/etc/fstab"
+                  . "/etc/fstab")
+                 ("/etc/fstab"
+                  . "/sudo::/etc/fstab")
+                 ("~/foo"
+                  . ,(concat "/sudo::" (getenv "HOME") "/foo"))))
+      (setq orig (car x)
+            known-good (cdr x)
+            xform (dired-toggle-sudo--internal orig))
+        (unless (string= xform known-good)
+          (message "XX %s\n-> %s\n!= %s\n" orig xform known-good)
+          (setq fail t)))
+    (when fail
+      (message "Fail!"))))
 
 ;;;###autoload
 (defun dired-toggle-sudo (&optional sudo-user)
@@ -115,10 +113,18 @@ If called with `universal-argument' (C-u), ask for username.
                    dired-directory))
          (sudo-user (if current-prefix-arg
                         (read-string "Username: ")
-                      sudo-user)))
+                      sudo-user))
+         (save-point (point))
+         (save-window-start (window-start)))
     (when fname
       (setq fname (dired-toggle-sudo--internal fname sudo-user))
-      (dired-toggle-sudo--find fname))))
+      (cl-letf (((symbol-function 'server-buffer-done)
+                 (lambda (buffer &optional for-killing) nil))
+                ((symbol-function 'server-kill-buffer-query-function)
+                 (lambda () t)))
+        (find-alternate-file fname))
+      (goto-char save-point)
+      (set-window-start (selected-window) save-window-start))))
 
 (provide 'dired-toggle-sudo)
 
