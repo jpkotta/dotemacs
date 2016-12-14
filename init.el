@@ -912,9 +912,10 @@ The numbers are formatted according to the FORMAT string."
 
   (defun ac-prefix-default ()
     "Same as `ac-prefix-symbol' but ignore a number prefix."
-    (let ((start (ac-prefix-symbol)))
+    (let ((start (ac-prefix-symbol))
+          (case-fold-search t))
       (when (and start
-               (not (string-match "^\\(?:0[xX][0-9A-Fa-f]+\\|[0-9]+\\)$"
+               (not (string-match "^\\(?:0[xbo][0-9a-f]+\\|[0-9]+\\)$"
                                   (buffer-substring-no-properties start (point)))))
         start)))
   )
