@@ -634,7 +634,7 @@ With prefix arg, insert a large ASCII art version.
 (with-library 'keychain-environment
   (keychain-refresh-environment))
 
-(dolist (x '(".ssh/config\\'" "sshd?_config\\'"))
+(dolist (x '(".ssh/config\\'" "sshd?_config"))
   (add-to-list 'auto-mode-alist `(,x . ssh-config-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2775,6 +2775,7 @@ If region is inactive, use the entire current line."
               "Doxyfile"
               "\\.rules\\'"
               "\\`fstab\\'"
+              "\\.env\\'"
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
 
