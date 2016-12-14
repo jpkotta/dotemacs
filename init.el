@@ -1110,8 +1110,16 @@ it's probably better to explicitly request a merge."
 
 (setq recentf-save-file (concat emacs-persistence-directory "recentf")
       recentf-max-saved-items 256)
-(with-eval-after-load "recentf"
-  (add-to-list 'recentf-exclude 'tramp-file-name-regexp))
+
+(defun jpk/recentf-keep-predicate (file)
+  "Faster than `recentf-keep-default-predicate'."
+  (cond
+   ((file-remote-p file nil t) (file-readable-p file))
+   ((file-remote-p file))))
+
+(setq recentf-keep (list #'jpk/recentf-keep-predicate))
+;;(setq recentf-exclude (list tramp-file-name-regexp))
+
 (recentf-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
