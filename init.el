@@ -807,6 +807,7 @@ The numbers are formatted according to the FORMAT string."
 (setq select-enable-clipboard t
       select-enable-primary t
       select-active-regions t)
+(setq save-interprogram-paste-before-kill t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Unicode
@@ -1297,6 +1298,8 @@ it's probably better to explicitly request a merge."
                 (apply orig args))))
 
 (global-set-key (kbd "C-x g") #'magit-status)
+(setq magit-diff-refine-hunk 'all)
+(add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
 
 ;; TODO
 ;; vc-revert bug
