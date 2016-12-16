@@ -59,9 +59,9 @@
   (add-to-list 'Info-additional-directory-list "~/.info/"))
 
 ;; a place to put persistent data
-(setq emacs-persistence-directory (concat user-emacs-directory "var/"))
-(unless (file-exists-p emacs-persistence-directory)
-  (make-directory emacs-persistence-directory t))
+(setq emacs-var-directory (concat user-emacs-directory "var/"))
+(unless (file-exists-p emacs-var-directory)
+  (make-directory emacs-var-directory t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
@@ -474,10 +474,10 @@
 (with-library 'projectile
   (setq projectile-indexing-method 'alien
         projectile-enable-caching t
-        projectile-cache-file (concat emacs-persistence-directory
+        projectile-cache-file (concat emacs-var-directory
                                       "projectile.cache")
         projectile-ack-function 'ack
-        projectile-known-projects-file (concat emacs-persistence-directory
+        projectile-known-projects-file (concat emacs-var-directory
                                                "projectile-bookmarks.eld")
         ;; If ggtags-mode is on, projectile automatically uses it.
         projectile-tags-command "ctags-exuberant -Re -f \"%s\" %s")
@@ -530,7 +530,7 @@
 ;; remember mode lets you quickly record notes without distracting you
 
 ;; it's probably best if this is an org-mode file
-(setq remember-data-file (concat emacs-persistence-directory "remember.org"))
+(setq remember-data-file (concat emacs-var-directory "remember.org"))
 (global-set-key (kbd "C-c r") 'remember)
 
 ;; babel
@@ -864,12 +864,12 @@ The numbers are formatted according to the FORMAT string."
 (setq browse-url-browser-function 'browse-url-chromium
       browse-url-new-window-flag t)
 
-(setq url-configuration-directory (concat emacs-persistence-directory "url/"))
+(setq url-configuration-directory (concat emacs-var-directory "url/"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; abbrev
 
-(setq abbrev-file-name (concat emacs-persistence-directory "abbrev_defs"))
+(setq abbrev-file-name (concat emacs-var-directory "abbrev_defs"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; auto-complete
@@ -888,7 +888,7 @@ The numbers are formatted according to the FORMAT string."
         ac-auto-show-menu t
         ac-use-quick-help nil
         ac-ignore-case nil
-        ac-comphist-file (concat emacs-persistence-directory "ac-comphist.dat"))
+        ac-comphist-file (concat emacs-var-directory "ac-comphist.dat"))
 
   (add-to-list 'ac-dictionary-files "~/.ispell_american")
   (add-to-list 'ac-dictionary-files "~/.aspell.en.pws")
@@ -941,7 +941,7 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Bookmarks
 
-(setq bookmark-default-file (concat emacs-persistence-directory "bookmarks")
+(setq bookmark-default-file (concat emacs-var-directory "bookmarks")
       bookmark-save-flag nil)
 
 ;; bm.el is a visible bookmark package.  Bookmarks are indicated with
@@ -949,7 +949,7 @@ The numbers are formatted according to the FORMAT string."
 ;; (per-buffer) persistent.
 
 (setq bm-marker 'bm-marker-right
-      bm-repository-file (concat emacs-persistence-directory "bm-repository")
+      bm-repository-file (concat emacs-var-directory "bm-repository")
       bm-recenter t
       bm-highlight-style 'bm-highlight-only-fringe)
 
@@ -995,7 +995,7 @@ The numbers are formatted according to the FORMAT string."
       ido-ignore-buffers '("\\` " "^\\*Completion" "^\\*Ido")
       ido-max-work-file-list 50
       ido-rotate-file-list-default t
-      ido-save-directory-list-file (concat emacs-persistence-directory
+      ido-save-directory-list-file (concat emacs-var-directory
                                            "ido-last")
       ido-show-dot-for-dired t
       ido-work-directory-match-only nil
@@ -1059,7 +1059,7 @@ it's probably better to explicitly request a merge."
   (when (boundp 'smex-cache)
     (smex-update)))
 
-(setq smex-save-file (concat emacs-persistence-directory "smex-items"))
+(setq smex-save-file (concat emacs-var-directory "smex-items"))
 (with-library 'smex
   (add-hook 'after-init-hook 'smex-initialize)
   (add-hook 'after-load-functions 'smex-update-after-load)
@@ -1070,7 +1070,7 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Backup
 
-(let ((dir (concat emacs-persistence-directory "backup/")))
+(let ((dir (concat emacs-var-directory "backup/")))
   (unless (file-directory-p dir)
     (make-directory dir t))
   (setq backup-directory-alist `(("." . ,dir))))
@@ -1090,8 +1090,8 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Autosave
 
-(let ((dir (concat emacs-persistence-directory "auto-save/"))
-      (list-dir (concat emacs-persistence-directory "auto-save-list/")))
+(let ((dir (concat emacs-var-directory "auto-save/"))
+      (list-dir (concat emacs-var-directory "auto-save-list/")))
   (dolist (d (list dir list-dir))
     (unless (file-exists-p d)
       (make-directory d t)))
@@ -1103,7 +1103,7 @@ it's probably better to explicitly request a merge."
 ;; Saves a list of the open files (via auto-save-hook), which can be
 ;; restored with save-visited-files-restore.
 
-(setq save-visited-files-location (concat emacs-persistence-directory
+(setq save-visited-files-location (concat emacs-var-directory
                                           "save-visited-files")
       save-visited-files-ignore-tramp-files t
       save-visited-files-ignore-directories nil
@@ -1112,7 +1112,7 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; recentf (recently visited files)
 
-(setq recentf-save-file (concat emacs-persistence-directory "recentf")
+(setq recentf-save-file (concat emacs-var-directory "recentf")
       recentf-max-saved-items 256)
 
 (defun jpk/recentf-keep-predicate (file)
@@ -1129,7 +1129,7 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; savehist
 
-(setq savehist-file (concat emacs-persistence-directory "history")
+(setq savehist-file (concat emacs-var-directory "history")
       history-delete-duplicates t)
 (savehist-mode 1)
 
@@ -1144,11 +1144,11 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
 
-(let ((backup-dir (concat emacs-persistence-directory "tramp-backup/")))
-  (setq tramp-persistency-file-name (concat emacs-persistence-directory
+(let ((backup-dir (concat emacs-var-directory "tramp-backup/")))
+  (setq tramp-persistency-file-name (concat emacs-var-directory
                                             "tramp")
         tramp-backup-directory-alist `(("." . ,backup-dir))
-        tramp-auto-save-directory (concat emacs-persistence-directory
+        tramp-auto-save-directory (concat emacs-var-directory
                                           "tramp-auto-save/"))
   (dolist (d (list tramp-auto-save-directory backup-dir))
     (unless (file-exists-p d)
@@ -1820,7 +1820,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;; Dired
 
 (with-eval-after-load "dired"
-  (setq image-dired-dir (concat emacs-persistence-directory "image-dired/"))
+  (setq image-dired-dir (concat emacs-var-directory "image-dired/"))
 
   (define-key dired-mode-map (kbd "C-s") 'dired-isearch-filenames)
   (define-key dired-mode-map (kbd "C-M-s") 'dired-isearch-filenames-regexp)
@@ -2219,7 +2219,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     root-dir))
 
 (setq multi-compile-history-file
-      (concat emacs-persistence-directory "multi-compile.cache"))
+      (concat emacs-var-directory "multi-compile.cache"))
 (with-eval-after-load "multi-compile"
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-ansi -Wall -g3 -std=c99"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))
@@ -2357,7 +2357,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C programming language
 
-(setq ctypes-file-name (concat emacs-persistence-directory "ctypes"))
+(setq ctypes-file-name (concat emacs-var-directory "ctypes"))
 
 (defun cpp-highlight-if-0/1 ()
   "Modify the face of things in between #if 0 ... #endif."
