@@ -915,15 +915,6 @@ The numbers are formatted according to the FORMAT string."
 
   ;; workaround for flyspell-mode
   (ac-flyspell-workaround)
-
-  (defun ac-prefix-default ()
-    "Same as `ac-prefix-symbol' but ignore a number prefix."
-    (let ((start (ac-prefix-symbol))
-          (case-fold-search t))
-      (when (and start
-               (not (string-match "^\\(?:0[xbo][0-9a-f]+\\|[0-9]+\\)$"
-                                  (buffer-substring-no-properties start (point)))))
-        start)))
   )
 
 ;; hippie-expand is like dabbrev-expand, but more
