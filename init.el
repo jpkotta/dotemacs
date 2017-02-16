@@ -153,6 +153,7 @@
         wgrep
         wgrep-ag
         wrap-region
+        yaml-mode
         ;;yankpad
         yasnippet
         ))
@@ -2786,6 +2787,13 @@ If region is inactive, use the entire current line."
               "\\.env\\'"
               ))
   (add-to-list 'auto-mode-alist `(,re . conf-mode)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; YAML mode
+
+(defun jpk/yaml-mode-hook ()
+  (setq tab-width 2))
+(add-hook 'yaml-mode-hook #'jpk/yaml-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; dts (flattened device tree)
