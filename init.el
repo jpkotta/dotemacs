@@ -321,7 +321,7 @@
     (let* ((buf (window-buffer w))
            (bufname (buffer-name buf))
            (all-window-bufs (mapcar 'window-buffer (window-list))))
-      (when (or (string-match "^\\*.*\\*$" bufname)
+      (when (or (string-match-p "^\\*.*\\*$" bufname)
                (memq buf (cdr (memq buf all-window-bufs))))
         (unless (eq w (selected-window))
           (bury-buffer buf)
@@ -685,13 +685,13 @@ With prefix arg, insert a large ASCII art version.
 This can be used as a drop-in replacement for `string-to-number'."
   (let ((case-fold-search t))
     (cond
-     ((string-match "0x[0-9A-F]+" str)
+     ((string-match-p "0x[0-9A-F]+" str)
       (string-to-number-orig (replace-regexp-in-string "0x" "" str) 16))
-     ((string-match "0o[0-7]+" str)
+     ((string-match-p "0o[0-7]+" str)
       (string-to-number-orig (replace-regexp-in-string "0o" "" str) 8))
-     ((string-match "0d[0-9]+" str)
+     ((string-match-p "0d[0-9]+" str)
       (string-to-number-orig (replace-regexp-in-string "0d" "" str) 10))
-     ((string-match "0b[01]+" str)
+     ((string-match-p "0b[01]+" str)
       (string-to-number-orig (replace-regexp-in-string "0b" "" str) 2))
      (t
       (string-to-number-orig str base)))))
@@ -1722,7 +1722,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (let* ((name (buffer-name))
          (filename (buffer-file-name))
          (dir
-          (if (string-match dir "\\(?:/\\|\\\\)$")
+          (if (string-match-p dir "\\(?:/\\|\\\\)$")
               (substring dir 0 -1) dir))
          (newname (concat dir "/" name)))
     (if (not filename)
@@ -1790,8 +1790,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                        "File name: ")
                      (apply-partially 'locate-file-completion-table
                                       dirs suffixes)
-                     (if suffixes
-                         (lambda (x) (string-match (concat (regexp-opt suffixes t) "$") x)))
+                     (when suffixes
+                       (lambda (x) (string-match-p (concat (regexp-opt suffixes t) "$") x)))
                      nil nil nil def)))
 
 (defun find-file-in-path (dirs suffixes)
@@ -2191,18 +2191,19 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (defun bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings "
-  (if (and
-       (string-match "compilation" (buffer-name buffer))
-       (string-match "finished" string)
-       (not
-        (with-current-buffer buffer
-          (goto-char (point-min))
-          (search-forward "warning" nil t))))
-      (run-with-timer 1 nil
-                      (lambda (buf)
-                        (bury-buffer buf)
-                        (switch-to-prev-buffer (get-buffer-window buf) 'kill))
-                      buffer)))
+  (when (and
+         (buffer-live-p buffer)
+         (string-match-p "compilation" (buffer-name buffer))
+         (string-match-p "finished" string)
+         (not
+          (with-current-buffer buffer
+            (goto-char (point-min))
+            (search-forward "warning" nil t))))
+    (run-with-timer 1 nil
+                    (lambda (buf)
+                      (bury-buffer buf)
+                      (switch-to-prev-buffer (get-buffer-window buf) 'kill))
+                    buffer)))
 (add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
 
 (setq compilation-read-command nil) ;; only prompt when compile is run with prefix
