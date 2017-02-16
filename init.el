@@ -1482,114 +1482,107 @@ This effectively makes `smerge-command-prefix' unnecessary."
 (setq term-suppress-hard-newline t)
 
 (with-eval-after-load "term"
-  (defun term-send-reverse-search-history ()
-    "Search history reverse."
-    (interactive)
-    (term-send-raw-string "\C-r"))
-
-  (defun term-send-esc ()
-    "Send ESC in term mode."
-    (interactive)
-    (term-send-raw-string "\e"))
-
-  (defun term-send-return ()
-    "Use term-send-raw-string \"\C-m\" instead term-send-input.
-Because term-send-input have bug that will duplicate input when you C-a and C-m in terminal."
-    (interactive)
-    (term-send-raw-string "\C-m"))
-
   (defun term-send-backward-kill-word ()
-    "Backward kill word in term mode."
+    "Backward kill word in `term-mode'."
     (interactive)
     (term-send-raw-string "\C-w"))
 
   (defun term-send-forward-kill-word ()
-    "Kill word in term mode."
+    "Kill word in `term-mode'."
     (interactive)
     (term-send-raw-string "\ed"))
 
   (defun term-send-backward-word ()
-    "Move backward word in term mode."
+    "Move backward word in `term-mode'."
     (interactive)
     (term-send-raw-string "\eb"))
 
   (defun term-send-forward-word ()
-    "Move forward word in term mode."
+    "Move forward word in `term-mode'."
     (interactive)
     (term-send-raw-string "\ef"))
 
-  (defun term-send-reverse-search-history ()
-    "Search history reverse."
-    (interactive)
-    (term-send-raw-string "\C-r"))
-
-  (defun term-send-quote ()
-    "Quote the next character in term-mode.
-Similar to how `quoted-insert' works in a regular buffer."
-    (interactive)
-    (term-send-raw-string "\C-v"))
-
   (defun term-send-M-x ()
-    "Type M-x in term-mode."
+    "Send `M-x' in `term-mode'."
     (interactive)
     (term-send-raw-string "\ex"))
 
-  (defun term-send-C-x ()
-    "Type C-x in term-mode."
-    (interactive "*")
-    (term-send-raw-string "\C-x"))
+  (defun term-interrupt-subjob-or-C-c ()
+    "Run `term-interrupt-subjob' or send `C-c'."
+    (interactive)
+    (if (process-id (get-process (buffer-name)))
+        (term-interrupt-subjob)
+      ;; serial processes don't have a process-id
+      (term-send-raw-string "\C-c")))
 
-    (dolist
+  (defun term-stop-subjob-or-C-z ()
+    "Run `term-stop-subjob' or send `C-z'."
+    (interactive)
+    (if (process-id (get-process (buffer-name)))
+        (term-stop-subjob)
+      ;; serial processes don't have a process-id
+      (term-send-raw-string "\C-z")))
+
+  (defun term-toggle-char-or-line-mode ()
+    "Toggle between `term-line-mode' and `term-char-mode'."
+    (interactive)
+    (cond
+     ((term-in-char-mode)
+      (term-line-mode))
+     ((term-in-line-mode)
+      (term-char-mode))
+     (t
+      (error "Term in neither line nor char mode."))))
+
+  (dolist
       (bind '(;; from multi-term
-              ("C-z" . nil)
               ("C-x" . nil)
-              ("C-c" . nil)
               ("C-h" . nil)
-              ("C-y" . nil)
               ("<ESC>" . nil)
-              ("C-c C-c" . term-interrupt-subjob)
               ("C-c C-e" . term-send-esc)
               ("C-p" . previous-line)
               ("C-n" . next-line)
               ("C-s" . isearch-forward)
               ("C-r" . isearch-backward)
-              ;;("C-m" . term-send-return)
-              ;;("C-y" . term-paste)
-              ;;("M-f" . term-send-forward-word)
-              ;;("M-b" . term-send-backward-word)
-              ;;("M-o" . term-send-backspace)
-              ;;("M-p" . term-send-up)
-              ;;("M-n" . term-send-down)
-              ;;("M-M" . term-send-forward-kill-word)
-              ;;("M-N" . term-send-backward-kill-word)
-              ;;("<C-backspace>" . term-send-backward-kill-word)
-              ;;("M-r" . term-send-reverse-search-history)
-              ;;("M-," . term-send-raw)
-              ;;("M-." . completion-at-point)
 
               ;; personal
+              ("C-v" . nil)
               ("C-<right>" . term-send-forward-word)
               ("C-<left>" . term-send-backward-word)
               ("C-<backspace>" . term-send-backward-kill-word)
               ("C-<delete>" . term-send-forward-kill-word)
               ("C-k" . term-send-raw)
               ("C-y" . term-send-raw)
-              ("C-c C-z" . term-stop-subjob)
-              ("C-c C-x" . term-send-C-x)
-              ("C-z" . term-stop-subjob)
+              ("C-c C-c" . term-interrupt-subjob-or-C-c)
+              ("C-c C-z" . term-stop-subjob-or-C-z)
               ("C-c C-y" . term-paste)
               ("C-c C-u" . universal-argument)
               ("<S-down>" . sane-term-create)
               ("<S-left>" . sane-term-prev)
-              ("<S-right>" . sane-term-next)))
+              ("<S-right>" . sane-term-next)
+              ("C-c C-j" . term-toggle-char-or-line-mode)
+              ("C-c C-v" . term-send-raw) ;; quote
+              ("C-c C-x" . term-send-raw) ;; C-x
+              ))
     (define-key term-raw-map
       (read-kbd-macro (car bind)) (cdr bind)))
-    )
+
+  (define-key term-mode-map (kbd "C-c C-j") #'term-toggle-char-or-line-mode)
+  )
+
+(defun term-revert-buffer (ignore-auto noconfirm)
+  "Clear the buffer.  Suitable for `revert-buffer-function'."
+  (when (or (not noconfirm)
+           (and noconfirm (y-or-n-p "Clear buffer? ")))
+    (term-reset-terminal)
+    (term-send-raw-string "\C-l")))
 
 (defun jpk/term-mode-hook ()
   (setq cua--ena-cua-keys-keymap nil)
   (with-library 'yasnippet
-    (yas-minor-mode 0)))
+    (yas-minor-mode 0))
+  (setq-local revert-buffer-function #'term-revert-buffer)
+  )
 (add-hook 'term-mode-hook 'jpk/term-mode-hook)
 
 (global-set-key (kbd "C-c t") 'sane-term)
