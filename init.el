@@ -335,7 +335,11 @@
     (split-windows-in-quarters)
     (modify-frame-parameters nil '((fullscreen . maximized)))
     (when svfm
-      (save-visited-files-mode 1)))
+      (let ((save-visited-files-ignore-tramp-files
+             save-visited-files-ignore-tramp-files))
+        (when (y-or-n-p "Tramp files? ")
+          (setq save-visited-files-ignore-tramp-files t))
+        (save-visited-files-mode 1))))
   (jpk/bury-some-buffers))
 
 (when (and (string= system-type "windows-nt")
