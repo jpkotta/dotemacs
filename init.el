@@ -515,10 +515,11 @@
   (local-unset-key (kbd "C-S-<left>"))
   (local-unset-key (kbd "C-S-<right>"))
   (local-unset-key (kbd "C-<return>"))
-  (local-unset-key (kbd "C-<down>"))
-  (local-unset-key (kbd "C-<up>"))
+  (local-unset-key [remap forward-paragraph])
+  (local-unset-key [remap backward-paragraph])
   (local-unset-key (kbd "C-S-<down>"))
   (local-unset-key (kbd "C-S-<up>"))
+
   (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
   (with-library 'flyspell
@@ -527,10 +528,10 @@
 (add-hook 'org-mode-hook 'jpk/org-mode-hook)
 
 (setq org-ellipsis "…"
-      org-src-fontify-natively t
       org-hide-leading-stars t
       org-hide-emphasis-markers t
-      org-fontify-emphasized-text nil)
+      org-fontify-emphasized-text nil
+      org-support-shift-select 'always)
 
 ;; remember mode lets you quickly record notes without distracting you
 
@@ -549,6 +550,8 @@
 (setq org-confirm-babel-evaluate nil
       org-src-fontify-natively t
       org-src-tab-acts-natively t
+      org-edit-src-content-indentation 0
+      org-src-preserve-indentation t
       org-babel-python-command "python -ic ''")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
