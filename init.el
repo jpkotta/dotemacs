@@ -2237,6 +2237,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (insert (make-string count (string-to-char comment-start))))
   (insert "\n"))
 
+(setq smartscan-symbol-selector "symbol")
 (with-eval-after-load "smartscan.el"
   (dolist (f '(smartscan-symbol-go-forward
                smartscan-symbol-go-backward
