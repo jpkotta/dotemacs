@@ -1041,8 +1041,7 @@ it's probably better to explicitly request a merge."
   (add-hook 'after-init-hook 'smex-initialize)
   (add-hook 'after-load-functions 'smex-update-after-load)
   (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-  (global-set-key (kbd "C-c M-x") 'execute-extended-command))
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Backup
