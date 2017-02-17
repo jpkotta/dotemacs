@@ -1087,10 +1087,12 @@ it's probably better to explicitly request a merge."
   "Faster than `recentf-keep-default-predicate'."
   (cond
    ((file-remote-p file nil t) (file-readable-p file))
-   ((file-remote-p file))))
+   ((file-remote-p file))
+   ;; file-readable-p can be slow for network filesystems, hopefully
+   ;; file-exists-p mitigates that
+   ((file-exists-p file) (file-readable-p file))))
 
 (setq recentf-keep (list #'jpk/recentf-keep-predicate))
-;;(setq recentf-exclude (list tramp-file-name-regexp))
 
 (recentf-mode 1)
 
