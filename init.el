@@ -100,6 +100,8 @@
         fuzzy ;; for auto-complete
         fvwm-mode
         ggtags
+        go-mode
+        go-scratch
         hgrc-mode
         hide-lines
         highlight-numbers
