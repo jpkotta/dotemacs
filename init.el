@@ -1829,24 +1829,26 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (define-key dired-mode-map (kbd "C-c C-v") 'dired-ranger-paste))
   )
 
-(with-eval-after-load 'view-mode
-  (defun dired-view-next ()
-    "Move to next dired line and view ."
-    (interactive)
+(with-eval-after-load 'view
+  (defun dired-view-next (&optional reversed)
+    "Move to next dired line and view."
+    (interactive "P")
     (quit-window)
-    (dired-next-line 1)
-    (dired-view-file))
+    (catch 'break
+      (while (if reversed
+                 (dired-previous-line 1)
+               (dired-next-line 1))
+        (let ((file (dired-get-file-for-visit)))
+          (unless (file-directory-p file)
+            (view-file file))))))
 
-  (defun dired-view-prev ()
-    "Move to next dired line and view ."
-    (interactive)
-    (quit-window)
-    (dired-next-line -1)
-    (dired-view-file))
+  (defun dired-view-prev (&optional reversed)
+    "Move to next dired line and view."
+    (interactive "P")
+    (dired-view-next (not reversed)))
 
   (define-key view-mode-map (kbd "n") 'dired-view-next)
   (define-key view-mode-map (kbd "p") 'dired-view-prev)
-
   )
 
 ;; word wrap looks terrible in dired buffers
