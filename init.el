@@ -1884,7 +1884,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                "okular"
                '(file))
          ))
-  (openwith-mode 1))
+  ;;(openwith-mode 1)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; image-mode
@@ -3257,6 +3258,12 @@ point."
   (yas-global-mode 1)
   )
 (global-set-key (kbd "C-c y") 'yas-insert-snippet)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; yankpad
+
+;; (setq yankpad-file (concat user-emacs-directory "snippets/yankpad.org"))
+;; (global-set-key (kbd "C-c Y") 'yankpad-map)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; miscellaneous keybindings
