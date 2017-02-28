@@ -1072,9 +1072,7 @@ it's probably better to explicitly request a merge."
 ;; Saves a list of the open files (via auto-save-hook), which can be
 ;; restored with save-visited-files-restore.
 
-(setq save-visited-files-location (concat no-littering-var-directory
-                                          "save-visited-files")
-      save-visited-files-ignore-tramp-files t
+(setq save-visited-files-ignore-tramp-files t
       save-visited-files-ignore-directories nil
       save-visited-files-auto-restore t)
 
@@ -2179,8 +2177,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          (root-dir (vc-call-backend (vc-deduce-backend) 'root file-dir)))
     root-dir))
 
-(setq multi-compile-history-file
-      (concat no-littering-var-directory "multi-compile.cache"))
 (with-eval-after-load "multi-compile"
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-ansi -Wall -g3 -std=c99"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))
