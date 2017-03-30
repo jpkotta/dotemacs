@@ -1033,6 +1033,8 @@ it's probably better to explicitly request a merge."
 ;; use ido (almost) everywhere
 
 (with-library 'ido-ubiquitous
+  (add-to-list 'ido-ubiquitous-command-overrides
+               '(enable exact "man"))
   (ido-ubiquitous-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1647,7 +1649,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (setq woman-use-own-frame nil
       woman-fill-column 72
       woman-cache-filename nil)
-(define-key help-map (kbd "C-m") 'woman)
+(define-key help-map (kbd "C-m") #'man)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; file functions
