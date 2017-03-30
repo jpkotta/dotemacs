@@ -158,8 +158,8 @@
 (setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version "/"))
 
 (package-initialize)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/"))
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("gnu" . "https://elpa.gnu.org/packages/")))
 
 (defun jpk/install-selected-packages ()
   (interactive)
@@ -267,6 +267,8 @@
    '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
 
    '(term ((t (:foreground "lavender blush"))))
+
+   '(Info-quoted ((t (:family "Luxi Mono"))))
    ))
 
 ;; Indicates when you're beyond a column (e.g. 80) and also shows the
@@ -533,12 +535,14 @@
 
 ;; babel
 ;; http://www.howardism.org/Technical/Emacs/literate-devops.html
-(org-babel-do-load-languages 'org-babel-load-languages
-                             '((sh . t)
-                               (emacs-lisp . t)
-                               (python . t)
-                               (ipython . t)
-                               (sql . t)))
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((sh . t)
+   (emacs-lisp . t)
+   (python . t)
+   (ipython . t)
+   (sql . t) ;; see also ob-sql-mode
+   ))
 (setq org-confirm-babel-evaluate nil
       org-src-fontify-natively t
       org-src-tab-acts-natively t
@@ -1050,7 +1054,7 @@ it's probably better to explicitly request a merge."
 (setq make-backup-files t
       vc-make-backup-files t
       version-control t
-      kept-new-versions 256
+      kept-new-versions 128
       kept-old-versions 0
       delete-old-versions t
       backup-by-copying t)
@@ -1078,7 +1082,7 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; recentf (recently visited files)
 
-(setq recentf-max-saved-items 256)
+(setq recentf-max-saved-items 1024)
 
 (defun jpk/recentf-keep-predicate (file)
   "Faster than `recentf-keep-default-predicate'."
@@ -1109,13 +1113,12 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
 
-(let ((backup-dir (concat no-littering-var-directory "tramp-backup/")))
-  (setq tramp-backup-directory-alist `(("." . ,backup-dir))
+(let ((backup-dir (concat no-littering-var-directory "tramp/backup/")))
+  (setq tramp-backup-directory-alist nil
         tramp-auto-save-directory (concat no-littering-var-directory
-                                          "tramp-auto-save/"))
+                                          "tramp/auto-save/"))
   (dolist (d (list tramp-auto-save-directory backup-dir))
-    (unless (file-exists-p d)
-      (make-directory d t))))
+    (make-directory d t)))
 
 (with-eval-after-load 'tramp
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
@@ -1264,13 +1267,15 @@ it's probably better to explicitly request a merge."
 (setq magit-diff-refine-hunk 'all)
 (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
 
+(defalias 'git-grep #'vc-git-grep)
+
 ;; TODO
 ;; vc-revert bug
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; diff
 
-(setq diff-switches "-u -r"
+(setq diff-switches "-u"
       diff-default-read-only t)
 
 (require 'ediff-tweak)
@@ -1488,7 +1493,9 @@ This effectively makes `smerge-command-prefix' unnecessary."
       (term-send-raw-string "\C-z")))
 
   (defun term-toggle-char-or-line-mode ()
-    "Toggle between `term-line-mode' and `term-char-mode'."
+    "Toggle between `term-line-mode' and `term-char-mode'.
+
+    `term-char-mode' (default) is more termy, `term-line-mode' is more Emacsy."
     (interactive)
     (cond
      ((term-in-char-mode)
@@ -2355,7 +2362,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (add-to-list 'ffap-c-path "/usr/lib/avr/include/"))
   )
 
-(defun jpk/c-mode-hook ()
+(defun jpk/c-mode-common-hook ()
   (smart-tabs-mode 1)
   (setq tab-width 4)
   (setq c-basic-offset 4
@@ -2381,7 +2388,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
   )
 
-(add-hook 'c-mode-common-hook 'jpk/c-mode-hook)
+(add-hook 'c-mode-common-hook 'jpk/c-mode-common-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUD (Grand Unified Debugger)
@@ -2555,6 +2562,8 @@ If region is inactive, use the entire current line."
     (sphinx-doc-mode 1))
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
+
+;;(setq gud-pdb-command-name "/usr/lib/python3.6/pdb.py")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
