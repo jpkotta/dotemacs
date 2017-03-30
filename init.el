@@ -65,7 +65,6 @@
       '(
         ac-c-headers
         ac-math
-        ac-octave
         adaptive-wrap
         ag
         anchored-transpose
@@ -2577,9 +2576,7 @@ If region is inactive, use the entire current line."
 (defun jpk/octave-mode-hook ()
   (local-set-key (kbd "C-c C-s") 'octave-send-buffer)
   (local-set-key (kbd "C-c C-l") 'octave-send-line)
-  (local-set-key (kbd "C-c C-r") 'octave-send-region)
-  (with-library 'ac-octave
-    (add-to-list 'ac-sources 'ac-source-octave)))
+  (local-set-key (kbd "C-c C-r") 'octave-send-region))
 
 (add-hook 'octave-mode-hook 'jpk/octave-mode-hook)
 
