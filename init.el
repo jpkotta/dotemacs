@@ -2185,18 +2185,26 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     root-dir))
 
 (with-eval-after-load "multi-compile"
-  (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-ansi -Wall -g3 -std=c99"))
-               ("%cxxflags" . (or (getenv "CXXFLAGS") "-ansi -Wall -g3"))
+  (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
+               ("%cxxflags" . (or (getenv "CXXFLAGS") "-Wall -g3"))
                ("%repo-dir" . (locate-repo-dir))))
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
-        '((".*" . (("repo" . "make --no-print-directory -C %repo-dir")
-                  ("run" . "make --no-print-directory -C %make-dir")))
-          (c-mode . (("c-simple" . "gcc -o %file-sans %cflags %file-name")
-                     ("c-simple32" . "gcc -o %file-sans %cflags -m32 %file-name")))
-          (c++-mode . (("c++-simple" . "g++ -o %file-sans %cxxflags %file-name")))))
+        '((".*" . (("make-simple" .
+                    "make -k")
+                   ("make-repo" .
+                    "make --no-print-directory -C '%repo-dir'")
+                   ("make-top" .
+                    "make --no-print-directory -C '%make-dir'")))
+          (c-mode . (("c-simple" .
+                      "gcc -o '%file-sans' %cflags '%file-name'")
+                     ("c-simple32" .
+                      "gcc -o '%file-sans' %cflags -m32 '%file-name'")))
+          (c++-mode . (("c++-simple" .
+                        "g++ -o '%file-sans' %cxxflags '%file-name'")))))
   )
+(global-set-key (kbd "C-c b") #'multi-compile-run)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hl-todo
