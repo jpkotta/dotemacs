@@ -139,7 +139,6 @@
         shackle
         smart-shift
         smart-tabs-mode
-        smartscan
         smex
         sphinx-doc
         sqlup-mode
@@ -2242,16 +2241,24 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (insert (make-string count (string-to-char comment-start))))
   (insert "\n"))
 
-(setq smartscan-symbol-selector "symbol")
-(with-eval-after-load "smartscan.el"
-  (dolist (f '(smartscan-symbol-go-forward
-               smartscan-symbol-go-backward
-               smartscan-symbol-replace))
-    (advice-add f
-                :after
-                (lambda (&rest args)
-                  "Recenter"
-                  (recenter)))))
+(defun isearch-forward-symbol-dwim ()
+  "Run `isearch-forward-symbol-at-point' or `isearch-repeat-forward'."
+  (interactive)
+  (if isearch-mode
+      (isearch-repeat-forward)
+    (isearch-forward-symbol-at-point)))
+
+(defun isearch-backward-symbol-dwim ()
+  "Run `isearch-forward-symbol-at-point' or `isearch-repeat-backward'."
+  (interactive)
+  (if isearch-mode
+      (isearch-repeat-backward)
+    (isearch-forward-symbol-at-point)))
+
+(global-set-key (kbd "M-n") #'isearch-forward-symbol-dwim)
+(global-set-key (kbd "M-p") #'isearch-backward-symbol-dwim)
+(define-key isearch-mode-map (kbd "M-n") #'isearch-forward-symbol-dwim)
+(define-key isearch-mode-map (kbd "M-p") #'isearch-backward-symbol-dwim)
 
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
@@ -2299,10 +2306,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
     (add-to-list 'ac-sources x))
-
-  ;; binds M-n, M-p, and M-'
-  (with-library 'smartscan
-    (smartscan-mode 1))
   )
 
 (add-hook 'prog-mode-hook 'jpk/prog-mode-hook)
