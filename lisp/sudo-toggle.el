@@ -1,23 +1,30 @@
-;;; dired-toggle-sudo.el --- Browse directory with sudo privileges.
+;;; sudo-toggle.el --- toggle opening a file with sudo via tramp
 
-;; Copyright © 2011 Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
+;; Copyright 2017 Jonathan Kotta
 
-;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
-;; Keywords: emacs, dired
-;; Created: 2011-07-06
-;; Last changed: 2015-11-09 11:03:27
-;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
+;; Author: Jonathan Kotta <jpkotta@gmail.com>
+;; Keywords: emacs, tramp, sudo
+;; Licence: GPLv3
 
 ;; This file is NOT part of GNU Emacs.
 
 ;;; Commentary:
 ;;
-;; Allow to switch from current user to sudo when browsind `dired' buffers.
+;; Toggle between opening a file normally and with sudo using tramp.
+;; This should work with remote tramp files as well (multihop).
+;;
+;;   (global-set-key (kbd "C-c r") #'sudo-toggle)
+;;
+;;
+;;
+;; This was originally dired-toggle-sudo by Sebastien Gross.  I
+;; rewrote it to use tramp functions instead of directly manipulating
+;; strings, and to add the header line.
 ;;
 ;; To activate and switch with "C-c C-s" just put in your .emacs:
 ;;
-;; (require 'dired-toggle-sudo)
-;; (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
+;; (require 'sudo-toggle)
+;; (define-key dired-mode-map (kbd "C-c C-s") 'sudo-toggle)
 ;; (eval-after-load 'tramp
 ;;  '(progn
 ;;     ;; Allow to use: /sudo:user@host:/path/to/file
@@ -31,13 +38,13 @@
 (require 'dired)
 (require 'cl-lib)
 
-(defface dired-toggle-sudo-header-face
+(defface sudo-toggle-header-face
   '((t (:foreground "white" :background "red3")))
   "*Face use to display header-lines for files opened as root."
   :group 'tramp)
 
 ;;;###autoload
-(defun dired-toggle-sudo-set-header ()
+(defun sudo-toggle-set-header ()
   "*Display a warning in header line of the current buffer.
 This function is suitable to add to `find-file-hook' and `dired-file-hook'."
   (when (string-equal
@@ -45,12 +52,20 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
          "root")
     (setq header-line-format
           (propertize "--- WARNING: EDITING FILE AS ROOT! %-"
-                      'face 'dired-toggle-sudo-header-face))))
+                      'face 'sudo-toggle-header-face))))
 
-(add-hook 'find-file-hook 'dired-toggle-sudo-set-header)
-(add-hook 'dired-mode-hook 'dired-toggle-sudo-set-header)
+(add-hook 'find-file-hook 'sudo-toggle-set-header)
+(add-hook 'dired-mode-hook 'sudo-toggle-set-header)
 
-(defun dired-toggle-sudo--internal (path &optional sudo-user)
+(defun sudo-toggle-sudo-p (path)
+  "Non-nil if PATH is a tramp sudo path."
+  (when (and (stringp path)
+           (not (string= path ""))
+           (tramp-tramp-file-p path))
+    (with-parsed-tramp-file-name path nil
+      (string= method "sudo"))))
+
+(defun sudo-toggle--internal (path &optional sudo-user)
   "Convert PATH to its sudoed version. root is used by default
 unless SUDO-USER is provided."
   (let ((path (expand-file-name path)))
@@ -74,8 +89,8 @@ unless SUDO-USER is provided."
             ;; just use localname
             localname))))))
 
-;; simple tests
-(when t
+(defun sudo-toggle--tests ()
+  "Simple tests for `sudo-toggle--internal'."
   (let (orig known-good xform fail)
     (dolist (x `(("/ssh:gwuser@gateway|ssh:user@remote|sudo:root@remote:/etc/fstab"
                   . "/ssh:gwuser@gateway|ssh:user@remote:/etc/fstab")
@@ -89,19 +104,23 @@ unless SUDO-USER is provided."
                   . "/etc/fstab")
                  ("/etc/fstab"
                   . "/sudo::/etc/fstab")
-                 ("~/foo"
-                  . ,(concat "/sudo::" (getenv "HOME") "/foo"))))
+                 (,(expand-file-name "~/foo")
+                  . ,(concat "/sudo::" (expand-file-name "~/foo")))
+                 (,(format "/sudo:root@%s:%s/foo" (system-name) (getenv "HOME"))
+                  . ,(expand-file-name "~/foo"))))
       (setq orig (car x)
             known-good (cdr x)
-            xform (dired-toggle-sudo--internal orig))
-        (unless (string= xform known-good)
-          (message "XX %s\n-> %s\n!= %s\n" orig xform known-good)
-          (setq fail t)))
-    (when fail
-      (message "Fail!"))))
+            xform (sudo-toggle--internal orig))
+      (unless (string= xform known-good)
+        (message "%s\n\t-> %s\n\t!= %s\n" orig xform known-good)
+        (setq fail t)))
+    (if fail
+        (message "Fail!")
+      (message "Pass!"))))
+;;(sudo-toggle--tests)
 
 ;;;###autoload
-(defun dired-toggle-sudo (&optional sudo-user)
+(defun sudo-toggle (&optional sudo-user)
   "Reopen current file or dired buffer with sudo.
 
 If SUDO-USER is nil assume root.
@@ -117,7 +136,7 @@ If called with `universal-argument' (C-u), ask for username.
          (save-point (point))
          (save-window-start (window-start)))
     (when fname
-      (setq fname (dired-toggle-sudo--internal fname sudo-user))
+      (setq fname (sudo-toggle--internal fname sudo-user))
       (cl-letf (((symbol-function 'server-buffer-done)
                  (lambda (buffer &optional for-killing) nil))
                 ((symbol-function 'server-kill-buffer-query-function)
@@ -126,6 +145,6 @@ If called with `universal-argument' (C-u), ask for username.
       (goto-char save-point)
       (set-window-start (selected-window) save-window-start))))
 
-(provide 'dired-toggle-sudo)
+(provide 'sudo-toggle)
 
-;;; dired-toggle-sudo.el ends here
+;;; sudo-toggle.el ends here

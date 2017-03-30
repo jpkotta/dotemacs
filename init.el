@@ -1124,7 +1124,7 @@ it's probably better to explicitly request a merge."
 (setq tramp-copy-size-limit nil) ; for Edison
 
 ;; normally this is bound to find-file-read-only
-(global-set-key (kbd "C-x C-r") 'dired-toggle-sudo)
+(global-set-key (kbd "C-x C-r") 'sudo-toggle)
 
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
 ;; sudo on remote: /ssh:user@remote|sudo:remote:/path/to/file
