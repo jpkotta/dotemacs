@@ -121,7 +121,6 @@
         mic-paren
         modeline-posn
         morlock
-        mouse+
         multi-compile
         mwim
         no-littering
@@ -1142,10 +1141,6 @@ it's probably better to explicitly request a merge."
       mouse-drag-copy-region t
       mouse-wheel-progressive-speed nil
       mouse-wheel-scroll-amount '(3 ((shift) . 1) ((control))))
-
-(with-library 'mouse+
-  (global-set-key (kbd "<down-mouse-2>") 'mouse-flash-position)
-  (global-set-key (kbd "S-<down-mouse-2>") 'mouse-scan-lines))
 
 ;; move mouse pointer away when the cursor gets near
 (mouse-avoidance-mode 'cat-and-mouse)
