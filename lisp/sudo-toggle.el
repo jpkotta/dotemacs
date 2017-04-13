@@ -85,7 +85,11 @@ unless SUDO-USER is provided."
           (if hop
               ;; remove sudo (last hop)
               (tramp-make-tramp-file-name
-               nil nil nil localname (replace-regexp-in-string "|$" "" hop))
+               nil nil nil localname
+               (replace-regexp-in-string ;; remove trailing "|"
+                (format "%s$" (regexp-quote tramp-postfix-hop-format))
+                ""
+                hop))
             ;; just use localname
             localname))))))
 
