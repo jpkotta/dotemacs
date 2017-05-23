@@ -107,7 +107,6 @@ files (e.g. directories, fifos, etc.)."
         evil-numbers
         expand-region
         figlet
-        flex-isearch
         flyspell-correct
         fuzzy ;; for auto-complete
         fvwm-mode
@@ -3067,12 +3066,6 @@ match.  It should be idempotent."
 (define-key isearch-mode-map (kbd "<C-backspace>") 'isearch-unfail)
 
 (define-key isearch-mode-map (kbd "M-k") nil)
-
-;; TODO minimal flex isearch (setq search-whitespace-regexp ".*?") is
-;; broken by flex-isearch
-(with-library 'flex-isearch
-  (setq flex-isearch-auto 'on-failed)
-  (global-flex-isearch-mode 1))
 
 (defvar isearch-auto-use-region-max-length 24
   "Upper threshold to automatically use the region in isearch.")
