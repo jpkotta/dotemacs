@@ -2555,12 +2555,7 @@ If region is inactive, use the entire current line."
 
 (when (executable-find "ipython2")
   (setq python-shell-interpreter "ipython2"
-        python-shell-interpreter-args ""
-        python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-        python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-        python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
-        python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
-        python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+        python-shell-interpreter-args "--simple-prompt -i"))
 
 (defun python-2to3 ()
   "Run 2to3 on the current buffer and put the diff in a new buffer."
