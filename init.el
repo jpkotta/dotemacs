@@ -454,7 +454,9 @@
 ;; This works even if ggtags-find-tag-dwim is just marked for
 ;; autoloading but isn't loaded yet.
 (when (commandp (symbol-function 'ggtags-find-tag-dwim))
-  (global-set-key (kbd "M-.") 'ggtags-find-tag-dwim))
+  (global-set-key (kbd "M-.") 'ggtags-find-tag-dwim)
+  ;; keep default definition for emacs-lisp-mode
+  (define-key emacs-lisp-mode-map (kbd "M-.") #'xref-find-definitions))
 
 ;; stops ggtags-create-tags from asking
 (setenv "GTAGSLABEL" "default")
@@ -470,10 +472,30 @@
 
 ;; GTAGSLABEL has no effect unless there's a ~/.globalrc
 (let ((rcfile "~/.globalrc")
-      (dist-rcfile "/usr/share/gtags/gtags.conf"))
-  (when (and (not (file-exists-p rcfile))
-           (file-exists-p dist-rcfile))
-    (copy-file dist-rcfile rcfile)))
+      (dist-rcfiles '("/usr/share/gtags/gtags.conf"
+                      "/usr/local/share/gtags/gtags.conf")))
+  (unless (file-exists-p rcfile)
+    (dolist (dist-rcfile dist-rcfiles)
+      (when (file-exists-p dist-rcfile)
+        (copy-file dist-rcfile rcfile)))))
+
+;; xref is the unified cross reference subsystem.  ggtags actually
+;; uses it for some things like tag history.  It's labeled as
+;; experimental in Emacs 25, and seems like it needs more work.  gxref
+;; is a package to use global as an xref backend.  Once xref is more
+;; mature, it will probably be better than ggtags.
+
+;; (defun gxref-create-db-pygments (project-root-dir)
+;;   "Like `gxref-create-db', but set GTAGSLABEL to pygments.
+
+;; Pygments supports more languages, but is much slower than the
+;; default label."
+;;   (interactive "DCreate db in directory: ")
+;;   (let ((gxref-gtags-label "pygments"))
+;;     (gxref-create-db project-root-dir)))
+
+;; (with-eval-after-load 'xref
+;;   (add-hook 'xref-backend-functions #'gxref-xref-backend))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
@@ -3064,16 +3086,15 @@ match.  It should be idempotent."
 ;; recenter after running next-error
 (setq next-error-recenter '(4))
 
-;; recenter the error buffer
-;; previous-error just calls next-error
-(advice-add 'next-error
-            :after
-            (lambda (&rest args)
-              "recenter the error buffer"
-              (let ((win (get-buffer-window next-error-last-buffer)))
-                (when win
-                  (with-selected-window win
-                    (recenter))))))
+(defun jpk/next-error-hook ()
+  ;; FIXME this breaks xref
+  (let ((win (get-buffer-window next-error-last-buffer))
+        (recenter-redisplay nil))
+    (when win
+      (with-selected-window win
+        (recenter)))))
+
+(add-hook 'next-error-hook #'jpk/next-error-hook)
 
 (defvar grep-context-lines 2
   "Default number of context lines (non-matching lines before and
