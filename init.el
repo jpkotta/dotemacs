@@ -1316,6 +1316,16 @@ it's probably better to explicitly request a merge."
   (define-key diff-mode-map (kbd "C-c C-o") 'diff-goto-source)
   )
 
+(defun diff-delete-trailing-CR ()
+  "Delete trailing carriage returns () in a `diff-mode' buffer."
+  (when (derived-mode-p 'diff-mode)
+    (let ((inhibit-read-only t))
+      (save-excursion
+        (goto-char (point-min))
+        (while (re-search-forward "+$" nil t)
+          (message "pos: %s" (point))
+          (replace-match "" nil nil))))))
+
 (defun jpk/diff-mode-hook ()
   ;; FIXME why? special-mode-map suppress-keymap
   (local-set-key (kbd "M-1") nil)
@@ -1326,10 +1336,13 @@ it's probably better to explicitly request a merge."
 
   (setq imenu-prev-index-position-function nil)
   (setq imenu-generic-expression '((nil "^--- .+/\\([^/]+\\)\t" 1)))
+
+  (remove-hook 'write-contents-functions #'delete-trailing-whitespace 'local)
   )
 
-(add-hook 'diff-mode-hook 'jpk/diff-mode-hook)
-(add-hook 'diff-mode-hook 'diff-make-unified)
+(add-hook 'diff-mode-hook #'jpk/diff-mode-hook)
+(add-hook 'diff-mode-hook #'diff-make-unified)
+(add-hook 'diff-mode-hook #'diff-delete-trailing-CR)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commit-patch-buffer is very picky about the patch buffer.
@@ -3377,7 +3390,7 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
 
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(add-hook 'write-contents-functions #'delete-trailing-whitespace)
 
 (setq backward-delete-char-untabify-method nil)
 
