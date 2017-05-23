@@ -647,10 +647,7 @@ With prefix arg, insert a large ASCII art version.
             "  '-./____-'  \n")
     ))
 
-(global-set-key (kbd "C-x 8 E") "€")
-(global-set-key (kbd "C-x 8 * E") "€")
-
-(defun insert-date/time ()
+(defun insert-current-time ()
   "Insert the current date and time in the buffer."
   (interactive "*")
   (let* ((fmt-alist '(("time" "%T")
@@ -836,6 +833,7 @@ The numbers are formatted according to the FORMAT string."
 (global-auto-revert-mode 1)
 (setq auto-revert-verbose nil
       global-auto-revert-non-file-buffers t)
+(add-hook 'dired-mode-hook #'auto-revert-mode)
 
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
@@ -2210,9 +2208,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
         '((".*" . (("make-simple" .
                     "make -k")
                    ("make-repo" .
-                    "make --no-print-directory -C '%repo-dir'")
+                    "make -k --no-print-directory -C '%repo-dir'")
                    ("make-top" .
-                    "make --no-print-directory -C '%make-dir'")))
+                    "make -k --no-print-directory -C '%make-dir'")))
           (c-mode . (("c-simple" .
                       "gcc -o '%file-sans' %cflags '%file-name'")
                      ("c-simple32" .
@@ -2326,7 +2324,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (highlight-operators-mode 1))
 
   (setq adaptive-wrap-extra-indent 1)
-
+  (visual-line-mode 1)
+  
   ;;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
 
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
