@@ -40,13 +40,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
+(require 'cl-lib) ;; not autoloaded
+
+(defun file-newer-than-all-in-dir-p (filename dirname)
+  "Non-nil if any files in DIRNAME are newer than FILENAME.
+
+Ignores files in the directory that are not regular
+files (e.g. directories, fifos, etc.)."
+  (cl-notany (lambda (x) (file-newer-than-file-p x filename))
+             (cl-remove-if-not #'file-regular-p
+                               (directory-files dirname t))))
+
 (defvar extra-lisp-directory (concat user-emacs-directory "lisp/")
   "Directory for Emacs lisp files that are not part of Emacs or in packages.")
 (add-to-list 'load-path extra-lisp-directory)
-(let ((autoload-file (concat extra-lisp-directory "lisp-autoloads.el")))
-  (when (not (file-exists-p autoload-file))
+(let* ((prefix "lisp")
+       (autoload-file (concat extra-lisp-directory prefix "-autoloads.el")))
+  (unless (and (file-exists-p autoload-file)
+             (file-newer-than-all-in-dir-p autoload-file extra-lisp-directory))
     (require 'package)
-    (package-generate-autoloads "lisp" extra-lisp-directory))
+    (package-generate-autoloads prefix extra-lisp-directory))
   (load-file autoload-file))
 
 ;; set up specific to the local machine
