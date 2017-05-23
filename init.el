@@ -1179,34 +1179,6 @@ it's probably better to explicitly request a merge."
 ;; move mouse pointer away when the cursor gets near
 (mouse-avoidance-mode 'cat-and-mouse)
 
-(defun mouse-avoidance-ignore-p ()
-  (let ((mp (mouse-position)))
-    (or (not (frame-pointer-visible-p)) ; The pointer is hidden
-       (not cursor-type)               ; There's no cursor
-       executing-kbd-macro	       ; don't check inside macro
-       (null (cadr mp))	       ; don't move unless in an Emacs frame
-       (not (eq (car mp) (selected-frame)))
-       ;; Don't do anything if last event was a mouse event.
-       ;; FIXME: this code fails in the case where the mouse was moved
-       ;; since the last key-press but without generating any event.
-       (and (consp last-input-event)
-          (symbolp (car last-input-event))
-          (let ((modifiers (event-modifiers (car last-input-event))))
-            (or (memq (car last-input-event)
-                     '(mouse-movement scroll-bar-movement
-                                      select-window focus-out file-notify))
-               (memq 'click modifiers)
-               (memq 'double modifiers)
-               (memq 'triple modifiers)
-               (memq 'drag modifiers)
-               (memq 'down modifiers)
-               (memq 'meta modifiers)
-               (memq 'control modifiers)
-               (memq 'shift modifiers)
-               (memq 'hyper modifiers)
-               (memq 'super modifiers)
-               (memq 'alt modifiers)))))))
-
 (global-set-key (kbd "<mouse-2>") 'mouse-yank-primary)
 
 (with-library 'mouse-copy
