@@ -156,8 +156,8 @@
 (setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version "/"))
 
 (package-initialize)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("gnu" . "https://elpa.gnu.org/packages/")))
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
+                         ("gnu" . "http://elpa.gnu.org/packages/")))
 
 (defun jpk/install-selected-packages ()
   (interactive)
