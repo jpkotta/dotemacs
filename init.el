@@ -168,7 +168,9 @@ files (e.g. directories, fifos, etc.)."
         yasnippet
         ))
 
-(setq package-user-dir (concat user-emacs-directory "elpa-" emacs-version "/"))
+(setq package-user-dir (expand-file-name
+                        (format "elpa-%s" emacs-version)
+                        user-emacs-directory))
 
 (package-initialize)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
@@ -194,6 +196,20 @@ files (e.g. directories, fifos, etc.)."
   (declare (indent defun))
   `(when (require ,feature nil 'noerror)
      ,@body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(setq use-package-always-ensure t
+      use-package-enable-imenu-support t)
+
+(when t
+  (setq use-package-verbose 'debug
+        use-package-debug t
+        use-package-minimum-reported-time 0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; no-littering
