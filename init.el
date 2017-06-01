@@ -78,6 +78,7 @@ files (e.g. directories, fifos, etc.)."
       '(
         ac-c-headers
         ac-math
+        ace-window
         adaptive-wrap
         ag
         anchored-transpose
@@ -529,8 +530,7 @@ files (e.g. directories, fifos, etc.)."
   (dolist (f '(bm-next bm-previous evil-numbers/inc-at-pt evil-numbers/dec-at-pt
                        gud-next gud-step
                        help-go-back help-go-forward
-                       next-buffer previous-buffer
-                       other-window other-window-prev))
+                       next-buffer previous-buffer))
     (add-to-list 'easy-repeat-command-list f))
   (easy-repeat-mode 1))
 
@@ -1207,12 +1207,9 @@ it's probably better to explicitly request a merge."
       (next-buffer))
     (other-window 1)))
 
-(defun other-window-prev (arg)
-  "Inverse of `other-window'."
-  (interactive "p")
-  (other-window (- (or arg 1))))
-
-(global-set-key (kbd "C-x p") 'other-window-prev)
+(with-library 'ace-window
+  (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
+  (global-set-key (kbd "C-x o") #'ace-window)) 
 
 ;; Save point position per-window instead of per-buffer.
 (with-library 'winpoint
