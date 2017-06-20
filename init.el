@@ -249,15 +249,18 @@ files (e.g. directories, fifos, etc.)."
                             (scroll-bar-height . 5)
                             (scroll-bar-width . 10)))
 
+(setq default-font-family "DejaVu Sans Mono")
+(when (string= system-type "windows-nt")
+  (setq default-font-family "Consolas"))
 (setq custom-safe-themes t)
 (with-library 'calmer-forest-theme
   (load-theme 'calmer-forest 'noconfirm)
   (custom-theme-set-faces
    'calmer-forest
 
-   '(default
+   `(default
       ((t (:family
-           "DejaVu Sans Mono"
+           ,default-font-family
            :inherit nil :stipple nil :overline nil :underline nil
            :background "gray12" :foreground "green"
            :inverse-video nil :box nil :strike-through nil
