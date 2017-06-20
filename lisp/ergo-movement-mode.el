@@ -1,7 +1,14 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ergo-movement-mode.el
-;;
+;; ergo-movement-mode.el --- use M-ijkl for cursor movement
+
 ;; Copyright (C) 2009 Teemu Likonen <tlikonen@iki.fi>
+
+;; Author: Teemu Likonen <tlikonen@iki.fi>
+;; License: GPLv3
+;; Version: 0.1
+
+;; This file is NOT part of GNU Emacs.
+
+;;; Commentary:
 
 ;; DESCRIPTION
 ;;
@@ -41,13 +48,21 @@
 ;;     (require 'ergo-movement-mode)
 ;;     (ergo-movement-mode 1)
 
-(defun make-run-keybind-func (key-spec &optional cua-movement)
+;; The way this works is to create commands that dynamically look up a
+;; keybinding and run it.  Emacs allows keys to run keyboard macros,
+;; which is almost the same thing and arguably simpler.  The problem
+;; is that certain things like selection-mode don't work with the
+;; keyboard macro method.
+
+;;; Code:
+
+(defun ergo-movement--make-func (key-spec &optional cua-movement)
   "Return a command suitable for binding with global-set-key or
   similar functions.  The command should run whatever command is
   bound to the key specified by KEY-SPEC.  If CUA-MOVEMENT is
   non-nil, then the new command will extend the region when shift
   is held down."
-  (let ((name (concat "call-" key-spec "-keybind")))
+  (let ((name (concat "ergo-movement--call-" key-spec "-keybind")))
     (unless (commandp (intern name))
       (fset (intern name)
             `(lambda ()
@@ -59,31 +74,43 @@
       (put (intern name) 'CUA 'move))
     (intern name)))
 
-(defvar ergo-movement-mode-map
+(defvar ergo-movement-key-alist
+  '(("M-j"   . "<left>")
+    ("M-l"   . "<right>")
+    ("M-i"   . "<up>")
+    ("M-k"   . "<down>")
+
+    ("C-M-j" . "C-<left>")
+    ("C-M-l" . "C-<right>")
+    ("C-M-i" . "C-<up>")
+    ("C-M-k" . "C-<down>")
+
+    ("M-u"   . "DEL")
+    ("M-o"   . "<deletechar>")
+    ("C-M-u" . "C-<backspace>")
+    ("C-M-o" . "C-<delete>")
+
+    ("C-S-d" . "DEL")
+    ("M-D"   . "C-<backspace>")
+    ("M-d"   . "C-<delete>"))
+  "Alist for `ergo-movement--make-keymap'.  car is new bind, cdr is
+  old bind.")
+
+(defun ergo-movement--make-keymap ()
+  "Create a keymap with `ergo-movement-key-alist'."
   (let ((map (make-sparse-keymap)))
-    (dolist (k '(("M-j"   . "<left>")
-                 ("M-l"   . "<right>")
-                 ("M-i"   . "<up>")
-                 ("M-k"   . "<down>")
-
-                 ("C-M-j" . "C-<left>")
-                 ("C-M-l" . "C-<right>")
-                 ("C-M-i" . "C-<up>")
-                 ("C-M-k" . "C-<down>")
-
-                 ("M-u"   . "DEL")
-                 ("M-o"   . "<deletechar>")
-                 ("C-M-u" . "C-<backspace>")
-                 ("C-M-o" . "C-<delete>")
-
-                 ("C-S-d" . "DEL")
-                 ("M-D"   . "C-<backspace>")
-                 ("M-d"   . "C-<delete>")
-                 ))
+    (dolist (k ergo-movement-key-alist)
       (define-key map
         (read-kbd-macro (car k))
-        (make-run-keybind-func (cdr k) t)))
-    map)
+        (ergo-movement--make-func (cdr k) t)))
+    map))
+
+(setq ergo-movement-mode-map (ergo-movement--make-keymap))
+
+;;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+(defvar ergo-movement-mode-map
+  (ergo-movement--make-keymap)
   "Key map for `ergo-movement-mode'.")
 
 ;;;###autoload
@@ -110,3 +137,5 @@ untouched. The new bindings override other commands though.
   )
 
 (provide 'ergo-movement-mode)
+
+;;; ergo-movement-mode.el ends here
