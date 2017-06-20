@@ -1195,12 +1195,6 @@ it's probably better to explicitly request a merge."
 ;; move mouse pointer away when the cursor gets near
 (mouse-avoidance-mode 'cat-and-mouse)
 
-(global-set-key (kbd "<mouse-2>") 'mouse-yank-primary)
-
-(with-library 'mouse-copy
-  (global-set-key (kbd "C-<down-mouse-1>") 'mouse-drag-secondary-pasting)
-  (global-set-key (kbd "C-S-<down-mouse-1>") 'mouse-drag-secondary-moving))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Windows
 
