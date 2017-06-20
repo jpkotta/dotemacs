@@ -78,7 +78,6 @@ files (e.g. directories, fifos, etc.)."
       '(
         ac-c-headers
         ac-math
-        ace-window
         adaptive-wrap
         ag
         anchored-transpose
@@ -123,7 +122,6 @@ files (e.g. directories, fifos, etc.)."
         htmlize
         ibuffer-projectile
         ibuffer-tramp
-        ido-ubiquitous
         iedit
         immortal-scratch
         keychain-environment
@@ -149,10 +147,8 @@ files (e.g. directories, fifos, etc.)."
         rainbow-mode
         sane-term
         save-visited-files
-        shackle
         smart-shift
         smart-tabs-mode
-        smex
         sphinx-doc
         sqlup-mode
         ssh-config-mode
@@ -183,10 +179,10 @@ files (e.g. directories, fifos, etc.)."
                  (lambda (prompt) t)))
         (when (null package-archive-contents)
           (package-refresh-contents))
-        (package-autoremove)
+        ;;(package-autoremove)
         (package-install-selected-packages))
     (package-refresh-contents)
-    (package-autoremove)
+    ;;(package-autoremove)
     (package-install-selected-packages)))
 
 (jpk/install-selected-packages)
@@ -206,7 +202,7 @@ files (e.g. directories, fifos, etc.)."
 (setq use-package-always-ensure t
       use-package-enable-imenu-support t)
 
-(when t
+(when init-file-debug ;; --debug-init
   (setq use-package-verbose 'debug
         use-package-debug t
         use-package-minimum-reported-time 0))
@@ -1078,25 +1074,20 @@ it's probably better to explicitly request a merge."
 
 (define-key minibuffer-local-map (kbd "C-c f") 'insert-filename-or-buffername)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; use ido (almost) everywhere
-
-(with-library 'ido-ubiquitous
+(use-package ido-ubiquitous
+  :config
+  (setq ido-ubiquitous-auto-update-overrides t)
   (add-to-list 'ido-ubiquitous-command-overrides
                '(enable exact "man"))
   (ido-ubiquitous-mode 1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ido for M-x
-(defun smex-update-after-load (unused)
-  (when (boundp 'smex-cache)
-    (smex-update)))
-
-(with-library 'smex
+(use-package smex
+  :config
   (add-hook 'after-init-hook 'smex-initialize)
-  (add-hook 'after-load-functions 'smex-update-after-load)
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
+
+  :bind
+  (("M-x" . smex)
+   ("M-X" . smex-major-mode-commands)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Backup
@@ -1217,16 +1208,24 @@ it's probably better to explicitly request a merge."
       (next-buffer))
     (other-window 1)))
 
-(with-library 'ace-window
+(use-package ace-window
+  :config
   (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
-  (global-set-key (kbd "C-x o") #'ace-window)) 
 
-;; Save point position per-window instead of per-buffer.
-(with-library 'winpoint
-  (winpoint-mode 1))
+  :bind
+  ("C-x o" . ace-window))
+
+;; ;; Save point position per-window instead of per-buffer.
+;; (use-package winpoint
+;;   :config
+;;   (winpoint-mode 1))
+
+(setq switch-to-buffer-preserve-window-point t)
 
 (setq help-window-select 'never)
-(with-library 'shackle
+
+(use-package shackle
+  :config
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
         '((Man-mode :select t)
