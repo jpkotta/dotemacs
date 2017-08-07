@@ -6,14 +6,11 @@
 
 (message "Loading jpkotta's init.el.")
 
-(setq gc-cons-threshold-orig gc-cons-threshold)
 (setq gc-cons-threshold most-positive-fixnum)
-
 (defun jpk/emacs-startup-hook ()
   (message "init.el loaded in %s." (emacs-init-time))
-  (setq gc-cons-threshold gc-cons-threshold-orig)
-  )
-(add-hook 'emacs-startup-hook 'jpk/emacs-startup-hook)
+  (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value))))
+(add-hook 'emacs-startup-hook #'jpk/emacs-startup-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TODO
