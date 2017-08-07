@@ -156,8 +156,6 @@ files (e.g. directories, fifos, etc.)."
         visual-regexp
         wrap-region
         yaml-mode
-        ;;yankpad
-        yasnippet
         ))
 
 (setq package-user-dir (expand-file-name
@@ -707,7 +705,6 @@ With prefix arg, insert a large ASCII art version.
   (with-eval-after-load "projectile" (diminish 'projectile-mode))
   (with-eval-after-load "sphinx-doc" (diminish 'sphinx-doc-mode))
   (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
-  (with-eval-after-load "yasnippet" (diminish 'yas-minor-mode))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1547,7 +1544,7 @@ This effectively makes `smerge-command-prefix' unnecessary."
 
 (defun jpk/term-mode-hook ()
   (setq cua--ena-cua-keys-keymap nil)
-  (with-library 'yasnippet
+  (when (featurep 'yasnippet)
     (yas-minor-mode 0))
   (setq-local revert-buffer-function #'term-revert-buffer)
   )
@@ -3260,21 +3257,28 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Yasnippet (Yet Another Template Mode)
 
-(with-eval-after-load "yasnippet"
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :init
+  (yas-global-mode 1)
+  
+  :config
   (setq yas-prompt-functions (cons 'yas-ido-prompt
                                    (remove 'yas-ido-prompt
                                            yas-prompt-functions)))
-  (define-key yas-minor-mode-map (kbd "TAB") nil)
-  (define-key yas-minor-mode-map (kbd "<tab>") nil)
-  (yas-global-mode 1)
+
+  :bind (("C-c y" . yas-insert-snippet)
+         :map yas-minor-mode-map
+         ("TAB" . nil)
+         ("<tab>" . nil))
   )
-(global-set-key (kbd "C-c y") 'yas-insert-snippet)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; yankpad
+(use-package yankpad
+  :config
+  (setq yankpad-file (expand-file-name "yankpad.org" no-littering-var-directory))
 
-;; (setq yankpad-file (concat user-emacs-directory "snippets/yankpad.org"))
-;; (global-set-key (kbd "C-c Y") 'yankpad-map)
+  :bind (("C-c Y" . yankpad-insert))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; miscellaneous keybindings
