@@ -77,7 +77,6 @@ files (e.g. directories, fifos, etc.)."
         ac-math
         ace-window
         adaptive-wrap
-        ag
         anchored-transpose
         atomic-chrome
         auctex
@@ -157,8 +156,6 @@ files (e.g. directories, fifos, etc.)."
         systemd
         undo-tree
         visual-regexp
-        wgrep
-        wgrep-ag
         wrap-region
         yaml-mode
         ;;yankpad
@@ -3085,10 +3082,6 @@ match.  It should be idempotent."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
 
-;; editable grep results
-(with-library 'wgrep
-  (define-key grep-mode-map (kbd "C-x C-q") 'wgrep-change-to-wgrep-mode))
-
 ;; recenter after running next-error
 (setq next-error-recenter '(4))
 
@@ -3099,44 +3092,61 @@ match.  It should be idempotent."
     (when win
       (with-selected-window win
         (recenter)))))
-
 (add-hook 'next-error-hook #'jpk/next-error-hook)
 
-(defvar grep-context-lines 2
-  "Default number of context lines (non-matching lines before and
+(use-package grep
+  :config
+  (defun jpk/grep/compilation-filter-hook ()
+    (when (eq major-mode 'grep-mode)
+      (setq adaptive-wrap-extra-indent 4)
+      (visual-line-mode 1)
+      (hide-lines-matching "^find")))
+  (add-hook 'compilation-filter-hook #'jpk/grep/compilation-filter-hook)
+
+  (defvar grep-context-lines 2
+    "Default number of context lines (non-matching lines before and
   after the matching line) for `rgrep-context'.")
 
-(defun rgrep-context (arg)
-  "Like `rgrep', but adds a '-C' parameter to get context lines around matches.
+  (defun rgrep-context (arg)
+    "Like `rgrep', but adds a '-C' parameter to get context lines around matches.
 
 Default number of context lines is `grep-context-lines', and can
 be specified with a numeric prefix."
-  (interactive "p")
-  (setq arg (or arg grep-context-lines))
-  (let ((grep-find-template
-         (format "find <D> <X> -type f <F> -print0 | xargs -0 -e grep <C> -nH -C %d -e <R>"
-                 arg))
-        grep-host-defaults-alist
-        current-prefix-arg)
-    (call-interactively 'rgrep)))
+    (interactive "p")
+    (setq arg (or arg grep-context-lines))
+    (let ((grep-find-template
+           (format "find <D> <X> -type f <F> -print0 | xargs -0 -e grep <C> -nH -C %d -e <R>"
+                   arg))
+          grep-host-defaults-alist
+          current-prefix-arg)
+      (call-interactively 'rgrep)))
+  )  
 
-(defun jpk/grep-mode-hook ()
-  (setq adaptive-wrap-extra-indent 4)
-  (visual-line-mode 1)
-  (with-library 'hide-lines
-    (run-with-timer
-     0.01 nil
-     (lambda ()
-       (with-current-buffer "*grep*"
-         (hide-lines-matching "^find"))))))
-
-(add-hook 'grep-mode-hook 'jpk/grep-mode-hook)
-
-(defun jpk/grep-setup-hook ()
-  (setenv "GREP_OPTIONS") ;; workaround until emacs 25
+(use-package wgrep
+  :bind (:map grep-mode-map
+              ("C-x C-q" . wgrep-change-to-wgrep-mode))
   )
 
-(add-hook 'grep-setup-hook 'jpk/grep-setup-hook)
+(use-package rg
+  :config
+  (add-hook 'rg-mode-hook #'wgrep-ag-setup)
+  )
+
+(use-package ag
+  :config
+  (setq ag-highlight-search t)
+  
+  (defun jpk/ag-mode-hook ()
+    (setq adaptive-wrap-extra-indent 4)
+    (visual-line-mode 1))
+  (add-hook 'ag-mode-hook #'jpk/ag-mode-hook)
+  )
+
+(use-package wgrep-ag
+  :after (wgrep ag)
+  :bind (:map ag-mode-map
+              ("C-x C-q" . wgrep-change-to-wgrep-mode))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Search and replace
@@ -3168,18 +3178,6 @@ The user is prompted at each instance like query-replace."
     (recenter)
     ret))
 (setq replace-re-search-function 're-search-forward-and-center)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Ag is a better ack
-
-(with-eval-after-load "ag"
-  (define-key ag-mode-map (kbd "C-x C-q") 'wgrep-change-to-wgrep-mode))
-
-(setq ag-highlight-search t)
-(defun jpk/ag-hook ()
-  (setq adaptive-wrap-extra-indent 4)
-  (visual-line-mode 1))
-(add-hook 'ag-mode-hook 'jpk/ag-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; locate
