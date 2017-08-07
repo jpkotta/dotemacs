@@ -119,7 +119,6 @@ files (e.g. directories, fifos, etc.)."
         htmlize
         ibuffer-projectile
         ibuffer-tramp
-        ido-ubiquitous
         iedit
         immortal-scratch
         keychain-environment
@@ -148,7 +147,6 @@ files (e.g. directories, fifos, etc.)."
         shackle
         smart-shift
         smart-tabs-mode
-        smex
         sphinx-doc
         sqlup-mode
         ssh-config-mode
@@ -1018,82 +1016,59 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ido - Interactively Do Things
 
-(setq ido-confirm-unique-completion t
-      ido-default-buffer-method 'selected-window
-      ido-default-file-method 'selected-window
-      ido-enable-flex-matching t
-      ido-ignore-buffers '("\\` " "^\\*Completion" "^\\*Ido")
-      ido-max-work-file-list 50
-      ido-rotate-file-list-default t
-      ido-show-dot-for-dired t
-      ido-work-directory-match-only nil
-      ido-auto-merge-work-directories-length -1
-      ido-use-virtual-buffers t
-      ido-use-filename-at-point 'guess
-      ido-use-url-at-point t
-      ido-ignore-extensions t)
+(use-package ido
+  :config
+  (setq ido-confirm-unique-completion t
+        ido-default-buffer-method 'selected-window
+        ido-default-file-method 'selected-window
+        ido-enable-flex-matching t
+        ido-ignore-buffers '("\\` " "^\\*Completion" "^\\*Ido")
+        ido-max-work-file-list 50
+        ido-rotate-file-list-default t
+        ido-show-dot-for-dired t
+        ido-work-directory-match-only nil
+        ido-auto-merge-work-directories-length -1
+        ido-use-virtual-buffers 'auto
+        ido-use-filename-at-point 'guess
+        ido-use-url-at-point t)
 
-(dolist (e '("-pkg.el" "-autoloads.el"))
-  (add-to-list 'completion-ignored-extensions e))
+  (dolist (e '("-pkg.el" "-autoloads.el"))
+    (add-to-list 'completion-ignored-extensions e))
 
-(ido-mode 'both) ;; both buffers and files
-(ido-everywhere 1)
+  (ido-mode 'both) ;; both buffers and files
+  (ido-everywhere 1)
 
-(defun ido-initiate-auto-merge-this-buffer ()
-  "Calls `ido-initiate-auto-merge' on the current buffer.
+  (defun ido-initiate-auto-merge-this-buffer ()
+    "Calls `ido-initiate-auto-merge' on the current buffer.
 
 ido's automerge is not particularly well documented.  Basically,
 if no matches are found, it starts looking in subdirectories for
 matches.  This can be annoying if you didn't really want it, so
 it's probably better to explicitly request a merge."
-  (interactive)
-  (ido-initiate-auto-merge (current-buffer)))
+    (interactive)
+    (ido-initiate-auto-merge (current-buffer)))
+              
+  (defun jpk/ido-minibuffer-setup-hook ()
+    ;; disallow wrapping of the minibuffer
+    (setq truncate-lines t))
+  (add-hook 'ido-minibuffer-setup-hook #'jpk/ido-minibuffer-setup-hook)
 
-(defun jpk/ido-setup-hook ()
-  (define-key ido-completion-map [remap backward-kill-word] nil)
-  (define-key ido-completion-map (kbd "<C-backspace>") 'backward-kill-word)
-  (define-key ido-completion-map (kbd "C-c C-s") 'ido-initiate-auto-merge-this-buffer))
-(add-hook 'ido-setup-hook 'jpk/ido-setup-hook)
+  :bind (:map
+         ido-completion-map
+         ("C-c C-s" . ido-initiate-auto-merge-this-buffer)
+         :map
+         ido-file-dir-completion-map
+         ([remap backward-kill-word] . nil)
+         ("C-<backspace>" . ido-delete-backward-word-updir-word))
+  )
 
-(defun jpk/ido-minibuffer-setup-hook ()
-  ;; disallow wrapping of the minibuffer
-  (setq truncate-lines t))
-(add-hook 'ido-minibuffer-setup-hook 'jpk/ido-minibuffer-setup-hook)
-
-(defun insert-filename-or-buffername (&optional arg)
-  "If the buffer has a file, insert the base name of that file.
-  Otherwise insert the buffer name.  With prefix argument, insert
-  the full file name."
-  (interactive "*P")
-  (let* ((buffer (window-buffer (minibuffer-selected-window)))
-         (file-path-maybe (buffer-file-name buffer)))
-    (insert (if file-path-maybe
-                (if arg
-                    file-path-maybe
-                  (file-name-nondirectory file-path-maybe))
-              (buffer-name buffer)))))
-
-(define-key minibuffer-local-map (kbd "C-c f") 'insert-filename-or-buffername)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; use ido (almost) everywhere
-
-(with-library 'ido-ubiquitous
-  (add-to-list 'ido-ubiquitous-command-overrides
-               '(enable exact "man"))
+(use-package ido-completing-read+
+  :config
   (ido-ubiquitous-mode 1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ido for M-x
-(defun smex-update-after-load (unused)
-  (when (boundp 'smex-cache)
-    (smex-update)))
-
-(with-library 'smex
-  (add-hook 'after-init-hook 'smex-initialize)
-  (add-hook 'after-load-functions 'smex-update-after-load)
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
+(use-package smex
+  :bind (("M-x" . smex)
+         ("M-X" . smex-major-mode-commands)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Backup
