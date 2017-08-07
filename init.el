@@ -161,7 +161,7 @@ files (e.g. directories, fifos, etc.)."
         ))
 
 (setq package-user-dir (expand-file-name
-                        (format "elpa-%s" emacs-version)
+                        (format "elpa-%d" emacs-major-version)
                         user-emacs-directory))
 
 (package-initialize)
@@ -175,10 +175,10 @@ files (e.g. directories, fifos, etc.)."
                  (lambda (prompt) t)))
         (when (null package-archive-contents)
           (package-refresh-contents))
-        (package-autoremove)
+        ;;(package-autoremove)
         (package-install-selected-packages))
     (package-refresh-contents)
-    (package-autoremove)
+    ;;(package-autoremove)
     (package-install-selected-packages)))
 
 (jpk/install-selected-packages)
@@ -890,11 +890,8 @@ The numbers are formatted according to the FORMAT string."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Daemon/Server
 
-(global-set-key (kbd "C-x C-S-c") 'save-buffers-kill-emacs)
-(global-set-key (kbd "C-x C-c") 'delete-frame)
-
-(when (daemonp)
-  (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function))
+(global-set-key (kbd "C-x C-S-c") #'save-buffers-kill-emacs)
+(global-set-key (kbd "C-x C-c") #'delete-frame)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Web Browser
