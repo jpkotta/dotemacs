@@ -127,7 +127,7 @@
        (interactive)
        (ediff-regions-wordwise (buffer-name) (buffer-name)))
 
-  ))
+     ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -151,21 +151,21 @@ we start the new diff otherwise some code in the middle of the
 stack expects some output that isn't there and triggers an
 error."
               (if ediff-tweak-auto-hexl-diff
-                  (let ((file-A (ad-get-arg 0))
-                        (file-B (ad-get-arg 1))
+                  (let ((file-A (nth 0 args))
+                        (file-B (nth 1 args))
                         ediff-tweak--do-hexl-diff)
                     (condition-case err
                         (apply orig args)
                       (error
-                       (if (ediff-tweak--do-hexl-diff
-                            (let ((buf-A (find-file-noselect file-A))
-                                  (buf-B (find-file-noselect file-B)))
-                              (with-current-buffer buf-A
-                                (hexl-mode 1))
-                              (with-current-buffer buf-B
-                                (hexl-mode 1))
-                              (ediff-buffers buf-A buf-B))
-                            (error (error-message-string err)))))))
+                       (if ediff-tweak--do-hexl-diff
+                           (let ((buf-A (find-file-noselect file-A))
+                                 (buf-B (find-file-noselect file-B)))
+                             (with-current-buffer buf-A
+                               (hexl-mode 1))
+                             (with-current-buffer buf-B
+                               (hexl-mode 1))
+                             (ediff-buffers buf-A buf-B))
+                         (error (error-message-string err))))))
                 (apply orig args))))
 
 (advice-add 'ediff-setup-diff-regions

@@ -288,6 +288,15 @@ files (e.g. directories, fifos, etc.)."
    '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red1"))))
    '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
 
+   '(ediff-even-diff-A ((t (:inherit diff-refine-changed))))
+   '(ediff-even-diff-B ((t (:inherit diff-refine-changed))))
+   '(ediff-even-diff-C ((t (:inherit diff-refine-changed))))
+   '(ediff-even-diff-Ancestor ((t (:inherit diff-refine-changed))))
+   '(ediff-odd-diff-A ((t (:inherit diff-refine-changed))))
+   '(ediff-odd-diff-B ((t (:inherit diff-refine-changed))))
+   '(ediff-odd-diff-C ((t (:inherit diff-refine-changed))))
+   '(ediff-odd-diff-Ancestor ((t (:inherit diff-refine-changed))))
+   
    '(term ((t (:foreground "lavender blush"))))
 
    '(Info-quoted ((t (:family "Luxi Mono"))))
