@@ -3166,31 +3166,28 @@ match.  It should be idempotent."
 Compatibility function for \\[next-error] invocations."
   (interactive "p")
   ;; we need to run occur-find-match from within the Occur buffer
-  (let (target-buffer)
-    (with-current-buffer
-        ;; Choose the buffer and make it current.
-        (if (next-error-buffer-p (current-buffer))
-            (current-buffer)
-          (next-error-find-buffer nil nil
-                                  (lambda ()
-                                    (eq major-mode 'occur-mode))))
+  (with-current-buffer
+      ;; Choose the buffer and make it current.
+      (if (next-error-buffer-p (current-buffer))
+          (current-buffer)
+        (next-error-find-buffer nil nil
+                                (lambda ()
+                                  (eq major-mode 'occur-mode))))
 
-      (goto-char (cond (reset (point-min))
-                       ((< argp 0) (line-beginning-position))
-                       ((> argp 0) (line-end-position))
-                       ((point))))
-      (occur-find-match
-       (abs argp)
-       (if (> 0 argp)
-           #'previous-single-property-change
-         #'next-single-property-change)
-       "No more matches")
-      ;; In case the *Occur* buffer is visible in a nonselected window.
-      (let ((win (get-buffer-window (current-buffer) t)))
-        (if win (set-window-point win (point))))
-      (occur-mode-goto-occurrence)
-      (setq target-buffer (current-buffer)))
-    (set-buffer target-buffer)))
+    (goto-char (cond (reset (point-min))
+                     ((< argp 0) (line-beginning-position))
+                     ((> argp 0) (line-end-position))
+                     ((point))))
+    (occur-find-match
+     (abs argp)
+     (if (> 0 argp)
+         #'previous-single-property-change
+       #'next-single-property-change)
+     "No more matches")
+    ;; In case the *Occur* buffer is visible in a nonselected window.
+    (let ((win (get-buffer-window (current-buffer) t)))
+      (if win (set-window-point win (point))))
+    (occur-mode-goto-occurrence)))
 
 (defun jpk/next-error-hook ()
   ;; FIXME this breaks xref
