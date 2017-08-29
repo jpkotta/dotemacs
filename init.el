@@ -742,27 +742,10 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
 
-(setf (symbol-function 'string-to-number-orig)
-      (symbol-function 'string-to-number))
-(defun str2num (str &optional base)
-  "Like `string-to-number', but with C-style prefixes for non-decimal strings.
-This can be used as a drop-in replacement for `string-to-number'."
-  (let ((case-fold-search t))
-    (cond
-     ((string-match-p "0x[0-9A-F]+" str)
-      (string-to-number-orig (replace-regexp-in-string "0x" "" str) 16))
-     ((string-match-p "0o[0-7]+" str)
-      (string-to-number-orig (replace-regexp-in-string "0o" "" str) 8))
-     ((string-match-p "0d[0-9]+" str)
-      (string-to-number-orig (replace-regexp-in-string "0d" "" str) 10))
-     ((string-match-p "0b[01]+" str)
-      (string-to-number-orig (replace-regexp-in-string "0b" "" str) 2))
-     (t
-      (string-to-number-orig str base)))))
-
-(with-library 'evil-numbers
-  (global-set-key (kbd "C-c =") 'evil-numbers/inc-at-pt)
-  (global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt))
+(use-package evil-numbers
+  :bind (("C-c =" . evil-numbers/inc-at-pt)
+         ("C-c -" . evil-numbers/dec-at-pt))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hexl mode
@@ -821,44 +804,56 @@ This can be used as a drop-in replacement for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CUA mode
 
-(global-set-key (kbd "C-<return>") 'cua-rectangle-mark-mode)
-
-(with-eval-after-load "cua-rect"
+(use-package cua-rect
+  :ensure nil
+  :config
+  (defun string-to-number-c (str &optional base)
+    "Like `string-to-number', but with C-style prefixes for
+non-decimal strings. This can be used as a drop-in replacement
+for `string-to-number'."
+  (let ((case-fold-search t))
+    (cond
+     ((string-match-p "0x[0-9A-F]+" str)
+      (string-to-number (replace-regexp-in-string "0x" "" str) 16))
+     ((string-match-p "0o[0-7]+" str)
+      (string-to-number (replace-regexp-in-string "0o" "" str) 8))
+     ((string-match-p "0d[0-9]+" str)
+      (string-to-number (replace-regexp-in-string "0d" "" str) 10))
+     ((string-match-p "0b[01]+" str)
+      (string-to-number (replace-regexp-in-string "0b" "" str) 2))
+     (t
+      (string-to-number str base)))))
 
   (defvar cua--sequence-rectangle-first-hist ()
     "History list for the initial value in `cua-sequence-rectangle'.")
   (defvar cua--sequence-rectangle-incr-hist ()
     "History list for the increment in `cua-sequence-rectangle'.")
 
-  (defun cua-sequence-rectangle (first incr format)
-    "Resequence each line of CUA rectangle starting from FIRST.
-The numbers are formatted according to the FORMAT string."
-    (interactive
-     (list (if current-prefix-arg
-               (prefix-numeric-value current-prefix-arg)
-             (str2num
-              (read-string "Start value: "
-                           (if cua--sequence-rectangle-first-hist
-                               (car cua--sequence-rectangle-first-hist)
-                             "0")
-                           'cua--sequence-rectangle-first-hist
-                           "0")))
-           (str2num
-            (read-string "Increment: "
-                         (if cua--sequence-rectangle-incr-hist
-                             (car cua--sequence-rectangle-incr-hist)
-                           "1")
-                         'cua--sequence-rectangle-incr-hist
-                         "1"))
-           (read-string (concat "Format: (" cua--rectangle-seq-format ") "))))
-    (if (= (length format) 0)
-        (setq format cua--rectangle-seq-format)
-      (setq cua--rectangle-seq-format format))
-    (cua--rectangle-operation 'clear nil t 1 nil
-                              (lambda (s e _l _r)
-                                (delete-region s e)
-                                (insert (format format first))
-                                (setq first (+ first incr)))))
+  (advice-add 'cua-sequence-rectangle
+              :filter-args
+              (lambda (&rest args)
+                "Use `string-to-number-c' instead of
+`string-to-number', and save more history."
+                (interactive)
+                (list (if current-prefix-arg
+                          (prefix-numeric-value current-prefix-arg)
+                        (string-to-number-c
+                         (read-string "Start value: "
+                                      (if cua--sequence-rectangle-first-hist
+                                          (car cua--sequence-rectangle-first-hist)
+                                        "0")
+                                      'cua--sequence-rectangle-first-hist
+                                      "0")))
+                      (string-to-number-c
+                       (read-string "Increment: "
+                                    (if cua--sequence-rectangle-incr-hist
+                                        (car cua--sequence-rectangle-incr-hist)
+                                      "1")
+                                    'cua--sequence-rectangle-incr-hist
+                                    "1"))
+                      (read-string (concat "Format: (" cua--rectangle-seq-format ") ")))))
+
+  :bind (("C-<return>" . cua-rectangle-mark-mode))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
