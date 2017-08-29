@@ -3544,44 +3544,60 @@ Positive arg means right; negative means left"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
 
-;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
-(defun unfill-paragraph ()
-  "Takes a multi-line paragraph and makes it into a single line
+(use-package fill
+  :ensure nil
+  :config
+  ;; see also fill-individual-paragraphs
+
+  ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
+  (defun unfill-paragraph ()
+    "Takes a multi-line paragraph and makes it into a single line
 of text."
-  (interactive "*")
-  (let ((fill-column (point-max)))
-    (fill-paragraph nil)))
+    (interactive "*")
+    (let ((fill-column (point-max))
+          (emacs-lisp-docstring-fill-column nil))
+      (fill-paragraph)))
 
-(defun fill-or-unfill-paragraph ()
-  "Toggle between `fill-paragraph' and `unfill-paragraph'."
-  (interactive "*")
-  (if (eq last-command 'fill-or-unfill-paragraph)
-      (progn
-        (setq this-command nil)
-        (call-interactively 'unfill-paragraph))
-    (call-interactively 'fill-paragraph)))
+  (defun fill-or-unfill-paragraph ()
+    "Toggle between `fill-paragraph' and `unfill-paragraph'."
+    (interactive "*")
+    (if (eq last-command 'fill-or-unfill-paragraph)
+        (progn
+          (setq this-command nil)
+          (call-interactively 'unfill-paragraph))
+      (call-interactively 'fill-paragraph)))
 
-(global-set-key (kbd "M-q") 'fill-or-unfill-paragraph)
+  (advice-add 'fill-paragraph
+              :after
+              (lambda (&rest args)
+                "Scroll to the left."
+                (scroll-right (window-hscroll))))
 
-(advice-add 'fill-paragraph
-            :after
-            (lambda (&rest args)
-              "Scroll to the left."
-              (scroll-right (window-hscroll))))
+  :bind (("M-q" . fill-or-unfill-paragraph))
+  )
 
-(defun align-regexp-space (beginning end)
-  "Align columns using space as a delimiter."
-  (interactive "*r")
-  (align-regexp beginning end
-                "\\(\\s-*\\)\\s-" 1 0 t))
+(use-package align
+  :ensure nil
+  :config
+  (defun align-regexp-space (beginning end)
+    "Align columns using space as a delimiter."
+    (interactive "*r")
+    (align-regexp beginning end
+                  "\\(\\s-*\\)\\s-" 1 0 t))
 
-(defun align-regexp-comma (beginning end)
-  "Align columns using comma as a delimiter."
-  (interactive "*r")
-  (align-regexp beginning end
-                ",\\(\\s-*\\)" 1 1 t))
-
-;; see also fill-individual-paragraphs
+  ;; FIXME
+  (defun align-regexp-comma (beginning end)
+    "Align columns using comma as a delimiter."
+    (interactive "*r")
+    (save-window-excursion
+      (save-excursion
+        (save-restriction
+          (narrow-to-region beginning end)
+          (with-temp-message ""
+            (replace-regexp "\\s-*," ", " t (point-min) (point-max)))
+          (align-regexp (point-min) (point-max)
+                        ",\\(\\s-*\\)" 1 1 t)))))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; adaptive word wrap
