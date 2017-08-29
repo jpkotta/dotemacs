@@ -555,52 +555,69 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Org Mode
 
-(defun jpk/org-mode-hook ()
-  (interactive)
-  (local-unset-key (kbd "C-<tab>"))
-  (local-unset-key (kbd "C-S-<iso-lefttab>"))
-  (local-unset-key (kbd "<S-iso-lefttab>"))
-  (local-unset-key (kbd "M-<up>"))
-  (local-unset-key (kbd "M-<down>"))
-  (local-unset-key (kbd "S-<left>"))
-  (local-unset-key (kbd "S-<right>"))
-  (local-unset-key (kbd "C-S-<left>"))
-  (local-unset-key (kbd "C-S-<right>"))
-  (local-unset-key (kbd "C-<return>"))
-  (local-unset-key [remap forward-paragraph])
-  (local-unset-key [remap backward-paragraph])
-  (local-unset-key (kbd "C-S-<down>"))
-  (local-unset-key (kbd "C-S-<up>"))
+(use-package org
+  ;;:pin gnu
+  :config
+  (defun jpk/org-mode-hook ()
+    (setq adaptive-wrap-extra-indent 0)
+    (visual-line-mode 1)
+    (when (featurep 'flyspell)
+      (flyspell-mode 1)))
+  (add-hook 'org-mode-hook #'jpk/org-mode-hook)
 
-  (setq adaptive-wrap-extra-indent 0)
-  (visual-line-mode 1)
-  (with-library 'flyspell
-    (flyspell-mode 1))
+  (setq org-ellipsis "…"
+        org-hide-leading-stars t
+        org-hide-emphasis-markers t
+        org-fontify-emphasized-text nil
+        org-support-shift-select 'always)
+
+  ;; http://www.howardism.org/Technical/Emacs/literate-devops.html
+  (setq org-babel-load-languages
+        '((sh . t)
+          (emacs-lisp . t)
+          (python . t)
+          (ipython . t)
+          (sql . t) ;; see also ob-sql-mode
+          (sqlite . t)
+          (C . t)
+          ))
+
+  (defun org-babel-reload-languages ()
+    (interactive)
+    (org-babel-do-load-languages
+     'org-babel-load-languages org-babel-load-languages))
+  (org-babel-reload-languages)
+
+  (setq org-confirm-babel-evaluate nil
+        org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        org-edit-src-content-indentation 0
+        org-src-preserve-indentation t
+        org-babel-python-command "python -ic ''")
+
+  :bind (:map org-mode-map
+         ("C-<tab>" . nil)
+         ("C-S-<iso-lefttab>" . nil)
+         ("<S-iso-lefttab>" . nil)
+         ("M-<up>" . nil)
+         ("M-<down>" . nil)
+         ("S-<left>" . nil)
+         ("S-<right>" . nil)
+         ("C-S-<left>" . nil)
+         ("C-S-<right>" . nil)
+         ("C-<return>" . nil)
+         ("C-S-<down>" . nil)
+         ("C-S-<up>" . nil)
+         ([remap forward-paragraph] . nil)
+         ([remap backward-paragraph] . nil))
   )
-(add-hook 'org-mode-hook 'jpk/org-mode-hook)
 
-(setq org-ellipsis "…"
-      org-hide-leading-stars t
-      org-hide-emphasis-markers t
-      org-fontify-emphasized-text nil
-      org-support-shift-select 'always)
-
-;; babel
-;; http://www.howardism.org/Technical/Emacs/literate-devops.html
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((sh . t)
-   (emacs-lisp . t)
-   (python . t)
-   (ipython . t)
-   (sql . t) ;; see also ob-sql-mode
-   ))
-(setq org-confirm-babel-evaluate nil
-      org-src-fontify-natively t
-      org-src-tab-acts-natively t
-      org-edit-src-content-indentation 0
-      org-src-preserve-indentation t
-      org-babel-python-command "python -ic ''")
+(use-package ob-async
+  :if nil
+  :after org
+  :config
+  (add-hook 'org-ctrl-c-ctrl-c-hook #'ob-async-org-babel-execute-src-block)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
