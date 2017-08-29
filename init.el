@@ -193,7 +193,7 @@ files (e.g. directories, fifos, etc.)."
 (setq use-package-always-ensure t
       use-package-enable-imenu-support t)
 
-(when t
+(when t ;;init-file-debug ;; --debug-init
   (setq use-package-verbose 'debug
         use-package-debug t
         use-package-minimum-reported-time 0))
@@ -290,7 +290,7 @@ files (e.g. directories, fifos, etc.)."
    '(ediff-odd-diff-B ((t (:inherit diff-refine-changed))))
    '(ediff-odd-diff-C ((t (:inherit diff-refine-changed))))
    '(ediff-odd-diff-Ancestor ((t (:inherit diff-refine-changed))))
-   
+
    '(term ((t (:foreground "lavender blush"))))
 
    '(Info-quoted ((t (:family "Luxi Mono"))))
@@ -378,6 +378,7 @@ files (e.g. directories, fifos, etc.)."
 
 (defun advice-remove-all (symbol)
   "Removes all advice from function symbol SYMBOL."
+  (interactive (find-function-read))
   (advice-mapc (lambda (advice props)
                  (advice-remove symbol advice))
                symbol))
@@ -481,9 +482,13 @@ files (e.g. directories, fifos, etc.)."
 ;; This works even if ggtags-find-tag-dwim is just marked for
 ;; autoloading but isn't loaded yet.
 (when (commandp (symbol-function 'ggtags-find-tag-dwim))
-  (global-set-key (kbd "M-.") 'ggtags-find-tag-dwim)
+  (global-set-key (kbd "M-.") #'ggtags-find-tag-dwim)
+  (global-set-key (kbd "M-?") #'ggtags-find-reference)
+
   ;; keep default definition for emacs-lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "M-.") #'xref-find-definitions))
+  (define-key emacs-lisp-mode-map (kbd "M-.") #'xref-find-definitions)
+  (define-key emacs-lisp-mode-map (kbd "M-?") #'xref-find-references)
+  )
 
 ;; stops ggtags-create-tags from asking
 (setenv "GTAGSLABEL" "default")
@@ -1066,17 +1071,15 @@ matches.  This can be annoying if you didn't really want it, so
 it's probably better to explicitly request a merge."
     (interactive)
     (ido-initiate-auto-merge (current-buffer)))
-              
+
   (defun jpk/ido-minibuffer-setup-hook ()
     ;; disallow wrapping of the minibuffer
     (setq truncate-lines t))
   (add-hook 'ido-minibuffer-setup-hook #'jpk/ido-minibuffer-setup-hook)
 
-  :bind (:map
-         ido-completion-map
+  :bind (:map ido-completion-map
          ("C-c C-s" . ido-initiate-auto-merge-this-buffer)
-         :map
-         ido-file-dir-completion-map
+         :map ido-file-dir-completion-map
          ([remap backward-kill-word] . nil)
          ("C-<backspace>" . ido-delete-backward-word-updir-word))
   )
@@ -1086,6 +1089,7 @@ it's probably better to explicitly request a merge."
   (ido-ubiquitous-mode 1))
 
 (use-package smex
+  ;; see also the amx package
   :bind (("M-x" . smex)
          ("M-X" . smex-major-mode-commands)))
 
@@ -1216,7 +1220,7 @@ it's probably better to explicitly request a merge."
 
 (with-library 'ace-window
   (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
-  (global-set-key (kbd "C-x o") #'ace-window)) 
+  (global-set-key (kbd "C-x o") #'ace-window))
 
 ;; Save point position per-window instead of per-buffer.
 (with-library 'winpoint
@@ -2329,7 +2333,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
-  
+
   ;;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
 
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
@@ -2677,6 +2681,83 @@ If region is inactive, use the entire current line."
 
 (setq eval-expression-print-length nil) ;; unlimited
 
+;; https://emacs.stackexchange.com/a/10233/651
+(defun Fuco1/lisp-indent-function (indent-point state)
+  "This function is the normal value of the variable `lisp-indent-function'.
+The function `calculate-lisp-indent' calls this to determine
+if the arguments of a Lisp function call should be indented specially.
+
+INDENT-POINT is the position at which the line being indented begins.
+Point is located at the point to indent under (for default indentation);
+STATE is the `parse-partial-sexp' state for that position.
+
+If the current line is in a call to a Lisp function that has a non-nil
+property `lisp-indent-function' (or the deprecated `lisp-indent-hook'),
+it specifies how to indent.  The property value can be:
+
+* `defun', meaning indent `defun'-style
+  \(this is also the case if there is no property and the function
+  has a name that begins with \"def\", and three or more arguments);
+
+* an integer N, meaning indent the first N arguments specially
+  (like ordinary function arguments), and then indent any further
+  arguments like a body;
+
+* a function to call that returns the indentation (or nil).
+  `lisp-indent-function' calls this function with the same two arguments
+  that it itself received.
+
+This function returns either the indentation to use, or nil if the
+Lisp function does not specify a special indentation."
+  (let ((normal-indent (current-column))
+        (orig-point (point)))
+    (goto-char (1+ (elt state 1)))
+    (parse-partial-sexp (point) calculate-lisp-indent-last-sexp 0 t)
+    (cond
+      ;; car of form doesn't seem to be a symbol, or is a keyword
+      ((and (elt state 2)
+          (or (not (looking-at "\\sw\\|\\s_"))
+             (looking-at ":")))
+       (if (not (> (save-excursion (forward-line 1) (point))
+                 calculate-lisp-indent-last-sexp))
+           (progn (goto-char calculate-lisp-indent-last-sexp)
+                  (beginning-of-line)
+                  (parse-partial-sexp (point)
+                                      calculate-lisp-indent-last-sexp 0 t)))
+       ;; Indent under the list or under the first sexp on the same
+       ;; line as calculate-lisp-indent-last-sexp.  Note that first
+       ;; thing on that line has to be complete sexp since we are
+       ;; inside the innermost containing sexp.
+       (backward-prefix-chars)
+       (current-column))
+      ((and (save-excursion
+            (goto-char indent-point)
+            (skip-syntax-forward " ")
+            (not (looking-at ":")))
+          (save-excursion
+            (goto-char orig-point)
+            (looking-at ":")))
+       (save-excursion
+         (goto-char (+ 2 (elt state 1)))
+         (current-column)))
+      (t
+       (let ((function (buffer-substring (point)
+                                         (progn (forward-sexp 1) (point))))
+             method)
+         (setq method (or (function-get (intern-soft function)
+                                       'lisp-indent-function)
+                         (get (intern-soft function) 'lisp-indent-hook)))
+         (cond ((or (eq method 'defun)
+                   (and (null method)
+                      (> (length function) 3)
+                      (string-match "\\`def" function)))
+                (lisp-indent-defform state indent-point))
+               ((integerp method)
+                (lisp-indent-specform method state
+                                      indent-point normal-indent))
+               (method
+                (funcall method indent-point state))))))))
+
 (with-library 'morlock
   (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
   (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
@@ -2700,6 +2781,7 @@ If region is inactive, use the entire current line."
                 ("not" . ?¬)
                 )))
     (add-to-list 'prettify-symbols-alist x))
+  (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)
   )
 
 ;; http://milkbox.net/note/single-file-master-emacs-configuration/
@@ -3145,11 +3227,11 @@ be specified with a numeric prefix."
           grep-host-defaults-alist
           current-prefix-arg)
       (call-interactively 'rgrep)))
-  )  
+  )
 
 (use-package wgrep
   :bind (:map grep-mode-map
-              ("C-x C-q" . wgrep-change-to-wgrep-mode))
+         ("C-x C-q" . wgrep-change-to-wgrep-mode))
   )
 
 (use-package rg
@@ -3160,7 +3242,7 @@ be specified with a numeric prefix."
 (use-package ag
   :config
   (setq ag-highlight-search t)
-  
+
   (defun jpk/ag-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
@@ -3170,7 +3252,7 @@ be specified with a numeric prefix."
 (use-package wgrep-ag
   :after (wgrep ag)
   :bind (:map ag-mode-map
-              ("C-x C-q" . wgrep-change-to-wgrep-mode))
+         ("C-x C-q" . wgrep-change-to-wgrep-mode))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3317,7 +3399,7 @@ point."
   :diminish yas-minor-mode
   :init
   (yas-global-mode 1)
-  
+
   :config
   (setq yas-prompt-functions (cons 'yas-ido-prompt
                                    (remove 'yas-ido-prompt
@@ -3427,7 +3509,7 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
 
-(add-hook 'write-contents-functions #'delete-trailing-whitespace)
+(add-hook 'before-save-hook #'delete-trailing-whitespace)
 
 (setq backward-delete-char-untabify-method nil)
 
@@ -3528,11 +3610,12 @@ Positive arg means right; negative means left"
 (defun move-left-dwim (beg en &optional arg)
   "Move the active region or the current line The Right Number of columns to the left."
   (interactive "*r\np")
-  (let ((shift (or (and (boundp 'smart-shift-indentation-level)
+  (let* ((shift (or (and (boundp 'smart-shift-indentation-level)
                      smart-shift-indentation-level)
                   (and (functionp 'smart-shift-infer-indentation-level)
                      (smart-shift-infer-indentation-level))
-                  tab-width)))
+                  tab-width))
+         (indent-tabs-mode (or indent-tabs-mode smart-tabs-mode)))
     (move-left-1 beg en (* arg shift))))
 
 (defun move-right-dwim (beg en &optional arg)
