@@ -101,7 +101,6 @@ files (e.g. directories, fifos, etc.)."
         dts-mode
         easy-repeat
         edit-list
-        evil-numbers
         expand-region
         figlet
         flyspell-correct
@@ -132,7 +131,6 @@ files (e.g. directories, fifos, etc.)."
         morlock
         multi-compile
         mwim
-        no-littering
         ob-ipython
         openwith
         paren-face
@@ -201,10 +199,7 @@ files (e.g. directories, fifos, etc.)."
         use-package-debug t
         use-package-minimum-reported-time 0))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; no-littering
-
-(require 'no-littering nil 'noerror)
+(use-package no-littering)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
