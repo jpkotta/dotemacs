@@ -131,7 +131,6 @@ files (e.g. directories, fifos, etc.)."
         morlock
         multi-compile
         mwim
-        ob-ipython
         openwith
         paren-face
         pkgbuild-mode
@@ -571,7 +570,6 @@ files (e.g. directories, fifos, etc.)."
         '((sh . t)
           (emacs-lisp . t)
           (python . t)
-          (ipython . t)
           (sql . t) ;; see also ob-sql-mode
           (sqlite . t)
           (C . t)
@@ -605,6 +603,13 @@ files (e.g. directories, fifos, etc.)."
          ("C-S-<up>" . nil)
          ([remap forward-paragraph] . nil)
          ([remap backward-paragraph] . nil))
+  )
+
+(use-package ob-ipython
+  :after org
+  :config
+  (add-to-list 'org-babel-load-languages (ipython . t))
+  (org-babel-reload-languages)
   )
 
 (use-package ob-async
