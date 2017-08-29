@@ -75,7 +75,6 @@ files (e.g. directories, fifos, etc.)."
       '(
         ac-c-headers
         ac-math
-        ace-window
         adaptive-wrap
         anchored-transpose
         atomic-chrome
@@ -141,7 +140,6 @@ files (e.g. directories, fifos, etc.)."
         rainbow-mode
         sane-term
         save-visited-files
-        shackle
         smart-shift
         smart-tabs-mode
         sphinx-doc
@@ -1190,12 +1188,6 @@ it's probably better to explicitly request a merge."
 ;; move mouse pointer away when the cursor gets near
 (mouse-avoidance-mode 'cat-and-mouse)
 
-(global-set-key (kbd "<mouse-2>") 'mouse-yank-primary)
-
-(with-library 'mouse-copy
-  (global-set-key (kbd "C-<down-mouse-1>") 'mouse-drag-secondary-pasting)
-  (global-set-key (kbd "C-S-<down-mouse-1>") 'mouse-drag-secondary-moving))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Windows
 
@@ -1218,16 +1210,21 @@ it's probably better to explicitly request a merge."
       (next-buffer))
     (other-window 1)))
 
-(with-library 'ace-window
+(use-package ace-window
+  :config
   (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
   (global-set-key (kbd "C-x o") #'ace-window))
 
 ;; Save point position per-window instead of per-buffer.
-(with-library 'winpoint
+(use-package winpoint
+  :if nil
+  :init
   (winpoint-mode 1))
 
 (setq help-window-select 'never)
-(with-library 'shackle
+
+(use-package shackle
+  :config
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
         '((Man-mode :select t)
