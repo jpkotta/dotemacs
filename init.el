@@ -750,7 +750,10 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hexl mode
 
-(with-eval-after-load "hexl"
+(use-package hexl
+  :config
+  (setq hexl-bits 8)
+
   (defun hexl-forward-256 (&optional arg)
     "Move vertically down ARG blocks of 256 bytes (16 lines)."
     (interactive "p")
@@ -793,12 +796,13 @@ With prefix arg, insert a large ASCII art version.
     (setq arg (if (= 0 arg) 1 arg))
     (hexl-forward-4k (- arg)))
 
-  (define-key hexl-mode-map (kbd "<next>") 'hexl-forward-256)
-  (define-key hexl-mode-map (kbd "<prior>") 'hexl-backward-256)
-  (define-key hexl-mode-map (kbd "C-<next>") 'hexl-forward-1k)
-  (define-key hexl-mode-map (kbd "C-<prior>") 'hexl-backward-1k)
-  (define-key hexl-mode-map (kbd "C-S-<next>") 'hexl-forward-4k)
-  (define-key hexl-mode-map (kbd "C-S-<prior>") 'hexl-backward-4k)
+  :bind (:map hexl-mode-map
+         ("<next>" . hexl-forward-256)
+         ("<prior>" . hexl-backward-256)
+         ("C-<next>" . hexl-forward-1k)
+         ("C-<prior>" . hexl-backward-1k)
+         ("C-S-<next>" . hexl-forward-4k)
+         ("C-S-<prior>" . hexl-backward-4k))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
