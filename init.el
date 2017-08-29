@@ -2833,8 +2833,8 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
 
-(dolist (x '("PKGBUILD" "\.install\\'"))
-  (add-to-list 'auto-mode-alist `(,x . pkgbuild-mode)))
+(use-package pkgbuild-mode
+  :mode ("\\`PKGBUILD\\'" "\.install\\'"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
