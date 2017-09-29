@@ -607,7 +607,7 @@ files (e.g. directories, fifos, etc.)."
   )
 
 (use-package ob-ipython
-  :after org
+  :after (org ipython)
   :config
   (add-to-list 'org-babel-load-languages (ipython . t))
   (org-babel-reload-languages)
@@ -868,6 +868,7 @@ for `string-to-number'."
 (setq auto-revert-verbose nil
       global-auto-revert-non-file-buffers t)
 (add-hook 'dired-mode-hook #'auto-revert-mode)
+(add-to-list 'revert-without-query "\\.rom\\'")
 
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
@@ -1318,14 +1319,19 @@ it's probably better to explicitly request a merge."
   )
 
 (defun diff-delete-trailing-CR ()
-  "Delete trailing carriage returns () in a `diff-mode' buffer."
-  (when (derived-mode-p 'diff-mode)
+  "Delete trailing carriage returns (^M) in a `diff-mode' buffer."
+  (when (and (derived-mode-p 'diff-mode)
+           (buffer-file-name)
+           (save-excursion
+             (goto-char (point-min))
+             (re-search-forward "\r$" nil t))
+           (y-or-n-p "Strip trailing carriage returns? "))
     (let ((inhibit-read-only t))
       (save-excursion
         (goto-char (point-min))
-        (while (re-search-forward "+$" nil t)
-          (message "pos: %s" (point))
-          (replace-match "" nil nil))))))
+        (while (re-search-forward "\r+$" nil t)
+          (replace-match "" nil nil)))
+      (set-buffer-modified-p nil))))
 
 (defun jpk/diff-mode-hook ()
   ;; FIXME why? special-mode-map suppress-keymap
@@ -1338,7 +1344,7 @@ it's probably better to explicitly request a merge."
   (setq imenu-prev-index-position-function nil)
   (setq imenu-generic-expression '((nil "^--- .+/\\([^/]+\\)\t" 1)))
 
-  (remove-hook 'write-contents-functions #'delete-trailing-whitespace 'local)
+  ;;(remove-hook 'before-save-hook #'delete-trailing-whitespace)
   )
 
 (add-hook 'diff-mode-hook #'jpk/diff-mode-hook)
@@ -1466,7 +1472,9 @@ This effectively makes `smerge-command-prefix' unnecessary."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
-(setq term-suppress-hard-newline t)
+;; t is usually better for shell terminals, but nil is better for
+;; serial terminals
+(setq term-suppress-hard-newline nil)
 
 (with-eval-after-load "term"
   (defun term-send-backward-kill-word ()
@@ -3489,12 +3497,25 @@ point."
                 (setq this-command 'kill-region))))
      ,@body))
 
+(defmacro delete-instead-of-kill (&rest body)
+  "Replaces `kill-region' with `delete-region' in BODY."
+  `(cl-letf (((symbol-function 'kill-region)
+              (lambda (beg end &optional region)
+                ;; FIXME: account for region arg
+                (delete-region beg end))))
+     ,@body))
+
 (setq kill-whole-line t)
 
 (defun copy-line (&optional arg)
   "Like `kill-line', but copies instead of killing."
   (interactive "P")
   (copy-instead-of-kill (kill-line arg)))
+
+(defun delete-word (&optional arg)
+  "Like `kill-word', but deletes instead of killing."
+  (interactive "p")
+  (delete-instead-of-kill (kill-word arg)))
 
 (global-set-key (kbd "C-S-k") 'copy-line)
 
@@ -3633,7 +3654,7 @@ Positive arg means right; negative means left"
 
 (use-package fill
   :ensure nil
-  :config
+  :init
   ;; see also fill-individual-paragraphs
 
   ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
@@ -3654,6 +3675,7 @@ of text."
           (call-interactively 'unfill-paragraph))
       (call-interactively 'fill-paragraph)))
 
+  :config
   (advice-add 'fill-paragraph
               :after
               (lambda (&rest args)
