@@ -1077,7 +1077,7 @@ it's probably better to explicitly request a merge."
          ("C-c C-s" . ido-initiate-auto-merge-this-buffer)
          :map ido-file-dir-completion-map
          ([remap backward-kill-word] . nil)
-         ("C-<backspace>" . ido-delete-backward-word-updir-word))
+         ("C-<backspace>" . ido-delete-backward-word-updir))
   )
 
 (use-package ido-completing-read+
