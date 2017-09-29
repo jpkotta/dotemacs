@@ -96,8 +96,6 @@ files (e.g. directories, fifos, etc.)."
         dired-imenu
         dired-narrow
         dired-ranger
-        ;;dired-toggle-sudo
-        dts-mode
         easy-repeat
         edit-list
         expand-region
@@ -191,7 +189,7 @@ files (e.g. directories, fifos, etc.)."
 (setq use-package-always-ensure t
       use-package-enable-imenu-support t)
 
-(when t ;;init-file-debug ;; --debug-init
+(when init-file-debug ;; --debug-init
   (setq use-package-verbose 'debug
         use-package-debug t
         use-package-minimum-reported-time 0))
@@ -2867,7 +2865,15 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; dts (flattened device tree)
 
-(add-to-list 'auto-mode-alist '("\\.its\\'" . dts-mode))
+(use-package dts-mode
+  :config
+  (defun jpk/dts-mode-hook ()
+    (setq indent-tabs-mode t)
+    (setq tab-width 4))
+  (add-hook 'dts-mode-hook #'jpk/dts-mode-hook)
+
+  :mode "\\.its\\'"
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; text-mode
