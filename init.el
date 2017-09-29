@@ -1212,6 +1212,8 @@ it's probably better to explicitly request a merge."
 (use-package ace-window
   :config
   (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
+  (setq aw-scope 'frame)
+  (setq aw-leading-char-style 'path)
   (global-set-key (kbd "C-x o") #'ace-window))
 
 ;; Save point position per-window instead of per-buffer.
