@@ -103,7 +103,6 @@ files (e.g. directories, fifos, etc.)."
         flyspell-correct
         fuzzy ;; for auto-complete
         fvwm-mode
-        ggtags
         go-mode
         go-scratch
         hgrc-mode
@@ -469,34 +468,7 @@ files (e.g. directories, fifos, etc.)."
   (pr-update-menus t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ggtags
-
-(setq ggtags-global-window-height nil
-      ggtags-enable-navigation-keys nil
-      ggtags-update-on-save t)
-
-;; This works even if ggtags-find-tag-dwim is just marked for
-;; autoloading but isn't loaded yet.
-(when (commandp (symbol-function 'ggtags-find-tag-dwim))
-  (global-set-key (kbd "M-.") #'ggtags-find-tag-dwim)
-  (global-set-key (kbd "M-?") #'ggtags-find-reference)
-
-  ;; keep default definition for emacs-lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "M-.") #'xref-find-definitions)
-  (define-key emacs-lisp-mode-map (kbd "M-?") #'xref-find-references)
-  )
-
-;; stops ggtags-create-tags from asking
-(setenv "GTAGSLABEL" "default")
-
-(defun ggtags-create-tags-pygments ()
-  "Like `ggtags-create-tags', but use pygments backend."
-  (interactive)
-  (let ((orig-label (getenv "GTAGSLABEL")))
-    (setenv "GTAGSLABEL" "pygments")
-    (ignore-errors
-      (call-interactively 'ggtags-create-tags))
-    (setenv "GTAGSLABEL" orig-label)))
+;;; tags
 
 ;; GTAGSLABEL has no effect unless there's a ~/.globalrc
 (let ((rcfile "~/.globalrc")
@@ -507,23 +479,62 @@ files (e.g. directories, fifos, etc.)."
       (when (file-exists-p dist-rcfile)
         (copy-file dist-rcfile rcfile)))))
 
+(use-package ggtags
+  :if nil
+  :config
+  (setq ggtags-global-window-height nil
+        ggtags-enable-navigation-keys nil
+        ggtags-update-on-save t)
+
+  ;; This works even if ggtags-find-tag-dwim is just marked for
+  ;; autoloading but isn't loaded yet.
+  (when (commandp (symbol-function 'ggtags-find-tag-dwim))
+    (global-set-key (kbd "M-.") #'ggtags-find-tag-dwim)
+    (global-set-key (kbd "M-?") #'ggtags-find-reference)
+
+    ;; keep default definition for emacs-lisp-mode
+    (define-key emacs-lisp-mode-map (kbd "M-.") #'xref-find-definitions)
+    (define-key emacs-lisp-mode-map (kbd "M-?") #'xref-find-references)
+    )
+
+  ;; stops ggtags-create-tags from asking
+  (setenv "GTAGSLABEL" "default")
+
+  (defun ggtags-create-tags-pygments ()
+    "Like `ggtags-create-tags', but use pygments backend."
+    (interactive)
+    (let ((orig-label (getenv "GTAGSLABEL")))
+      (setenv "GTAGSLABEL" "pygments")
+      (ignore-errors
+        (call-interactively 'ggtags-create-tags))
+      (setenv "GTAGSLABEL" orig-label))))
+
 ;; xref is the unified cross reference subsystem.  ggtags actually
 ;; uses it for some things like tag history.  It's labeled as
 ;; experimental in Emacs 25, and seems like it needs more work.  gxref
 ;; is a package to use global as an xref backend.  Once xref is more
 ;; mature, it will probably be better than ggtags.
 
-;; (defun gxref-create-db-pygments (project-root-dir)
-;;   "Like `gxref-create-db', but set GTAGSLABEL to pygments.
+(use-package gxref
+  :if t
+  :after xref
+  :config
+  ;; (remove-hook 'next-error-hook #'jpk/next-error-hook)
+  ;; (setq next-error-recenter nil)
 
-;; Pygments supports more languages, but is much slower than the
-;; default label."
-;;   (interactive "DCreate db in directory: ")
-;;   (let ((gxref-gtags-label "pygments"))
-;;     (gxref-create-db project-root-dir)))
+  (defun gxref-create-db-pygments (project-root-dir)
+    "Like `gxref-create-db', but set GTAGSLABEL to pygments.
 
-;; (with-eval-after-load 'xref
-;;   (add-hook 'xref-backend-functions #'gxref-xref-backend))
+Pygments supports more languages, but is much slower than the
+default label."
+    (interactive "DCreate GTAGS db in directory: ")
+    (let ((gxref-gtags-label "pygments"))
+      (gxref-create-db project-root-dir)))
+
+  (add-hook 'xref-backend-functions #'gxref-xref-backend)
+
+  :bind ("M-/" . xref-find-references)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
@@ -3203,11 +3214,11 @@ Compatibility function for \\[next-error] invocations."
     (occur-mode-goto-occurrence)))
 
 (defun jpk/next-error-hook ()
-  ;; FIXME this breaks xref
   (let ((win (get-buffer-window next-error-last-buffer))
+        (buf (buffer-name next-error-last-buffer))
         (recenter-redisplay nil))
-    (when win
-      (with-selected-window win
+    (when (and win (not (string= "*xref*" buf)))
+      (with-selected-window win ;; this is what breaks xref
         (recenter)))))
 (add-hook 'next-error-hook #'jpk/next-error-hook)
 
