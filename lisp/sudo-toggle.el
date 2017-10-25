@@ -3,8 +3,10 @@
 ;; Copyright 2017 Jonathan Kotta
 
 ;; Author: Jonathan Kotta <jpkotta@gmail.com>
-;; Keywords: emacs, tramp, sudo
-;; Licence: GPLv3
+;; Keywords: files
+;; License: GPLv3
+;; Version: 0.1
+;; URL: http://bitbucket.org/jpkotta/sudo-toggle
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -15,21 +17,9 @@
 ;;
 ;;   (global-set-key (kbd "C-c r") #'sudo-toggle)
 ;;
-;;
-;;
 ;; This was originally dired-toggle-sudo by Sebastien Gross.  I
 ;; rewrote it to use tramp functions instead of directly manipulating
 ;; strings, and to add the header line.
-;;
-;; To activate and switch with "C-c C-s" just put in your .emacs:
-;;
-;; (require 'sudo-toggle)
-;; (define-key dired-mode-map (kbd "C-c C-s") 'sudo-toggle)
-;; (eval-after-load 'tramp
-;;  '(progn
-;;     ;; Allow to use: /sudo:user@host:/path/to/file
-;;     (add-to-list 'tramp-default-proxies-alist
-;;		  '(".*" "\\`.+\\'" "/ssh:%h:"))))
 
 ;;; Code:
 
@@ -54,8 +44,8 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
           (propertize "--- WARNING: EDITING FILE AS ROOT! %-"
                       'face 'sudo-toggle-header-face))))
 
-(add-hook 'find-file-hook 'sudo-toggle-set-header)
-(add-hook 'dired-mode-hook 'sudo-toggle-set-header)
+(add-hook 'find-file-hook #'sudo-toggle-set-header)
+(add-hook 'dired-mode-hook #'sudo-toggle-set-header)
 
 (defun sudo-toggle-sudo-p (path)
   "Non-nil if PATH is a tramp sudo path."
@@ -66,8 +56,8 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
       (string= method "sudo"))))
 
 (defun sudo-toggle--internal (path &optional sudo-user)
-  "Convert PATH to its sudoed version. root is used by default
-unless SUDO-USER is provided."
+  "Convert PATH to its sudoed version.
+root is used by default unless SUDO-USER is provided."
   (let ((path (expand-file-name path)))
     (if (not (tramp-tramp-file-p path))
         ;; local, no sudo
@@ -94,7 +84,7 @@ unless SUDO-USER is provided."
             localname))))))
 
 (defun sudo-toggle--tests ()
-  "Simple tests for `sudo-toggle--internal'."
+  "Simple test for `sudo-toggle--internal'."
   (let (orig known-good xform fail)
     (dolist (x `(("/ssh:gwuser@gateway|ssh:user@remote|sudo:root@remote:/etc/fstab"
                   . "/ssh:gwuser@gateway|ssh:user@remote:/etc/fstab")
@@ -129,8 +119,7 @@ unless SUDO-USER is provided."
 
 If SUDO-USER is nil assume root.
 
-If called with `universal-argument' (C-u), ask for username.
-"
+If called with a prefix argument, ask for username."
   (interactive "P")
   (let* ((fname (or buffer-file-name
                    dired-directory))
