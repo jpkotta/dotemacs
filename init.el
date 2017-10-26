@@ -2909,7 +2909,9 @@ Lisp function does not specify a special indentation."
   :config
   (defun jpk/dts-mode-hook ()
     (setq indent-tabs-mode t)
-    (setq tab-width 4))
+    (setq tab-width 4)
+    (setq comment-start "// "
+          comment-end ""))
   (add-hook 'dts-mode-hook #'jpk/dts-mode-hook)
 
   :mode "\\.its\\'"
@@ -3261,6 +3263,7 @@ be specified with a numeric prefix."
 (use-package rg
   :config
   (add-hook 'rg-mode-hook #'wgrep-ag-setup)
+  (add-to-list 'rg-custom-type-aliases '("dts" . "*.dts *.dtsi"))
   )
 
 (use-package ag
