@@ -76,7 +76,6 @@ files (e.g. directories, fifos, etc.)."
         ac-c-headers
         ac-math
         adaptive-wrap
-        anchored-transpose
         atomic-chrome
         auctex
         auto-complete
@@ -92,7 +91,7 @@ files (e.g. directories, fifos, etc.)."
         dictionary
         diff-hl
         diminish
-        dired+
+        dired+ ;; deprecated
         dired-imenu
         dired-narrow
         dired-ranger
@@ -123,7 +122,7 @@ files (e.g. directories, fifos, etc.)."
         markdown-mode
         mediawiki
         mic-paren
-        modeline-posn
+        modeline-posn ; deprecated
         morlock
         multi-compile
         mwim
@@ -158,9 +157,9 @@ files (e.g. directories, fifos, etc.)."
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
-(defun jpk/install-selected-packages ()
-  (interactive)
-  (if (not (called-interactively-p))
+(defun jpk/install-selected-packages (&optional arg)
+  (interactive "p")
+  (if (not arg) ;; not called interactively, see called-interactively-p
       (cl-letf (((symbol-function 'y-or-n-p)
                  (lambda (prompt) t)))
         (when (null package-archive-contents)
@@ -554,13 +553,14 @@ default label."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
 
-(with-library 'projectile
+(use-package projectile
+  :config
   (setq projectile-indexing-method 'alien
         projectile-enable-caching t
         projectile-ack-function 'ack
-        ;; If ggtags-mode is on, projectile automatically uses it.
-        projectile-tags-command "ctags-exuberant -Re -f \"%s\" %s")
-  (projectile-global-mode 1))
+        projectile-tags-backend 'xref
+        projectile-tags-command "gtags -f \"%s\" %s")
+  (projectile-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Repeatable Commands
@@ -635,7 +635,7 @@ default label."
 (use-package ob-ipython
   :after (org ipython)
   :config
-  (add-to-list 'org-babel-load-languages (ipython . t))
+  (add-to-list 'org-babel-load-languages '(ipython . t))
   (org-babel-reload-languages)
   )
 
@@ -1282,7 +1282,8 @@ it's probably better to explicitly request a merge."
       ;; as useful for toggling (I think), so we work around it.
       (vc-dir-mark-unmark 'vc-dir-toggle-mark-file)
       (setq col (current-column))
-      (goto-line line)
+      (goto-char (point-min))
+      (forward-line (1- line))
       (move-to-column col)))
 
   (define-key vc-dir-mode-map (kbd "SPC") 'vc-dir-toggle)
@@ -1693,7 +1694,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                                      (t (concat (car x) "@" (cadr x)))))
                         (apply 'append
                                (mapcar
-                                (lambda (x) (remove-if-not 'identity (apply (car x) (cdr x))))
+                                (lambda (x) (cl-remove-if-not 'identity (apply (car x) (cdr x))))
                                 (tramp-get-completion-function "ssh"))))))
      (list (completing-read "Hostname: " hosts nil 'confirm nil nil hosts nil))))
   (let ((destdir (format "/ssh:%s:.terminfo/e/" hostspec)))
@@ -2001,7 +2002,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
             (if (or (/= (length x) 1)
                    (and (boundp 'csv-field-quotes)
                       (member x csv-field-quotes)))
-                (error)))
+                (error "Invalid separator: %s" x)))
           separators)
     (setq csv-separators separators)
     (setq csv-separator-chars (mapcar 'string-to-char separators)
@@ -2132,8 +2133,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                  (if (eq (ibuffer-current-mark) ibuffer-marked-char)
                      (ibuffer-mark-interactive arg ?\s 0)
                    (ibuffer-mark-interactive arg ibuffer-marked-char 0))))
-  (define-key ibuffer-mode-map
-    (kbd "SPC") 'ibuffer-mark-toggle)
+  (define-key ibuffer-mode-map (kbd "SPC") 'ibuffer-mark-toggle)
   )
 
 ;; run when ibuffer buffer is created
@@ -3596,7 +3596,7 @@ If called repeatedly, cycle the indent as follows:
        (t
         (indent-line-to last-line-indent))))
 
-    (when (or (bolp) (looking-back "^[[:space:]]+"))
+    (when (or (bolp) (looking-back "^[[:space:]]+" (point-min)))
       (beginning-of-line-text))))
 
 (setq-default indent-line-function 'indent-relative-dwim)
@@ -3717,8 +3717,9 @@ of text."
       (save-excursion
         (save-restriction
           (narrow-to-region beginning end)
-          (with-temp-message ""
-            (replace-regexp "\\s-*," ", " t (point-min) (point-max)))
+          (goto-char (point-min))
+          (while (re-search-forward "\\s-*,")
+            (replace-match ", "))
           (align-regexp (point-min) (point-max)
                         ",\\(\\s-*\\)" 1 1 t)))))
   )
@@ -3743,7 +3744,6 @@ of text."
 
 ;; makes scrolling less jittery
 (setq auto-window-vscroll nil
-      redisplay-dont-pause t
       scroll-conservatively most-positive-fixnum
       )
 
