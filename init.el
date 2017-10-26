@@ -409,14 +409,13 @@ files (e.g. directories, fifos, etc.)."
 ;; binding compose-mail useful.
 (global-unset-key (kbd "C-x m"))
 
-(dolist (f '(mouse-set-point mouse-set-region))
-  (advice-add f
-              :before-until
-              (lambda (&rest args)
-                "no mouse select window if minibuffer active"
-                (or (active-minibuffer-window)
-                   (window-minibuffer-p)
-                   (minibuffer-window-active-p (selected-window))))))
+(defun jpk/mouse-select-window (&rest args)
+  "no mouse select window if minibuffer active"
+  (or (active-minibuffer-window)
+     (window-minibuffer-p)
+     (minibuffer-window-active-p (selected-window))))
+(advice-add 'mouse-set-point :before-until #'jpk/mouse-select-window)
+(advice-add 'mouse-set-region :before-until #'jpk/mouse-select-window)
 
 ;; cancel everything, including active minibuffers and recursive edits
 (global-set-key (kbd "C-M-g") 'top-level)
@@ -427,14 +426,30 @@ files (e.g. directories, fifos, etc.)."
 ;; Turning it off speeds up remote X.
 (setq mouse-highlight nil)
 
-;; never shrink windows
-(defvar allow-window-shrinking nil
+;; never shrink windows by default
+(defvar jpk/allow-window-shrinking nil
   "If non-nil, effectively disable shrinking windows by making `shrink-window-if-larger-than-buffer' a no-op.")
+(defun jpk/prevent-window-shrinking (&rest args)
+  "Do nothing if `jpk/allow-window-shrinking' is nil."
+  jpk/allow-window-shrinking)
 (advice-add 'shrink-window-if-larger-than-buffer
-            :before-while
-            (lambda (&rest args)
-              "Do nothing if `allow-window-shrinking' is nil."
-              allow-window-shrinking))
+            :before-while #'jpk/prevent-window-shrinking)
+
+;; add this :around advice to enable shrinking windows
+(defun jpk/allow-window-shrinking (orig &rest args)
+  "Set `jpk/allow-windows-shrinking' non-nil."
+  (let ((jpk/allow-window-shrinking t))
+    (apply orig args)))
+
+(defvar jpk/saved-window-state nil
+  "Stores the window state so that it can be restored later.")
+(defun jpk/save-window-state (&rest args)
+  "Save window layout in `jpk/saved-window-state'."
+  (setq jpk/saved-window-state (current-window-configuration)))
+(defun jpk/restore-window-state (&rest args)
+  "Restore window layout from `jpk/saved-window-state'."
+  (when (window-configuration-p jpk/saved-window-state)
+    (set-window-configuration jpk/saved-window-state)))
 
 ;; https://www.masteringemacs.org/article/fixing-mark-commands-transient-mark-mode
 (defun push-mark-no-activate ()
@@ -845,29 +860,29 @@ for `string-to-number'."
   (defvar cua--sequence-rectangle-incr-hist ()
     "History list for the increment in `cua-sequence-rectangle'.")
 
-  (advice-add 'cua-sequence-rectangle
-              :filter-args
-              (lambda (&rest args)
-                "Use `string-to-number-c' instead of
+  (defun jpk/rectangle-args (&rest args)
+    "Use `string-to-number-c' instead of
 `string-to-number', and save more history."
-                (interactive)
-                (list (if current-prefix-arg
-                          (prefix-numeric-value current-prefix-arg)
-                        (string-to-number-c
-                         (read-string "Start value: "
-                                      (if cua--sequence-rectangle-first-hist
-                                          (car cua--sequence-rectangle-first-hist)
-                                        "0")
-                                      'cua--sequence-rectangle-first-hist
-                                      "0")))
-                      (string-to-number-c
-                       (read-string "Increment: "
-                                    (if cua--sequence-rectangle-incr-hist
-                                        (car cua--sequence-rectangle-incr-hist)
-                                      "1")
-                                    'cua--sequence-rectangle-incr-hist
-                                    "1"))
-                      (read-string (concat "Format: (" cua--rectangle-seq-format ") ")))))
+    (interactive)
+    (list (if current-prefix-arg
+              (prefix-numeric-value current-prefix-arg)
+            (string-to-number-c
+             (read-string "Start value: "
+                          (if cua--sequence-rectangle-first-hist
+                              (car cua--sequence-rectangle-first-hist)
+                            "0")
+                          'cua--sequence-rectangle-first-hist
+                          "0")))
+          (string-to-number-c
+           (read-string "Increment: "
+                        (if cua--sequence-rectangle-incr-hist
+                            (car cua--sequence-rectangle-incr-hist)
+                          "1")
+                        'cua--sequence-rectangle-incr-hist
+                        "1"))
+          (read-string (concat "Format: (" cua--rectangle-seq-format ") "))))
+
+  (advice-add 'cua-sequence-rectangle :filter-args #'jpk/rectangle-args)
 
   :bind (("C-<return>" . cua-rectangle-mark-mode))
   )
@@ -1274,13 +1289,13 @@ it's probably better to explicitly request a merge."
 
   )
 
+(defun jpk/suppress-messages (orig &rest args)
+  "Suppress any messages using `with-temp-message'."
+  (with-temp-message ""
+    (apply orig args)))
+
 ;; toggle-read-only prints an annoying message
-(advice-add 'toggle-read-only
-            :around
-            (lambda (orig &rest args)
-              "Suppress VC message."
-              (with-temp-message ""
-                (apply orig args))))
+(advice-add 'toggle-read-only :around #'jpk/suppress-messages)
 
 (global-set-key (kbd "C-x g") #'magit-status)
 (setq magit-diff-refine-hunk 'all)
@@ -1297,14 +1312,25 @@ it's probably better to explicitly request a merge."
 (setq diff-switches "-u"
       diff-default-read-only t)
 
+;; diff uses the current file and the most recent backup by default.
+;; This makes it hard to pick two different files, and backup-walker
+;; handles the backups much better, so change the interactive form to
+;; look for normal existing files.
+(defun jpk/diff-default-args (&rest args)
+  "Better default arguments for `diff'."
+  (interactive "fOld: \nfNew: \n"))
+(advice-add 'diff :before #'jpk/diff-default-args)
+
+(defun diff-directories (old new &optional switches no-async)
+  "Like `diff', but run recursively on directories."
+  (interactive "DOld: \nDNew: \n")
+  (unless switches
+    (setq switches "-u -r -w"))
+  (diff old new switches no-async))
+
 (require 'ediff-tweak)
 
-(advice-add 'ediff-setup-windows
-            :around
-            (lambda (orig &rest args)
-              "Set `allow-windows-shrinking' non-nil for ediff."
-              (let ((allow-window-shrinking t))
-                (apply orig args))))
+(advice-add 'ediff-setup-windows :around #'jpk/allow-window-shrinking)
 
 ;; put the ediff control window in the same frame
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -1463,14 +1489,10 @@ This effectively makes `smerge-command-prefix' unnecessary."
               comint-prompt-read-only t
               comint-scroll-to-bottom-on-input 'all)
 
-(defvar comint-eob-on-send t
-  "Like comint-eol-on-send, but moves to the end of buffer.")
-(advice-add 'comint-send-input
-            :before
-            (lambda (&rest args)
-              "Move to end of buffer when `comint-eob-on-send' is non-nil."
-              (when comint-eob-on-send
-                (goto-char (point-max)))))
+(defun jpk/eob (&rest args)
+  "Move to end of buffer."
+  (goto-char (point-max)))
+(advice-add 'comint-send-input :before #'jpk/eob)
 
 ;; used for interactive terminals
 (with-eval-after-load "comint"
@@ -1859,15 +1881,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (setq wdired-allow-to-change-permissions t)
 
-  (advice-add 'dired-rename-file
-              :before
-              (lambda (&rest args)
-                "Create parent dirs"
-                (let* ((new-name (nth 1 args))
-                       (dir (file-name-directory new-name)))
-                  (unless (file-directory-p dir)
-                    (message "Creating dir for file %s" new-name)
-                    (make-directory dir 'parents)))))
+  (defun jpk/create-parent-dirs (&rest args)
+    "Create parent directories if necessary."
+    (let* ((new-name (nth 1 args))
+           (dir (file-name-directory new-name)))
+      (unless (file-directory-p dir)
+        (message "Creating dir for file %s" new-name)
+        (make-directory dir 'parents))))
+  (advice-add 'dired-rename-file :before #'jpk/create-parent-dirs)
 
   (with-library 'dired-ranger
     (define-key dired-mode-map (kbd "C-c C-c") 'dired-ranger-copy)
@@ -2092,15 +2113,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (define-key ibuffer-mode-map
     (kbd "C-<up>") 'ibuffer-backward-filter-group)
 
+  (defun jpk/recenter (&rest args)
+    "Recenter"
+    (recenter))
   (dolist (func '(ibuffer-forward-filter-group
                   ibuffer-backward-filter-group
                   ibuffer-mark-interactive
                   ibuffer-toggle-filter-group-1))
-    (advice-add func
-                :after
-                (lambda (&rest args)
-                  "Recenter"
-                  (recenter))))
+    (advice-add func :after #'jpk/recenter))
 
   (defun ibuffer-mark-toggle (arg)
     (interactive "P")
@@ -2129,14 +2149,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'ibuffer-hook 'jpk/ibuffer-hook)
 
 ;; jump to most recent buffer
-(advice-add 'ibuffer
-            :around
-            (lambda (orig &rest args)
-              "Move point to most recent."
-              (let ((recent-buffer-name (buffer-name)))
-                (apply orig args)
-                (unless (string-match-p "*Ibuffer*" recent-buffer-name)
-                  (ibuffer-jump-to-buffer recent-buffer-name)))))
+(defun jpk/jump-to-most-recent (orig &rest args)
+  "Move point to most recent."
+  (let ((recent-buffer-name (buffer-name)))
+    (apply orig args)
+    (unless (string-match-p "*Ibuffer*" recent-buffer-name)
+      (ibuffer-jump-to-buffer recent-buffer-name))))
+(advice-add 'ibuffer :around #'jpk/jump-to-most-recent)
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
@@ -2972,19 +2991,18 @@ Lisp function does not specify a special indentation."
 
   ;;;;
 
-  (advice-add 'sql-sqlite
-              :around
-              (lambda (orig &rest args)
-                "Complete and process file."
-                (let (sql-user sql-server insert-default-directory)
-                  (setq sql-database (if (and (stringp sql-database)
-                                            (file-exists-p sql-database))
-                                         sql-database
-                                       default-directory))
-                  (setq sql-database (read-file-name "SQLite file: "
-                                                     (file-name-directory sql-database)
-                                                     sql-database))
-                  (apply orig args))))
+  ;; FIXME broken
+  (defun jpk/sqlite-args (orig &rest args)
+    (let (sql-user sql-server insert-default-directory)
+      (setq sql-database (if (and (stringp sql-database)
+                                (file-exists-p sql-database))
+                             sql-database
+                           default-directory))
+      (setq sql-database (read-file-name "SQLite file: "
+                                         (file-name-directory sql-database)
+                                         sql-database))
+      (apply orig args)))
+  (advice-add 'sql-sqlite :around #'jpk/sqlite-args)
 
   (setq sql-sqlite-program "sqlite3")
 
@@ -3110,21 +3128,8 @@ server/database name."
   (global-set-key (kbd "C-S-z") 'undo-tree-redo))
 
 ;; C-x u starts the undo-tree visualizer
-(defvar undo-tree-visualize-window-state nil
-  "Stores the window state before undo-tree-visualize is called,
-  so that it can be restored by undo-tree-visualizer-quit")
-(advice-add 'undo-tree-visualize
-            :before
-            (lambda (&rest args)
-              "Save window layout."
-              (setq undo-tree-visualize-window-state
-                    (current-window-configuration))))
-(advice-add 'undo-tree-visualizer-quit
-            :after
-            (lambda (&rest args)
-              "Restore window layout."
-              (when undo-tree-visualize-window-state
-                (set-window-configuration undo-tree-visualize-window-state))))
+(advice-add 'undo-tree-visualize :before #'jpk/save-window-state)
+(advice-add 'undo-tree-visualizer-quit :after #'jpk/restore-window-state)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; isearch
@@ -3138,13 +3143,11 @@ server/database name."
 ;; get a literal tab with C-q <tab>
 (define-key isearch-mode-map (kbd "<tab>") 'isearch-complete)
 
-;; recenter the cursor after finding a match
-(advice-add 'isearch-search
-            :after
-            (lambda (&rest args)
-              "Recenter"
-              (when isearch-success
-                (recenter))))
+(defun jpk/isearch-update-post-hook ()
+  (when (and isearch-success (not isearch-just-started))
+    (recenter)))
+
+(add-hook 'isearch-update-post-hook #'jpk/isearch-update-post-hook)
 
 ;; make backspace behave in a more intuitive way
 (define-key isearch-mode-map (kbd "<backspace>") 'isearch-del-char)
@@ -3164,10 +3167,10 @@ match.  It should be idempotent."
 
 (define-key isearch-mode-map (kbd "M-k") nil)
 
+;; quickly search for a string by selecting it and typing `C-s C-s`
 (defvar isearch-auto-use-region-max-length 24
   "Upper threshold to automatically use the region in isearch.")
-
-(defun isearch-auto-use-region-advice (&rest args)
+(defun jpk/isearch-auto-use-region (&rest args)
   "Automatically use region as search string unless it's too big or empty."
   (when (region-active-p)
     (let* ((b (region-beginning))
@@ -3176,8 +3179,8 @@ match.  It should be idempotent."
       (when (and (< 0 l) (<= l isearch-auto-use-region-max-length))
         (add-to-history 'search-ring (buffer-substring-no-properties b e))
         (deactivate-mark)))))
-(advice-add 'isearch-forward :before #'isearch-auto-use-region-advice)
-(advice-add 'isearch-backward :before #'isearch-auto-use-region-advice)
+(advice-add 'isearch-forward :before #'jpk/isearch-auto-use-region)
+(advice-add 'isearch-backward :before #'jpk/isearch-auto-use-region)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
@@ -3533,12 +3536,12 @@ point."
 (global-set-key (kbd "C-S-k") 'copy-line)
 
 (with-library 'browse-kill-ring
-  (advice-add 'yank-pop :around
-              (lambda (orig &rest args)
-                "Run `browse-kill-ring' if last command was not `yank'."
-                (if (eq last-command 'yank)
-                    (apply orig args)
-                  (browse-kill-ring)))))
+  (defun jpk/maybe-browse-kill-ring (orig &rest args)
+    "Run `browse-kill-ring' if last command was not `yank'."
+    (if (eq last-command 'yank)
+        (apply orig args)
+      (browse-kill-ring)))
+  (advice-add 'yank-pop :around #'jpk/maybe-browse-kill-ring))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
@@ -3689,11 +3692,10 @@ of text."
       (call-interactively 'fill-paragraph)))
 
   :config
-  (advice-add 'fill-paragraph
-              :after
-              (lambda (&rest args)
-                "Scroll to the left."
-                (scroll-right (window-hscroll))))
+  (defun jpk/scroll-left (&rest args)
+    "Scroll to the left."
+    (scroll-right (window-hscroll)))
+  (advice-add 'fill-paragraph :after #'jpk/scroll-left)
 
   :bind (("M-q" . fill-or-unfill-paragraph))
   )
