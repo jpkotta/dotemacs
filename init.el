@@ -1511,6 +1511,7 @@ This effectively makes `smerge-command-prefix' unnecessary."
 ;; t is usually better for shell terminals, but nil is better for
 ;; serial terminals
 (setq term-suppress-hard-newline nil)
+(setq term-buffer-maximum-size 32768)
 
 (with-eval-after-load "term"
   (defun term-send-backward-kill-word ()
@@ -1702,6 +1703,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (dired-create-directory destdir))
     (copy-file (concat data-directory "e/eterm-color")
                (concat destdir "eterm-color"))))
+
+(defun jpk/eshell-mode-hook ()
+  (defun eshell--revert-buffer-function (&optional ignore-auto noconfirm)
+    (eshell/clear))
+  (setq-local revert-buffer-function #'eshell--revert-buffer-function))
+
+(add-hook 'eshell-mode-hook #'jpk/eshell-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; man pages
@@ -2686,6 +2694,9 @@ If region is inactive, use the entire current line."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Lisp
+
+(use-package package-lint)
+(use-package flycheck-package)
 
 (defun describe-symbol-at-point ()
   "Get help for the symbol at point."
