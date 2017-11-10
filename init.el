@@ -999,7 +999,7 @@ for `string-to-number'."
   )
 
 ;; hippie-expand is like dabbrev-expand, but more
-(global-set-key (kbd "M-/") 'hippie-expand)
+;;(global-set-key (kbd "M-/") #'hippie-expand)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Flyspell
@@ -1254,7 +1254,7 @@ it's probably better to explicitly request a merge."
   :config
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
-        '((Man-mode :select t)
+        '(("[*]Man .*" :select t :regexp t)
           (completion-list-mode :inhibit-window-quit nil :align 'below :size 0.3)
           (("*vc-incoming*" "*vc-outgoing*") :same t)
           ))
@@ -1568,6 +1568,36 @@ This effectively makes `smerge-command-prefix' unnecessary."
      (t
       (error "Term in neither line nor char mode."))))
 
+  (defvar term--arrow-char "O"
+    "Arrow keys send escape codes like \"\e[A\" or \"\eOA\".
+    This is the middle character, and should be either \"[\" or
+    \"O\".")
+
+  (defun term-toggle-arrow-char ()
+    "Toggle `term--arrow-char' between \"O\" and \"[\"."
+    (interactive)
+    (cond
+     ((string= term--arrow-char "O")
+      (setq term--arrow-char "["))
+     ((string= term--arrow-char "[")
+      (setq term--arrow-char "O"))
+     (t
+      (setq term--arrow-char "O")))
+    (message "Term arrow character set to \"%s\"." term--arrow-char))
+
+  (defun term-send-up ()
+    (interactive)
+    (term-send-raw-string (format "\e%sA" term--arrow-char)))
+  (defun term-send-down ()
+    (interactive)
+    (term-send-raw-string (format "\e%sB" term--arrow-char)))
+  (defun term-send-right ()
+    (interactive)
+    (term-send-raw-string (format "\e%sC" term--arrow-char)))
+  (defun term-send-left ()
+    (interactive)
+    (term-send-raw-string (format "\e%sD" term--arrow-char)))
+
   (dolist
       (bind '(;; from multi-term
               ("C-x" . nil)
@@ -1708,7 +1738,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (defun eshell--revert-buffer-function (&optional ignore-auto noconfirm)
     (eshell/clear))
   (setq-local revert-buffer-function #'eshell--revert-buffer-function))
-
 (add-hook 'eshell-mode-hook #'jpk/eshell-mode-hook)
 
 (defun jpk/eshell-prompt-function ()
