@@ -3307,13 +3307,33 @@ be specified with a numeric prefix."
          ("C-x C-q" . wgrep-change-to-wgrep-mode))
   )
 
+(use-package ripgrep
+  :config
+  (defalias 'rg 'ripgrep-regexp)
+  (defun jpk/ripgrep-search-mode-hook ()
+    (setq adaptive-wrap-extra-indent 4)
+    (visual-line-mode 1))
+  (add-hook 'ripgrep-search-mode-hook #'jpk/ripgrep-search-mode-hook)
+  (add-hook 'ripgrep-search-mode-hook #'wgrep-setup)
+
+  :bind (:map ripgrep-search-mode-map
+         ("C-x C-q" . wgrep-change-to-wgrep-mode))
+  )
+
+(use-package projectile-ripgrep
+  :bind (:map projectile-command-map
+         ("s r" . projectile-ripgrep))
+  )
+
 (use-package rg
+  :if nil
   :config
   (add-hook 'rg-mode-hook #'wgrep-ag-setup)
   (add-to-list 'rg-custom-type-aliases '("dts" . "*.dts *.dtsi"))
   )
 
 (use-package ag
+  :if nil
   :config
   (setq ag-highlight-search t)
 
@@ -3324,6 +3344,7 @@ be specified with a numeric prefix."
   )
 
 (use-package wgrep-ag
+  :if nil
   :after (wgrep ag)
   :bind (:map ag-mode-map
          ("C-x C-q" . wgrep-change-to-wgrep-mode))
