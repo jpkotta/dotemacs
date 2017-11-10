@@ -1711,6 +1711,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (add-hook 'eshell-mode-hook #'jpk/eshell-mode-hook)
 
+(defun jpk/eshell-prompt-function ()
+  (format "[%s][%s]\n$ "
+          (format-time-string "%H:%M:%S")
+          (abbreviate-file-name (eshell/pwd))))
+(setq eshell-prompt-function #'jpk/eshell-prompt-function
+      eshell-prompt-regexp "^[$] ")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; man pages
 
