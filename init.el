@@ -84,12 +84,9 @@ files (e.g. directories, fifos, etc.)."
 
 (setq package-selected-packages
       '(
-        ac-c-headers
-        ac-math
         adaptive-wrap
         atomic-chrome
         auctex
-        auto-complete
         backup-walker
         bitbake
         bm
@@ -110,7 +107,6 @@ files (e.g. directories, fifos, etc.)."
         expand-region
         figlet
         flyspell-correct
-        fuzzy ;; for auto-complete
         fvwm-mode
         go-mode
         go-scratch
@@ -277,6 +273,17 @@ files (e.g. directories, fifos, etc.)."
    '(ac-gtags-candidate-face ((t (:inherit ac-candidate-face))))
    '(ac-yasnippet-selection-face ((t (:inherit ac-selection-face))))
    '(ac-yasnippet-candidate-face ((t (:inherit ac-candidate-face))))
+
+   '(company-tooltip ((t (:background "grey16" :foreground "lavender"))))
+   '(company-tooltip-common ((t (:inherit company-tooltip :weight bold))))
+   '(company-tooltip-annotation ((t (:inherit company-tooltip))))
+   '(company-tooltip-selection ((t (:background "grey9" :foreground "magenta"))))
+   '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold))))
+   '(company-tooltip-annotation-selection ((t (:inherit company-tooltip-selection))))
+   '(company-preview ((t (:foreground "green3"))))
+   '(company-preview-common ((t (:inherit company-preview :weight bold))))
+   '(company-scrollbar-bg ((t (:background "lavender"))))
+   '(company-scrollbar-fg ((t (:background "grey9"))))
 
    '(font-lock-preprocessor-face ((t (:inherit font-lock-builtin-face))))
 
@@ -759,7 +766,6 @@ With prefix arg, insert a large ASCII art version.
 
 (with-library 'diminish
   (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
-  (with-eval-after-load "auto-complete" (diminish 'auto-complete-mode))
   (with-eval-after-load "doxymacs" (diminish 'doxymacs-mode))
   (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
   (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
@@ -970,18 +976,23 @@ for `string-to-number'."
       browse-url-new-window-flag t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; auto-complete
-;; TAB completion with a nice UI
+;;; completion
 
 (defun jpk/dabbrev-friend-buffer (other-buffer)
-  (< (buffer-size other-buffer) (* 1 1024 1024)))
+  (and (dabbrev--same-major-mode-p other-buffer)
+     (< (buffer-size other-buffer) (* 1 1024 1024))))
 (setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
 
-(with-library 'auto-complete-config
-  (ac-config-default))
+(use-package auto-complete
+  :if t
+  :diminish auto-complete-mode
+  :init
+  (use-package fuzzy)
+  (ac-config-default)
+  (when (boundp 'global-company-mode)
+    (global-company-mode 0))
 
-(with-eval-after-load "auto-complete"
-
+  :config
   (setq ac-auto-start 3
         ac-auto-show-menu t
         ac-use-quick-help nil
@@ -991,22 +1002,57 @@ for `string-to-number'."
   (add-to-list 'ac-dictionary-files "~/.aspell.en.pws")
 
   (add-to-list 'ac-modes 'latex-mode)
+  (add-to-list 'ac-modes 'inferior-emacs-lisp-mode)
 
   (add-to-list 'ac-sources 'ac-source-filename)
   (setq-default ac-sources ac-sources)
 
-  ;; keybinds
-  (define-key ac-completing-map (kbd "C-n") 'ac-next)
-  (define-key ac-completing-map (kbd "C-p") 'ac-previous)
-  (define-key ac-completing-map (kbd "M-k") 'ac-next)
-  (define-key ac-completing-map (kbd "M-i") 'ac-previous)
-  (define-key ac-completing-map (kbd "<backtab>") 'ac-expand-previous)
-  (define-key ac-completing-map (kbd "S-TAB") 'ac-expand-previous)
-  (define-key ac-completing-map (kbd "C-s") 'ac-isearch)
-  (global-set-key (kbd "C-<tab>") 'auto-complete)
-
   ;; workaround for flyspell-mode
   (ac-flyspell-workaround)
+
+  :bind (("C-<tab>" . auto-complete)
+         :map ac-completing-map
+         ("C-n" . ac-next)
+         ("C-p" . ac-previous)
+         ("M-k" . ac-next)
+         ("M-i" . ac-previous)
+         ("<backtab>" . ac-expand-previous)
+         ("S-TAB" . ac-expand-previous)
+         ("C-s" . ac-isearch))
+  )
+
+(use-package ac-c-headers
+  :after auto-complete)
+(use-package ac-math
+  :after auto-complete)
+
+(use-package company
+  :if nil
+  :diminish company-mode
+  :init
+  (global-company-mode 1)
+  (when (boundp 'global-auto-complete-mode)
+    (global-auto-complete-mode 0))
+
+  :config
+  ;; configuration similar to auto-complete
+  (company-tng-configure-default)
+  (setq company-idle-delay 0.1
+        company-auto-complete t
+        company-search-regexp-function 'company-search-flex-regexp
+        company-tooltip-align-annotations t)
+
+  (setq company-backends (standard-value 'company-backends))
+  ;;(setq company-backends '(company-dabbrev-code company-dabbrev))
+
+  :bind (:map company-active-map
+         ("M-i" . company-select-previous)
+         ("M-k" . company-select-next)
+         ("S-TAB" . company-select-previous)
+         ("<backtab>" . company-select-previous)
+         ("<tab>" . company-complete-common-or-cycle)
+         ("TAB" . company-complete-common-or-cycle)
+         )
   )
 
 ;; hippie-expand is like dabbrev-expand, but more
@@ -2903,17 +2949,14 @@ Lisp function does not specify a special indentation."
   (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
   )
 
-(with-library 'auto-complete
-  (add-to-list 'ac-modes 'inferior-emacs-lisp-mode))
-
 (defun jpk/ielm-mode-hook ()
-  (with-library 'auto-complete
+  (when (featurep 'auto-complete
     (dolist (x '(ac-source-functions
                  ac-source-variables
                  ac-source-features
                  ac-source-symbols
                  ac-source-words-in-same-mode-buffers))
-      (add-to-list 'ac-sources x))))
+      (add-to-list 'ac-sources x)))))
 (add-hook 'ielm-mode-hook 'jpk/ielm-mode-hook)
 
 (add-hook 'ielm-mode-hook 'jpk/lisp-modes-hook)
@@ -2994,7 +3037,7 @@ Lisp function does not specify a special indentation."
   (setq indent-line-function 'indent-relative-dwim)
   (with-library 'flyspell
     (flyspell-mode 1))
-  (with-library 'auto-complete
+  (when (featurep 'auto-complete)
     (setq ac-sources
           '(ac-source-dictionary ac-source-words-in-buffer ac-source-filename))
     (auto-complete-mode 1))
@@ -3019,7 +3062,7 @@ Lisp function does not specify a special indentation."
   (setq fill-column 80)
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (setq indent-line-function 'LaTeX-indent-line)
-  (with-library 'ac-math
+  (when (featurp 'ac-math)
     (dolist (x '(ac-source-math-unicode
                  ac-source-math-latex
                  ac-source-latex-commands))
