@@ -85,7 +85,6 @@ files (e.g. directories, fifos, etc.)."
         boxquote
         browse-kill-ring
         buffer-move
-        calmer-forest-theme
         csharp-mode
         csv-mode
         dictionary
@@ -231,39 +230,37 @@ files (e.g. directories, fifos, etc.)."
                             (scroll-bar-height . 5)
                             (scroll-bar-width . 10)))
 
-(setq default-font-family "DejaVu Sans Mono")
-(when (string= system-type "windows-nt")
-  (setq default-font-family "Consolas"))
 (setq custom-safe-themes t)
-(with-library 'calmer-forest-theme
+(use-package calmer-forest-theme
+  :init
   (load-theme 'calmer-forest 'noconfirm)
+
+  (set-face-attribute 'default nil
+                      :family (if (string= system-type "windows-nt")
+                                  "Consolas"
+                                "DejaVu Sans Mono")
+                      :foreground "green1"
+                      :height 100)
+  (set-face-attribute 'mode-line nil :height 1.0)
+
+  :config
   (custom-theme-set-faces
    'calmer-forest
 
-   `(default
-      ((t (:family
-           ,default-font-family
-           :inherit nil :stipple nil :overline nil :underline nil
-           :background "gray12" :foreground "green"
-           :inverse-video nil :box nil :strike-through nil
-           :slant normal :weight normal :height 100 :width normal
-           :foundry "unknown"))))
+   '(fringe ((t (:background "grey10" :foreground "dark green"))))
+   '(highlight ((t (:background "#001000"))))
 
-   '(fringe ((t (:background "gray10" :foreground "dark green"))))
-   '(highlight ((t (:background "gray6"))))
-
-   '(mode-line ((t (:background "gray37" :foreground "gray85" :overline "black"))))
    '(mode-line-buffer-id ((t (:weight bold))))
    '(modelinepos-region ((t (:inverse-video t))))
 
    '(region ((t (:background "#400060"))))
    '(mouse ((t (:background "orange"))))
-   '(mouse-flash-position ((t (:background "gray75"))))
-   '(secondary-selection ((t (:background "#600040"))))
+   '(mouse-flash-position ((t (:background "grey75"))))
+   '(secondary-selection ((t (:background "DeepPink4"))))
 
    '(ac-completion-face ((t (:foreground "green3"))))
-   '(ac-selection-face ((t (:background "gray9" :foreground "magenta"))))
-   '(ac-candidate-face ((t (:background "gray16" :foreground "lavender"))))
+   '(ac-selection-face ((t (:background "grey9" :foreground "magenta"))))
+   '(ac-candidate-face ((t (:background "grey16" :foreground "lavender"))))
    '(ac-gtags-selection-face ((t (:inherit ac-selection-face))))
    '(ac-gtags-candidate-face ((t (:inherit ac-candidate-face))))
    '(ac-yasnippet-selection-face ((t (:inherit ac-selection-face))))
@@ -271,9 +268,9 @@ files (e.g. directories, fifos, etc.)."
 
    '(font-lock-preprocessor-face ((t (:inherit font-lock-builtin-face))))
 
-   '(diff-refine-changed ((t (:weight bold :background "gray24"))))
-   '(diff-refine-added ((t (:inherit diff-refine-change :foreground "green1"))))
-   '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red1"))))
+   '(diff-refine-changed ((t (:weight bold :background "grey24"))))
+   '(diff-refine-added ((t (:inherit diff-refine-change :foreground "green2"))))
+   '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red2"))))
    '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
 
    '(ediff-even-diff-A ((t (:inherit diff-refine-changed))))
