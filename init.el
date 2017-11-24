@@ -6,10 +6,21 @@
 
 (message "Loading jpkotta's init.el.")
 
+(defun standard-value (symbol)
+  "Return the `standard-value' of `symbol'.
+
+Only defcustoms usually have a `standard-value'."
+  (when (not (symbolp symbol))
+    (error "Not a symbol: %s" symbol))
+  (let ((sv (get symbol 'standard-value)))
+    (when (null sv)
+      (error "No standard-value: %s" symbol))
+    (eval (car sv))))
+
 (setq gc-cons-threshold most-positive-fixnum)
 (defun jpk/emacs-startup-hook ()
   (message "init.el loaded in %s." (emacs-init-time))
-  (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value))))
+  (setq gc-cons-threshold (standard-value 'gc-cons-threshold)))
 (add-hook 'emacs-startup-hook #'jpk/emacs-startup-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
