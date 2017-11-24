@@ -201,6 +201,8 @@ files (e.g. directories, fifos, etc.)."
         use-package-debug t
         use-package-minimum-reported-time 0))
 
+(add-hook 'package-menu-mode-hook #'hl-line-mode)
+
 (use-package no-littering)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -321,7 +323,6 @@ files (e.g. directories, fifos, etc.)."
 
 (blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
-(global-hl-line-mode 1)
 
 (setq eol-mnemonic-dos "(CRLF)"
       eol-mnemonic-mac "(CR)"
@@ -590,7 +591,9 @@ default label."
     (setq adaptive-wrap-extra-indent 0)
     (visual-line-mode 1)
     (when (featurep 'flyspell)
-      (flyspell-mode 1)))
+      (flyspell-mode 1))
+    (hl-line-mode 1)
+    )
   (add-hook 'org-mode-hook #'jpk/org-mode-hook)
 
   (setq org-ellipsis "…"
@@ -772,6 +775,7 @@ With prefix arg, insert a large ASCII art version.
 
 (setq message-log-max 10000)
 (global-set-key (kbd "C-h C-f") 'find-function)
+(add-hook 'help-mode-hook #'hl-line-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
@@ -1391,6 +1395,8 @@ it's probably better to explicitly request a merge."
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
 
+  (hl-line-mode 1)
+
   (setq imenu-prev-index-position-function nil)
   (setq imenu-generic-expression '((nil "^--- .+/\\([^/]+\\)\t" 1)))
 
@@ -1976,6 +1982,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; word wrap looks terrible in dired buffers
 (defun jpk/dired-before-readin-hook ()
   (visual-line-mode 0)
+  (hl-line-mode 1)
   (setq truncate-lines t)
   )
 (add-hook 'dired-before-readin-hook 'jpk/dired-before-readin-hook)
@@ -2193,6 +2200,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; run when ibuffer buffer is created
 (defun jpk/ibuffer-mode-hook ()
   (ibuffer-auto-mode 1)
+  (hl-line-mode 1)
   (setq truncate-lines t))
 (add-hook 'ibuffer-mode-hook 'jpk/ibuffer-mode-hook)
 
@@ -2423,6 +2431,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
 
+  (hl-line-mode 1)
+
   ;;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
 
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
@@ -2567,6 +2577,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   ;; highlight operators like '+' and '&'
   (with-library 'highlight-operators
     (highlight-operators-mode 1))
+
+  (hl-line-mode 1)
 
   (setq adaptive-wrap-extra-indent 1)
 )
@@ -2918,6 +2930,7 @@ Lisp function does not specify a special indentation."
   ;;(fvwm-enable-indentation)
   (local-set-key (kbd "RET") 'newline)
   (setq indent-line-function 'indent-relative-dwim)
+  (hl-line-mode 1)
   (setq tab-width 4))
 
 (add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
@@ -2987,6 +3000,7 @@ Lisp function does not specify a special indentation."
     (auto-complete-mode 1))
   (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
+  (hl-line-mode 1)
   )
 
 (add-hook 'text-mode-hook 'jpk/text-mode-hook)
@@ -3012,6 +3026,7 @@ Lisp function does not specify a special indentation."
       (add-to-list 'ac-sources x)))
   (local-set-key [remap next-error] nil)
   (local-set-key [remap previous-error] nil)
+  (hl-line-mode 1)
   )
 
 (add-hook 'LaTeX-mode-hook 'jpk/LaTeX-mode-hook)
