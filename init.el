@@ -117,7 +117,6 @@ files (e.g. directories, fifos, etc.)."
         keychain-environment
         ;;list-unicode-display
         lua-mode
-        magit
         markdown-mode
         mediawiki
         mic-paren
@@ -1295,9 +1294,12 @@ it's probably better to explicitly request a merge."
 ;; toggle-read-only prints an annoying message
 (advice-add 'toggle-read-only :around #'jpk/suppress-messages)
 
-(global-set-key (kbd "C-x g") #'magit-status)
-(setq magit-diff-refine-hunk 'all)
-(add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
+(use-package magit
+  :config
+  (setq magit-diff-refine-hunk 'all)
+  (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
+  (global-magit-file-mode 1)
+  )
 
 (defalias 'git-grep #'vc-git-grep)
 
