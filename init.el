@@ -142,7 +142,6 @@ files (e.g. directories, fifos, etc.)."
         save-visited-files
         smart-shift
         smart-tabs-mode
-        sphinx-doc
         sqlup-mode
         ssh-config-mode
         syntax-subword
@@ -971,6 +970,11 @@ for `string-to-number'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; completion
+
+(use-package abbrev
+  :ensure nil
+  :diminish abbrev-mode
+  :defer)
 
 (defun jpk/dabbrev-friend-buffer (other-buffer)
   (and (dabbrev--same-major-mode-p other-buffer)
@@ -2730,10 +2734,15 @@ If region is inactive, use the entire current line."
                ("sum" . ?∑)
                ))
     (add-to-list 'prettify-symbols-alist x))
-  (with-library 'sphinx-doc
-    (sphinx-doc-mode 1))
   )
 (add-hook 'python-mode-hook 'jpk/python-mode-hook)
+
+(use-package sphinx-doc
+  :after python
+  :diminish sphinx-doc-mode
+  :config
+  (add-hook 'python-mode-hook #'sphinx-doc-mode)
+  )
 
 ;;(setq gud-pdb-command-name "/usr/lib/python3.6/pdb.py")
 
