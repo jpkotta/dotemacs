@@ -149,7 +149,6 @@ files (e.g. directories, fifos, etc.)."
         systemd
         undo-tree
         visual-regexp
-        wrap-region
         yaml-mode
         ))
 
@@ -3453,10 +3452,13 @@ The user is prompted at each instance like query-replace."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paren insertion
 
-(with-library 'wrap-region
+(use-package wrap-region
+  :diminish wrap-region-mode
+  :config
   (defun jpk/wrap-region-after-hook ()
     (goto-char (1+ wrap-region-end)))
-  (add-hook 'wrap-region-after-hook 'jpk/wrap-region-after-hook))
+  (add-hook 'wrap-region-after-hook #'jpk/wrap-region-after-hook)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paren Highlighting
