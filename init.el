@@ -97,7 +97,6 @@ files (e.g. directories, fifos, etc.)."
         csv-mode
         dictionary
         diff-hl
-        diminish
         dired+ ;; deprecated
         dired-imenu
         dired-narrow
@@ -340,6 +339,11 @@ files (e.g. directories, fifos, etc.)."
 
 (setq whitespace-style '(newline space-mark tab-mark newline-mark))
 
+(use-package face-remap
+  :ensure nil
+  :diminish buffer-face-mode
+  :defer)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ergomovement
 
@@ -508,6 +512,7 @@ files (e.g. directories, fifos, etc.)."
 (use-package ggtags
   :disabled
   :if (executable-find "global")
+  :diminish ggtags-mode
   :config
   (setq ggtags-global-window-height nil
         ggtags-enable-navigation-keys nil
@@ -567,6 +572,7 @@ default label."
 ;;; Projectile
 
 (use-package projectile
+  :diminish projectile-mode
   :config
   (setq projectile-indexing-method 'alien
         projectile-enable-caching t
@@ -752,21 +758,6 @@ With prefix arg, insert a large ASCII art version.
 (with-library 'syntax-subword
   (setq syntax-subword-skip-spaces 'consistent)
   (global-syntax-subword-mode 1)
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Diminish
-;; Hide some minor mode indicators in the modeline.
-
-(with-library 'diminish
-  (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
-  (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
-  (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
-  (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
-  (with-eval-after-load "ggtags" (diminish 'ggtags-mode))
-  (with-eval-after-load "projectile" (diminish 'projectile-mode))
-  (with-eval-after-load "sphinx-doc" (diminish 'sphinx-doc-mode))
-  (with-eval-after-load "wrap-region" (diminish 'wrap-region-mode))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2911,6 +2902,10 @@ Lisp function does not specify a special indentation."
 
 (autoload 'edit-list "edit-list.el"
   "Edit a lisp list in a buffer." t)
+
+(use-package eldoc-mode
+  :ensure nil
+  :diminish eldoc-mode)
 
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
