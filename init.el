@@ -509,7 +509,8 @@ files (e.g. directories, fifos, etc.)."
         (copy-file dist-rcfile rcfile)))))
 
 (use-package ggtags
-  :if nil
+  :disabled
+  :if (executable-find "global")
   :config
   (setq ggtags-global-window-height nil
         ggtags-enable-navigation-keys nil
@@ -545,8 +546,8 @@ files (e.g. directories, fifos, etc.)."
 ;; mature, it will probably be better than ggtags.
 
 (use-package gxref
-  :if t
   :after xref
+  :if (executable-find "global")
   :config
   ;; (remove-hook 'next-error-hook #'jpk/next-error-hook)
   ;; (setq next-error-recenter nil)
@@ -572,7 +573,6 @@ default label."
   :config
   (setq projectile-indexing-method 'alien
         projectile-enable-caching t
-        projectile-ack-function 'ack
         projectile-tags-backend 'xref
         projectile-tags-command "gtags -f \"%s\" %s")
   (projectile-mode 1))
@@ -980,7 +980,7 @@ for `string-to-number'."
 (setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
 
 (use-package auto-complete
-  :if t
+  ;; :disabled
   :diminish auto-complete-mode
   :init
   (use-package fuzzy)
@@ -1023,7 +1023,7 @@ for `string-to-number'."
   :after auto-complete)
 
 (use-package company
-  :if nil
+  :disabled
   :diminish company-mode
   :init
   (global-company-mode 1)
@@ -1297,7 +1297,7 @@ it's probably better to explicitly request a merge."
 
 ;; Save point position per-window instead of per-buffer.
 (use-package winpoint
-  :if nil
+  :disabled
   :init
   (winpoint-mode 1))
 
@@ -1352,6 +1352,7 @@ it's probably better to explicitly request a merge."
 (advice-add 'toggle-read-only :around #'jpk/suppress-messages)
 
 (use-package magit
+  :if (executable-find "git")
   :config
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
@@ -2964,6 +2965,7 @@ Lisp function does not specify a special indentation."
 ;;; PKGBUILD
 
 (use-package pkgbuild-mode
+  :if (executable-find "pacman")
   :mode ("\\`PKGBUILD\\'" "\.install\\'"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3357,6 +3359,7 @@ be specified with a numeric prefix."
   )
 
 (use-package ripgrep
+  :if (executable-find "rg")
   :config
   (defalias 'rg 'ripgrep-regexp)
   (defun jpk/ripgrep-search-mode-hook ()
@@ -3375,14 +3378,16 @@ be specified with a numeric prefix."
   )
 
 (use-package rg
-  :if nil
+  :disabled
+  :if (executable-find "rg")
   :config
   (add-hook 'rg-mode-hook #'wgrep-ag-setup)
   (add-to-list 'rg-custom-type-aliases '("dts" . "*.dts *.dtsi"))
   )
 
 (use-package ag
-  :if nil
+  :disabled
+  :if (executable-find "ag")
   :config
   (setq ag-highlight-search t)
 
@@ -3393,7 +3398,7 @@ be specified with a numeric prefix."
   )
 
 (use-package wgrep-ag
-  :if nil
+  :disabled
   :after (wgrep ag)
   :bind (:map ag-mode-map
          ("C-x C-q" . wgrep-change-to-wgrep-mode))
