@@ -763,7 +763,6 @@ With prefix arg, insert a large ASCII art version.
 
 (with-library 'diminish
   (with-eval-after-load "abbrev" (diminish 'abbrev-mode))
-  (with-eval-after-load "doxymacs" (diminish 'doxymacs-mode))
   (with-eval-after-load "eldoc" (diminish 'eldoc-mode))
   (with-eval-after-load "face-remap" (diminish 'buffer-face-mode))
   (with-eval-after-load "flyspell" (diminish 'flyspell-mode))
@@ -2333,10 +2332,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (global-set-key (kbd "C-c b") 'compile)
 (global-set-key (kbd "C-x ~") 'previous-error)
 
-(defun doxygen-compile ()
- (interactive)
- (compile "doxygen 2>&1 1>/dev/null | sed s%`pwd`/%%"))
-
 (defun locate-repo-dir (&optional file-or-dir)
   "Find the root of the version control repository."
   (let* ((file-or-dir (or file-or-dir (buffer-file-name) default-directory))
@@ -2441,12 +2436,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
 
-  ;; for doxygen
-  (with-library 'doxymacs
-    (setq doxymacs-command-character "\\")
-    (doxymacs-mode 1)
-    (doxymacs-font-lock))
-
   ;; check spelling on the fly, but only in comments and strings
   (with-library 'flyspell
     (flyspell-mode 0)
@@ -2497,10 +2486,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (save-excursion
     (imenu--cleanup)
     (setq imenu--index-alist nil)))
-
-(with-eval-after-load "doxymacs"
-  (load "doxymacs-hacks.el")
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C programming language
@@ -2998,7 +2983,6 @@ Lisp function does not specify a special indentation."
 ;;; config files
 
 (dolist (re '("\\.list\\'"
-              "Doxyfile"
               "\\.rules\\'"
               "\\`fstab\\'"
               "\\.env\\'"
