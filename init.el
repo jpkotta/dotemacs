@@ -2998,12 +2998,10 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
 
-(dolist (re '("\\.list\\'"
-              "\\.rules\\'"
-              "\\`fstab\\'"
-              "\\.env\\'"
-              ))
-  (add-to-list 'auto-mode-alist `(,re . conf-mode)))
+(use-package config-mode
+  :ensure nil
+  :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; YAML mode
