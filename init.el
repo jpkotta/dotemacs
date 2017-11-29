@@ -1513,25 +1513,30 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; smerge-mode
 
-(setq smerge-command-prefix (read-kbd-macro "C-c c"))
+(use-package smerge-mode
+  :ensure nil
+  :init
+  (setq smerge-command-prefix (read-kbd-macro "C-c c"))
 
-(defun smerge-help ()
-  "Describe keybindings for `smerge-mode'."
-  (interactive)
-  (with-temp-buffer
-    (smerge-mode 1) ;; ensure smerge-mode-map is active
-    (describe-bindings smerge-command-prefix)))
+  :config
+  (defun smerge-help ()
+    "Describe keybindings for `smerge-mode'."
+    (interactive)
+    (with-temp-buffer
+      (smerge-mode 1) ;; ensure smerge-mode-map is active
+      (describe-bindings smerge-command-prefix)))
 
-(defun smerge-quick-keys ()
-  "Set `smerge-basic-map' as the transient keymap.
+  (defun smerge-quick-keys ()
+    "Set `smerge-basic-map' as the transient keymap.
 This effectively makes `smerge-command-prefix' unnecessary."
-  (interactive)
-  (set-transient-map smerge-basic-map t))
+    (interactive)
+    (set-transient-map smerge-basic-map t))
 
-(add-hook 'smerge-mode-hook 'smerge-quick-keys)
-
-(with-eval-after-load "smerge-mode"
-  (define-key smerge-basic-map (kbd "h") 'smerge-help))
+  :bind (:map smerge-basic-map
+         ("h" . smerge-help)
+         ("c" . smerge-quick-keys))
+  :bind-keymap ("C-c c" . smerge-mode-map)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; diff-hl
