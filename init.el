@@ -106,7 +106,6 @@ files (e.g. directories, fifos, etc.)."
         edit-list
         expand-region
         figlet
-        flyspell-correct
         fvwm-mode
         go-mode
         go-scratch
@@ -1057,15 +1056,22 @@ for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Flyspell
 
-;; TODO: http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
-(setq ispell-program-name "aspell")
+(use-package flyspell
+  :ensure nil
+  :diminish flyspell-mode
+  :init
+  (setq ispell-program-name "aspell")
 
-(with-eval-after-load "flyspell"
+  :config
   (setq flyspell-use-meta-tab nil)
-  (define-key flyspell-mode-map (kbd "M-TAB") nil)
 
-  (with-library 'flyspell-correct-ido
-    (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-word-generic))
+  :bind (:map flyspell-mode-map
+         ("M-TAB" . nil))
+  )
+
+(use-package flyspell-correct
+  :bind (:map flyspell-mode-map
+         ("C-;" . flyspell-correct-word-generic))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2438,7 +2444,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   ;;(smart-tabs-mode 0) ;; default to using spaces
 
   ;; check spelling on the fly, but only in comments and strings
-  (with-library 'flyspell
+  (when (featurep 'flyspell)
     (flyspell-mode 0)
     (flyspell-prog-mode))
 
@@ -3018,7 +3024,7 @@ Lisp function does not specify a special indentation."
 
 (defun jpk/text-mode-hook ()
   (setq indent-line-function 'indent-relative-dwim)
-  (with-library 'flyspell
+  (when (featurep 'flyspell)
     (flyspell-mode 1))
   (when (featurep 'auto-complete)
     (setq ac-sources
@@ -3040,7 +3046,7 @@ Lisp function does not specify a special indentation."
 (defun jpk/LaTeX-mode-hook ()
   (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
-  (with-library 'flyspell
+  (when (featurep 'flyspell)
     (flyspell-mode 1))
   (setq fill-column 80)
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
