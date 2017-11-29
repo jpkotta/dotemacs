@@ -611,7 +611,7 @@ default label."
 
   ;; http://www.howardism.org/Technical/Emacs/literate-devops.html
   (setq org-babel-load-languages
-        '((sh . t)
+        '((shell . t)
           (emacs-lisp . t)
           (python . t)
           (sql . t) ;; see also ob-sql-mode
@@ -657,10 +657,7 @@ default label."
   )
 
 (use-package ob-async
-  :if nil
   :after org
-  :config
-  (add-hook 'org-ctrl-c-ctrl-c-hook #'ob-async-org-babel-execute-src-block)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
