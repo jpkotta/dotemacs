@@ -1798,18 +1798,34 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (copy-file (concat data-directory "e/eterm-color")
                (concat destdir "eterm-color"))))
 
-(defun jpk/eshell-mode-hook ()
-  (defun eshell--revert-buffer-function (&optional ignore-auto noconfirm)
-    (eshell/clear))
-  (setq-local revert-buffer-function #'eshell--revert-buffer-function))
-(add-hook 'eshell-mode-hook #'jpk/eshell-mode-hook)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; eshell
 
-(defun jpk/eshell-prompt-function ()
-  (format "[%s][%s]\n$ "
-          (format-time-string "%H:%M:%S")
-          (abbreviate-file-name (eshell/pwd))))
-(setq eshell-prompt-function #'jpk/eshell-prompt-function
-      eshell-prompt-regexp "^[$] ")
+(use-package eshell
+  :ensure nil
+  :config
+  (require 'em-smart)
+  (add-hook 'eshell-mode-hook #'eshell-smart-initialize)
+
+  (defun jpk/eshell-mode-hook ()
+    (defun eshell--revert-buffer-function (&optional ignore-auto noconfirm)
+      (eshell/clear))
+    (setq-local revert-buffer-function #'eshell--revert-buffer-function))
+  (add-hook 'eshell-mode-hook #'jpk/eshell-mode-hook)
+
+  (defun jpk/eshell-prompt-function ()
+    (format "[%s][%s]\n$ "
+            (format-time-string "%H:%M:%S")
+            (abbreviate-file-name (eshell/pwd))))
+  (setq eshell-prompt-function #'jpk/eshell-prompt-function
+        eshell-prompt-regexp "^[$] ")
+
+  (defun eshell-insert-history ()
+    (interactive)
+    (insert (completing-read
+             "Eshell history: "
+             (delete-dups (ring-elements eshell-history-ring)))))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; man pages
