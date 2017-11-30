@@ -2924,7 +2924,7 @@ Lisp function does not specify a special indentation."
 (autoload 'edit-list "edit-list.el"
   "Edit a lisp list in a buffer." t)
 
-(use-package eldoc-mode
+(use-package eldoc
   :ensure nil
   :diminish eldoc-mode)
 
