@@ -3392,8 +3392,9 @@ be specified with a numeric prefix."
 
 (use-package ripgrep
   :if (executable-find "rg")
-  :config
+  :init
   (defalias 'rg 'ripgrep-regexp)
+  :config
   (defun jpk/ripgrep-search-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
@@ -3410,7 +3411,7 @@ be specified with a numeric prefix."
   )
 
 (use-package rg
-  :disabled
+  :disabled ;; ripgrep is better
   :if (executable-find "rg")
   :config
   (add-hook 'rg-mode-hook #'wgrep-ag-setup)
@@ -3418,7 +3419,7 @@ be specified with a numeric prefix."
   )
 
 (use-package ag
-  :disabled
+  :disabled ;; ripgrep is better
   :if (executable-find "ag")
   :config
   (setq ag-highlight-search t)
@@ -3430,7 +3431,7 @@ be specified with a numeric prefix."
   )
 
 (use-package wgrep-ag
-  :disabled
+  :disabled ;; normal wgrep works with ripgrep
   :after (wgrep ag)
   :bind (:map ag-mode-map
          ("C-x C-q" . wgrep-change-to-wgrep-mode))
