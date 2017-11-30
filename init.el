@@ -1361,6 +1361,22 @@ it's probably better to explicitly request a merge."
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
   (global-magit-file-mode 1)
+
+  (defun magit-switch-to-status-buffer (buffer)
+    "Like `switch-to-buffer', but only for `magit-status-mode' buffers."
+    (interactive (list (completing-read
+                        "Magit status: "
+                        (mapcar #'buffer-name (buffer-list))
+                        (lambda (b)
+                          (with-current-buffer b
+                            (derived-mode-p 'magit-status-mode))))))
+    (if (string-empty-p buffer)
+        (magit-status)
+      (switch-to-buffer buffer)))
+
+  :bind (("C-x g" . magit-status)
+         ("C-x C-g" . magit-switch-to-status-buffer)
+         ("C-x M-g" . magit-dispatch-popup))
   )
 
 (defalias 'git-grep #'vc-git-grep)
