@@ -115,8 +115,6 @@ files (e.g. directories, fifos, etc.)."
         htmlize
         ibuffer-projectile
         ibuffer-tramp
-        iedit
-        immortal-scratch
         keychain-environment
         ;;list-unicode-display
         lua-mode
@@ -144,7 +142,6 @@ files (e.g. directories, fifos, etc.)."
         syntax-subword
         systemd
         undo-tree
-        visual-regexp
         yaml-mode
         ))
 
@@ -2309,9 +2306,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; immortal-scratch
 
-(with-library 'immortal-scratch
+(use-package immortal-scratch
+  :init
+  (immortal-scratch-mode 1)
+
+  :config
   (setq immortal-scratch-switch-to-respawned-scratch t)
-  (immortal-scratch-mode 1))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; figlet
@@ -2473,11 +2474,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (define-key isearch-mode-map (kbd "M-n") #'isearch-forward-symbol-dwim)
 (define-key isearch-mode-map (kbd "M-p") #'isearch-backward-symbol-dwim)
 
-(global-set-key (kbd "C-c i") #'iedit-mode)
+(use-package iedit
+  :bind (("C-c i" . iedit-mode))
+  )
 
-;; visual-regexp
-(global-set-key [remap replace-regexp] #'vr/replace)
-(global-set-key [remap query-replace-regexp] #'vr/query-replace)
+(use-package visual-regexp
+  :bind (([remap replace-regexp] . vr/replace)
+         ([remap query-replace-regexp] . vr/query-replace))
+  )
 
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
