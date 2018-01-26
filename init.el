@@ -959,13 +959,20 @@ for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; revert
 
-(global-auto-revert-mode 1)
-(setq auto-revert-verbose nil
-      global-auto-revert-non-file-buffers t)
-(add-hook 'dired-mode-hook #'auto-revert-mode)
-(add-to-list 'revert-without-query "\\.rom\\'")
+(use-package autorevert
+  :ensure nil
+  :diminish auto-revert-mode
+  :init
+  (global-auto-revert-mode 1)
 
-(global-set-key (kbd "<f5>") 'revert-buffer)
+  :config
+  (setq auto-revert-verbose nil
+        global-auto-revert-non-file-buffers t)
+  (add-hook 'dired-mode-hook #'auto-revert-mode)
+  (add-to-list 'revert-without-query "\\.rom\\'")
+
+  :bind (("<f5>" . revert-buffer))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Clipboard
@@ -2752,12 +2759,36 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; shell-script
 
-(defun jpk/sh-mode-hook ()
-  (dolist (s '(paragraph-start paragraph-separate))
-    (set s (default-value s)))
-  )
+(use-package sh-script
+  :ensure nil
+  :config
+  (defun jpk/sh-mode-hook ()
+    (dolist (s '(paragraph-start paragraph-separate))
+      (set s (default-value s))))
+  (add-hook 'sh-mode-hook #'jpk/sh-mode-hook)
 
-(add-hook 'sh-mode-hook 'jpk/sh-mode-hook)
+  ;; https://fuco1.github.io/2017-06-11-Font-locking-with-custom-matchers.html
+  (defun my-match-variables-in-quotes (limit)
+    "Match variables in double-quotes in `sh-mode'."
+    (with-syntax-table sh-mode-syntax-table
+      (catch 'done
+        (while (re-search-forward
+                ;; `rx' is cool, mkay.
+                (rx (or line-start (not (any "\\")))
+                    (group "$")
+                    (group
+                     (or (and "{" (+? nonl) "}")
+                        (and (+ (any alnum "_")))
+                        (and (any "*" "@" "#" "?" "-" "$" "!" "0" "_")))))
+                limit t)
+          (-when-let (string-syntax (nth 3 (syntax-ppss)))
+            (when (= string-syntax 34)
+              (throw 'done (point))))))))
+  (font-lock-add-keywords
+   'sh-mode '((my-match-variables-in-quotes
+               (1 'default t)
+               (2 font-lock-variable-name-face t))))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Perl
@@ -2798,34 +2829,6 @@ If region is inactive, use the entire current line."
 
 (global-set-key (kbd "C-c e p") 'jpk/python-eval-insert-region)
 
-(setq python-indent-offset 4)
-
-(with-eval-after-load "python"
-
-  (with-library 'pylint
-    ;; N.B. you probably want to set shell-file-name to something like
-    ;; "C:/cygwin/bin/bash.exe" on Windows, because the default shell
-    ;; will fuck up the command line.
-    (setq pylint-options '("--rcfile=./.pylintrc"
-                           "--jobs=4"
-                           "--reports=n"
-                           "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
-                           "--disable=C,R,locally-disabled"
-                           ))
-
-    (define-key python-mode-map (kbd "C-c C-v") 'pylint)
-    (define-key python-mode-map (kbd "C-c C-i") 'pylint-insert-ignore-comment)
-    )
-
-  (define-key python-mode-map (kbd "<backtab>") 'delete-indentation)
-  (define-key python-mode-map (kbd "S-TAB") 'delete-indentation)
-  (define-key python-mode-map (kbd "C-c C-3") 'python-2to3)
-  )
-
-(when (executable-find "ipython2")
-  (setq python-shell-interpreter "ipython2"
-        python-shell-interpreter-args "--simple-prompt -i"))
-
 (defun python-2to3 ()
   "Run 2to3 on the current buffer and put the diff in a new buffer."
   (interactive)
@@ -2836,6 +2839,37 @@ If region is inactive, use the entire current line."
     (with-current-buffer output-buffer
       (diff-mode))
     (switch-to-buffer-other-window output-buffer)))
+
+(use-package python
+  :ensure nil
+  :config
+  (setq python-indent-offset 4)
+  (when (executable-find "ipython2")
+    (setq python-shell-interpreter "ipython2"
+          python-shell-interpreter-args "--simple-prompt -i"))
+  :bind (:map python-mode-map
+         ("<backtab>" . delete-indentation)
+         ("S-TAB" . delete-indentation)
+         ("C-c C-3" . python-2to3))
+  )
+
+(use-package pylint
+  :after python
+  :config
+  ;; N.B. you probably want to set shell-file-name to something like
+  ;; "C:/cygwin/bin/bash.exe" on Windows, because the default shell
+  ;; will fuck up the command line.
+  (setq pylint-options '("--rcfile=./.pylintrc"
+                         "--jobs=4"
+                         "--reports=n"
+                         "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
+                         "--disable=C,R,locally-disabled"
+                         ))
+
+  :bind (:map python-mode-map
+         ("C-c C-v" . pylint)
+         ("C-c C-i" . pylint-insert-ignore-comment))
+  )
 
 (defun jpk/python-mode-hook ()
   (dolist (x '(("!=" . ?≠)
