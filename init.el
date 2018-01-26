@@ -759,6 +759,9 @@ With prefix arg, insert a large ASCII art version.
 ;;; C SubWordMode
 ;; FindSubWordsInCamelCase
 
+;; FIXME reimplement using subword-{forward,backward}-function
+;; (no need to remap bindings, etc.)
+
 (with-library 'syntax-subword
   (setq syntax-subword-skip-spaces 'consistent)
   (global-syntax-subword-mode 1)
@@ -768,8 +771,18 @@ With prefix arg, insert a large ASCII art version.
 ;;; Help
 
 (setq message-log-max 10000)
-(global-set-key (kbd "C-h C-f") 'find-function)
 (add-hook 'help-mode-hook #'hl-line-mode)
+
+(use-package find-func
+  :ensure nil
+  :config
+  (let ((dir (expand-file-name "~/src/emacs/src")))
+    (when (and (null find-function-C-source-directory)
+	       (file-directory-p dir))
+      (setq find-function-C-source-directory dir)))
+
+  :bind (("C-h C-f" . find-function))
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
@@ -1455,6 +1468,9 @@ it's probably better to explicitly request a merge."
 
 (use-package magit
   :if (executable-find "git")
+  :init
+  ;; show margin (author+time) in a magit log buffer with L d
+  (setq magit-log-margin '(nil age-abbreviated magit-log-margin-width :author 11))
   :config
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
@@ -1468,8 +1484,7 @@ it's probably better to explicitly request a merge."
                         (lambda (b)
                           (with-current-buffer b
                             (derived-mode-p 'magit-status-mode))))))
-    (if (string-empty-p buffer)
-        (magit-status)
+    (unless (string-empty-p buffer)
       (switch-to-buffer buffer)))
 
   :bind (("C-x g" . magit-status)
@@ -1806,6 +1821,9 @@ This effectively makes `smerge-command-prefix' unnecessary."
               ("<S-down>" . sane-term-create)
               ("<S-left>" . sane-term-prev)
               ("<S-right>" . sane-term-next)
+              ("C-S-t" . sane-term-create)
+              ("<C-prior>" . sane-term-prev)
+              ("<C-next>" . sane-term-next)
               ("C-c C-j" . term-toggle-char-or-line-mode)
               ("C-c C-v" . term-send-raw) ;; quote
               ("C-c C-x" . term-send-raw) ;; C-x
@@ -2986,7 +3004,10 @@ If region is inactive, use the entire current line."
 
 (global-set-key (kbd "C-c e") 'eval-and-replace-last-sexp)
 
-(setq eval-expression-print-length nil) ;; unlimited
+(setq print-length 256
+      print-level 16
+      eval-expression-print-length print-length
+      eval-expression-print-level print-level)
 
 ;; https://emacs.stackexchange.com/a/10233/651
 (defun Fuco1/lisp-indent-function (indent-point state)
@@ -3188,7 +3209,12 @@ Lisp function does not specify a special indentation."
           comment-end ""))
   (add-hook 'dts-mode-hook #'jpk/dts-mode-hook)
 
-  :mode "\\.its\\'"
+  ;; FIXME push upstream
+  (let ((table dts-mode-syntax-table))
+    (modify-syntax-entry ?<  "(>" table)
+    (modify-syntax-entry ?>  ")<" table))
+
+  :mode ("\\.its\\'")
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
