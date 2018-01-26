@@ -88,7 +88,6 @@ files (e.g. directories, fifos, etc.)."
         atomic-chrome
         auctex
         backup-walker
-        bitbake
         bm
         boxquote
         browse-kill-ring
@@ -104,7 +103,6 @@ files (e.g. directories, fifos, etc.)."
         easy-repeat
         edit-list
         expand-region
-        figlet
         fvwm-mode
         go-mode
         go-scratch
@@ -2318,7 +2316,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; figlet
 
-(with-eval-after-load "figlet.el"
+(use-package figlet
+  :if (executable-find "figlet")
+  :defer t
+  :config
   (add-to-list 'figlet-options "-k") ;; kerning
   )
 
@@ -2619,43 +2620,26 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; bitbake
 
-;; also: .conf and .inc
-(add-to-list 'auto-mode-alist
-             '("\\.bb\\(append\\|class\\)?\\'" . bitbake-mode))
-(add-to-list 'auto-mode-alist
-             '("\\.inc\\'" . bitbake-mode))
+(use-package bitbake
+  :config
+  (defun jpk/bitbake-mode-hook ()
+    ;; FIXME upstream
+    (setq comment-start "#"
+          comment-stop "")
+    (setq indent-line-function #'indent-relative-dwim)
+    )
+  (add-hook 'bitbake-mode-hook #'jpk/prog-mode-hook)
+  (add-hook 'bitbake-mode-hook #'jpk/bitbake-mode-hook)
 
-(defun jpk/bitbake-mode-hook ()
-  (setq comment-start "#"
-        comment-stop "") ;; FIXME upstream
-  (setq indent-line-function #'indent-relative-dwim)
-  (local-set-key (kbd "C-M-;") #'insert-comment-bar)
-  (local-set-key (kbd "C-a") #'mwim-beginning-of-line-or-code)
-  (local-set-key (kbd "C-e") #'mwim-end-of-line-or-code)
+  :mode (("\\.bb\\(append\\|class\\)?\\'" . bitbake-mode)
+         ("\\.inc\\'" . bitbake-mode)
+         ("/tmp/work/.*/temp/log\\.do_.*\\'" . compilation-mode))
 
-  (with-library 'hl-todo
-    (hl-todo-mode 1))
-
-  ;; highlight numeric literals
-  (with-library 'highlight-numbers
-    (highlight-numbers-mode 1))
-
-  ;; FIXME DRY
-  ;; highlight brackets
-  (with-library 'paren-face
-    (setq paren-face-regexp (regexp-opt '("[" "]" "(" ")" "{" "}")))
-    (set-face-attribute 'parenthesis nil :foreground "cyan3")
-    (paren-face-mode 1))
-
-  ;; highlight operators like '+' and '&'
-  (with-library 'highlight-operators
-    (highlight-operators-mode 1))
-
-  (hl-line-mode 1)
-
-  (setq adaptive-wrap-extra-indent 1)
-)
-(add-hook 'bitbake-mode-hook #'jpk/bitbake-mode-hook)
+  :bind (:map bitbake-mode-map
+         ("C-M-;" . insert-comment-bar)
+         ("C-a" . mwim-beginning-of-line-or-code)
+         ("C-e" . mwim-end-of-line-or-code))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C#
