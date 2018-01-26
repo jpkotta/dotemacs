@@ -780,6 +780,70 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hexl mode
 
+(use-package nhexl-mode
+  ;; TODO
+  ;; indirect buffer (but set-buffer-multibyte doesn't work with that)
+  ;; mode map
+  ;; hexl-bits configuration
+  ;; bytes not decoded °
+  :disabled
+  :config
+  (defun nhexl-goto-addr (addr)
+    "Move vertically down ARG blocks of 256 bytes (16 lines)."
+    (interactive "nAddress (use `#x' prefix for hex): ")
+    (let ((pos (byte-to-position (1+ addr))))
+      (cond
+       (pos (goto-char pos))
+       ((> 0 addr) (goto-char (point-min)))
+       (t (goto-char (point-max))))))
+
+  (defun nhexl-current-addr ()
+    (interactive)
+    (position-bytes (point)))
+
+  (defun nhexl-forward-256 (&optional arg)
+    "Move vertically down ARG blocks of 256 bytes (16 lines)."
+    (interactive "p")
+    (nhexl-goto-addr (+ (* 256 arg) (point)))
+    (recenter))
+
+  (defun nhexl-backward-256 (&optional arg)
+    "Move vertically up ARG blocks of 256 bytes (16 lines)."
+    (interactive "p")
+    (nhexl-forward-256 (- arg)))
+
+  (defun nhexl-forward-1k (&optional arg)
+    "Move vertically down ARG blocks of 1024 bytes (64 lines)."
+    (interactive "p")
+    (nhexl-goto-addr (+ (* 1024 arg) (point)))
+    (recenter))
+
+  (defun nhexl-backward-1k (&optional arg)
+    "Move vertically up ARG blocks of 1024 bytes (64 lines)."
+    (interactive "p")
+    (nhexl-forward-1k (- arg)))
+
+  (defun nhexl-forward-4k (&optional arg)
+    "Move vertically down ARG blocks of 4096 bytes (256 lines)."
+    (interactive "p")
+    (nhexl-goto-addr (+ (* 4096 arg) (point)))
+    (recenter))
+
+  (defun nhexl-backward-4k (&optional arg)
+    "Move vertically up ARG blocks of 4096 bytes (256 lines)."
+    (interactive "p")
+    (nhexl-forward-4k (- arg)))
+
+  (setq nhexl-mode-map (make-sparse-keymap))
+  :bind (:map nhexl-mode-map
+         ("<next>" . nhexl-forward-256)
+         ("<prior>" . nhexl-backward-256)
+         ("C-<next>" . nhexl-forward-1k)
+         ("C-<prior>" . nhexl-backward-1k)
+         ("C-S-<next>" . nhexl-forward-4k)
+         ("C-S-<next>" . nhexl-backward-4k))
+  )
+
 (use-package hexl
   :config
   (setq hexl-bits 8)
