@@ -3227,7 +3227,7 @@ Lisp function does not specify a special indentation."
     (modify-syntax-entry ?<  "(>" table)
     (modify-syntax-entry ?>  ")<" table))
 
-  :mode ("\\.its\\'")
+  :mode "\\.its\\'"
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
