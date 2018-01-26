@@ -2733,6 +2733,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'c-mode-common-hook 'jpk/c-mode-common-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; miscellaneous programming modes
+
+(use-package rust-mode)
+
+(use-package groovy-mode)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUD (Grand Unified Debugger)
 
 (use-package gud
@@ -2922,6 +2929,12 @@ If region is inactive, use the entire current line."
 (use-package ipython-shell-send
   :disabled
   :after python
+  )
+
+(use-package rst
+  :ensure nil
+  :config
+  (add-hook 'rst-mode-hook #'flyspell-mode)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
