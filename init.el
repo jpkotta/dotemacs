@@ -1041,7 +1041,7 @@ for `string-to-number'."
 (setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
 
 (use-package auto-complete
-  ;; :disabled
+  :disabled
   :diminish auto-complete-mode
   :init
   (use-package fuzzy)
@@ -1067,6 +1067,8 @@ for `string-to-number'."
   ;; workaround for flyspell-mode
   (ac-flyspell-workaround)
 
+  (add-to-list 'ac-modes 'text-mode)
+
   :bind (("C-<tab>" . auto-complete)
          :map ac-completing-map
          ("C-n" . ac-next)
@@ -1084,7 +1086,8 @@ for `string-to-number'."
   :after auto-complete)
 
 (use-package company
-  :disabled
+  ;;:disabled
+  :pin melpa
   :diminish company-mode
   :init
   (global-company-mode 1)
@@ -1095,16 +1098,29 @@ for `string-to-number'."
   ;; configuration similar to auto-complete
   (company-tng-configure-default)
   (setq company-idle-delay 0.1
-        company-auto-complete t
+        company-auto-complete nil
         company-search-regexp-function 'company-search-flex-regexp
         company-tooltip-align-annotations t)
 
+  ;;(setq company-frontends (standard-value 'company-frontends))
+  (setq company-transformers '(company-sort-by-occurrence))
   (setq company-backends (standard-value 'company-backends))
   ;;(setq company-backends '(company-dabbrev-code company-dabbrev))
 
+  (setq company-dabbrev-code-everywhere t)
+  (setq company-dabbrev-code-other-buffers t) ;; same major-mode
+
   :bind (:map company-active-map
-         ("M-i" . company-select-previous)
-         ("M-k" . company-select-next)
+         ;;("M-i" . company-select-previous)
+         ;;("M-k" . company-select-next)
+         ("S-TAB" . company-select-previous)
+         ("<backtab>" . company-select-previous)
+         ("<tab>" . company-complete-common-or-cycle)
+         ("TAB" . company-complete-common-or-cycle)
+         ("C-s" . company-filter-candidates)
+         :map company-search-map
+         ;;("M-i" . company-select-previous)
+         ;;("M-k" . company-select-next)
          ("S-TAB" . company-select-previous)
          ("<backtab>" . company-select-previous)
          ("<tab>" . company-complete-common-or-cycle)
@@ -1234,8 +1250,12 @@ it's probably better to explicitly request a merge."
   :init
   (ido-ubiquitous-mode 1))
 
+(use-package amx
+  :init
+  (amx-mode 1))
+
 (use-package smex
-  ;; see also the amx package
+  :disabled
   :bind (("M-x" . smex)
          ("M-X" . smex-major-mode-commands)))
 
@@ -3146,8 +3166,7 @@ Lisp function does not specify a special indentation."
     (flyspell-mode 1))
   (when (featurep 'auto-complete)
     (setq ac-sources
-          '(ac-source-dictionary ac-source-words-in-buffer ac-source-filename))
-    (auto-complete-mode 1))
+          '(ac-source-dictionary ac-source-words-in-buffer ac-source-filename)))
   (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
   (hl-line-mode 1)
