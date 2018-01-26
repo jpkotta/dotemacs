@@ -111,7 +111,6 @@ files (e.g. directories, fifos, etc.)."
         highlight-numbers
         highlight-operators
         highlight-quoted
-        hl-todo
         htmlize
         ibuffer-projectile
         ibuffer-tramp
@@ -128,7 +127,6 @@ files (e.g. directories, fifos, etc.)."
         openwith
         paren-face
         pkgbuild-mode
-        projectile
         pydoc-info
         pylint
         python-info
@@ -574,13 +572,15 @@ default label."
 ;;; Projectile
 
 (use-package projectile
+  :defer 2
   :diminish projectile-mode
   :config
   (setq projectile-indexing-method 'alien
         projectile-enable-caching t
         projectile-tags-backend 'xref
         projectile-tags-command "gtags -f \"%s\" %s")
-  (projectile-mode 1))
+  (projectile-global-mode 1)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Repeatable Commands
@@ -2413,11 +2413,16 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hl-todo
 
-(with-library 'hl-todo
+(use-package hl-todo
+  :init
+  (add-hook 'prog-mode-hook #'hl-todo-mode)
+  (add-hook 'bitbake-mode-hook #'hl-todo-mode)
+
+  :config
   (setq hl-todo-keyword-faces
         (mapcar (lambda (w) (cons w "red"))
                 '("TODO" "FIXME" "KLUDGE" "XXX" "DEBUG")))
-  (add-hook 'prog-mode-hook 'hl-todo-mode))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generic Programming
@@ -3413,6 +3418,7 @@ be specified with a numeric prefix."
   )
 
 (use-package projectile-ripgrep
+  :after projectile
   :bind (:map projectile-command-map
          ("s r" . projectile-ripgrep))
   )
