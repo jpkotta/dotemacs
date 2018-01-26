@@ -192,7 +192,9 @@ files (e.g. directories, fifos, etc.)."
 
 (add-hook 'package-menu-mode-hook #'hl-line-mode)
 
-(use-package no-littering)
+(use-package no-littering
+  :pin melpa
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
@@ -299,8 +301,8 @@ files (e.g. directories, fifos, etc.)."
    '(whitespace-space ((t (:inherit whitespace-newline))))
    '(whitespace-tab ((t (:inherit whitespace-newline))))
 
-   '(Info-quoted ((t (:family "Luxi Mono"))))
-   ))
+   '(Info-quoted ((t (:family "Luxi Mono")))))
+  )
 
 ;; Indicates when you're beyond a column (e.g. 80) and also shows the
 ;; size of the region if it's active.
@@ -342,7 +344,7 @@ files (e.g. directories, fifos, etc.)."
 (use-package face-remap
   :ensure nil
   :diminish buffer-face-mode
-  :defer)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ergomovement
@@ -565,7 +567,7 @@ default label."
 
   (add-hook 'xref-backend-functions #'gxref-xref-backend)
 
-  :bind ("M-/" . xref-find-references)
+  :bind (("M-/" . xref-find-references))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -655,7 +657,7 @@ default label."
   )
 
 (use-package ob-ipython
-  :after (org ipython)
+  :after org
   :config
   (add-to-list 'org-babel-load-languages '(ipython . t))
   (org-babel-reload-languages)
@@ -1031,7 +1033,7 @@ for `string-to-number'."
 (use-package abbrev
   :ensure nil
   :diminish abbrev-mode
-  :defer)
+  )
 
 (defun jpk/dabbrev-friend-buffer (other-buffer)
   (and (dabbrev--same-major-mode-p other-buffer)
@@ -1183,6 +1185,7 @@ for `string-to-number'."
 ;;; ido - Interactively Do Things
 
 (use-package ido
+  :ensure nil
   :config
   (setq ido-confirm-unique-completion t
         ido-default-buffer-method 'selected-window
@@ -1227,7 +1230,8 @@ it's probably better to explicitly request a merge."
   )
 
 (use-package ido-completing-read+
-  :config
+  :after ido
+  :init
   (ido-ubiquitous-mode 1))
 
 (use-package smex
@@ -1359,7 +1363,9 @@ it's probably better to explicitly request a merge."
   (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
   (setq aw-scope 'frame)
   (setq aw-leading-char-style 'path)
-  (global-set-key (kbd "C-x o") #'ace-window))
+
+  :bind (("C-x o" . ace-window))
+  )
 
 ;; Save point position per-window instead of per-buffer.
 (use-package winpoint
@@ -1370,6 +1376,9 @@ it's probably better to explicitly request a merge."
 (setq help-window-select 'never)
 
 (use-package shackle
+  :init
+  (shackle-mode 1)
+
   :config
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
@@ -1377,7 +1386,7 @@ it's probably better to explicitly request a merge."
           (completion-list-mode :inhibit-window-quit nil :align 'below :size 0.3)
           (("*vc-incoming*" "*vc-outgoing*") :same t)
           ))
-  (shackle-mode 1))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
@@ -2681,9 +2690,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUD (Grand Unified Debugger)
 
-(with-eval-after-load 'gud
-  (define-key gud-minor-mode-map (kbd "C-c C-n") 'gud-next)
-  (define-key gud-minor-mode-map (kbd "C-c C-s") 'gud-step)
+(use-package gud
+  :ensure nil
+  :bind (:map gud-minor-mode-map
+         ("C-c C-n" . gud-next)
+         ("C-c C-s" . gud-step))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2836,7 +2847,10 @@ If region is inactive, use the entire current line."
   (add-hook 'python-mode-hook #'sphinx-doc-mode)
   )
 
-;;(setq gud-pdb-command-name "/usr/lib/python3.6/pdb.py")
+(use-package ipython-shell-send
+  :disabled
+  :after python
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
@@ -3006,7 +3020,8 @@ Lisp function does not specify a special indentation."
 
 (use-package eldoc
   :ensure nil
-  :diminish eldoc-mode)
+  :diminish eldoc-mode
+  )
 
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
@@ -3076,7 +3091,8 @@ Lisp function does not specify a special indentation."
 
 (use-package pkgbuild-mode
   :if (executable-find "pacman")
-  :mode ("\\`PKGBUILD\\'" "\.install\\'"))
+  :mode ("\\`PKGBUILD\\'" "\.install\\'")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
@@ -3434,6 +3450,7 @@ Compatibility function for \\[next-error] invocations."
 (add-hook 'next-error-hook #'jpk/next-error-hook)
 
 (use-package grep
+  :ensure nil
   :config
   (defun jpk/grep/compilation-filter-hook ()
     (when (eq major-mode 'grep-mode)
@@ -3659,9 +3676,6 @@ point."
 
 (use-package yasnippet
   :diminish yas-minor-mode
-  :init
-  (yas-global-mode 1)
-
   :config
   (setq yas-prompt-functions (cons 'yas-ido-prompt
                                    (remove 'yas-ido-prompt
