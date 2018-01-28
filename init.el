@@ -122,7 +122,6 @@ files (e.g. directories, fifos, etc.)."
         mic-paren
         modeline-posn ; deprecated
         morlock
-        multi-compile
         mwim
         openwith
         paren-face
@@ -2497,16 +2496,18 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (global-set-key (kbd "C-c b") 'compile)
 (global-set-key (kbd "C-x ~") 'previous-error)
 
-(defun locate-repo-dir (&optional file-or-dir)
-  "Find the root of the version control repository."
-  (let* ((file-or-dir (or file-or-dir (buffer-file-name) default-directory))
-         (file-dir (if (file-directory-p file-or-dir)
-                       file-or-dir
-                     (file-name-directory file-or-dir)))
-         (root-dir (vc-call-backend (vc-deduce-backend) 'root file-dir)))
-    root-dir))
+(use-package multi-compile
+  :config
 
-(with-eval-after-load "multi-compile"
+  (defun locate-repo-dir (&optional file-or-dir)
+    "Find the root of the version control repository."
+    (let* ((file-or-dir (or file-or-dir (buffer-file-name) default-directory))
+           (file-dir (if (file-directory-p file-or-dir)
+                         file-or-dir
+                       (file-name-directory file-or-dir)))
+           (root-dir (vc-call-backend (vc-deduce-backend) 'root file-dir)))
+      root-dir))
+
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-Wall -g3"))
                ("%repo-dir" . (locate-repo-dir))))
@@ -2525,8 +2526,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                       "gcc -o '%file-sans' %cflags -m32 '%file-name'")))
           (c++-mode . (("c++-simple" .
                         "g++ -o '%file-sans' %cxxflags '%file-name'")))))
+
+  :bind (("C-c b" . multi-compile-run))
   )
-(global-set-key (kbd "C-c b") #'multi-compile-run)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hl-todo
