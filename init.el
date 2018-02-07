@@ -123,7 +123,6 @@ files (e.g. directories, fifos, etc.)."
         paren-face
         pkgbuild-mode
         rainbow-mode
-        sane-term
         save-visited-files
         smart-shift
         smart-tabs-mode
@@ -1697,12 +1696,19 @@ This effectively makes `smerge-command-prefix' unnecessary."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
-;; t is usually better for shell terminals, but nil is better for
-;; serial terminals
-(setq term-suppress-hard-newline nil)
-(setq term-buffer-maximum-size 32768)
+(use-package sane-term
+  :bind (("C-c t" . sane-term))
+  )
 
-(with-eval-after-load "term"
+(use-package term
+  :ensure nil
+  :config
+
+  ;; t is usually better for shell terminals, but nil is better for
+  ;; serial terminals
+  (setq term-suppress-hard-newline nil)
+  (setq term-buffer-maximum-size 32768)
+
   (defun term-send-backward-kill-word ()
     "Backward kill word in `term-mode'."
     (interactive)
@@ -1744,19 +1750,6 @@ This effectively makes `smerge-command-prefix' unnecessary."
       ;; serial processes don't have a process-id
       (term-send-raw-string "\C-z")))
 
-  (defun term-toggle-char-or-line-mode ()
-    "Toggle between `term-line-mode' and `term-char-mode'.
-
-    `term-char-mode' (default) is more termy, `term-line-mode' is more Emacsy."
-    (interactive)
-    (cond
-     ((term-in-char-mode)
-      (term-line-mode))
-     ((term-in-line-mode)
-      (term-char-mode))
-     (t
-      (error "Term in neither line nor char mode."))))
-
   (defvar term--arrow-char "O"
     "Arrow keys send escape codes like \"\e[A\" or \"\eOA\".
     This is the middle character, and should be either \"[\" or
@@ -1787,61 +1780,45 @@ This effectively makes `smerge-command-prefix' unnecessary."
     (interactive)
     (term-send-raw-string (format "\e%sD" term--arrow-char)))
 
-  (dolist
-      (bind '(;; from multi-term
-              ("C-x" . nil)
-              ("C-h" . nil)
-              ("<ESC>" . nil)
-              ("C-c C-e" . term-send-esc)
-              ("C-p" . previous-line)
-              ("C-n" . next-line)
-              ("C-s" . isearch-forward)
-              ("C-r" . isearch-backward)
+  (defun term-revert-buffer (ignore-auto noconfirm)
+    "Clear the buffer.  Suitable for `revert-buffer-function'."
+    (when (or (not noconfirm)
+             (and noconfirm (y-or-n-p "Clear buffer? ")))
+      (term-reset-terminal)
+      (term-send-raw-string "\C-l")))
 
-              ;; personal
-              ("C-v" . nil)
-              ("C-<right>" . term-send-forward-word)
-              ("C-<left>" . term-send-backward-word)
-              ("C-<backspace>" . term-send-backward-kill-word)
-              ("C-<delete>" . term-send-forward-kill-word)
-              ("C-k" . term-send-raw)
-              ("C-y" . term-send-raw)
-              ("C-c C-c" . term-interrupt-subjob-or-C-c)
-              ("C-c C-z" . term-stop-subjob-or-C-z)
-              ("C-c C-y" . term-paste)
-              ("C-c C-u" . universal-argument)
-              ("<S-down>" . sane-term-create)
-              ("<S-left>" . sane-term-prev)
-              ("<S-right>" . sane-term-next)
-              ("C-S-t" . sane-term-create)
-              ("<C-prior>" . sane-term-prev)
-              ("<C-next>" . sane-term-next)
-              ("C-c C-j" . term-toggle-char-or-line-mode)
-              ("C-c C-v" . term-send-raw) ;; quote
-              ("C-c C-x" . term-send-raw) ;; C-x
-              ))
-    (define-key term-raw-map
-      (read-kbd-macro (car bind)) (cdr bind)))
+  (defun jpk/term-mode-hook ()
+    (setq cua--ena-cua-keys-keymap nil)
+    (when (featurep 'yasnippet)
+      (yas-minor-mode 0))
+    (setq-local revert-buffer-function #'term-revert-buffer)
+    )
+  (add-hook 'term-mode-hook 'jpk/term-mode-hook)
 
-  (define-key term-mode-map (kbd "C-c C-j") #'term-toggle-char-or-line-mode)
+  :bind (:map term-raw-map
+         ("C-x" . nil)
+         ("C-h" . nil)
+         ("<ESC>" . nil)
+         ("C-c C-e" . term-send-esc)
+         ("C-s" . isearch-forward)
+         ("C-r" . isearch-backward)
+         ("C-v" . nil)
+         ("C-<right>" . term-send-forward-word)
+         ("C-<left>" . term-send-backward-word)
+         ("C-<backspace>" . term-send-backward-kill-word)
+         ("C-<delete>" . term-send-forward-kill-word)
+         ("C-k" . term-send-raw)
+         ("C-y" . term-send-raw)
+         ("C-c C-c" . term-interrupt-subjob-or-C-c)
+         ("C-c C-z" . term-stop-subjob-or-C-z)
+         ("C-c C-y" . term-paste)
+         ("C-c C-u" . universal-argument)
+         ("C-S-t" . sane-term-create)
+         ("<C-prior>" . sane-term-prev)
+         ("<C-next>" . sane-term-next)
+         ("C-c C-v" . term-send-raw) ;; quote
+         ("C-c C-x" . term-send-raw)) ;; C-x
   )
-
-(defun term-revert-buffer (ignore-auto noconfirm)
-  "Clear the buffer.  Suitable for `revert-buffer-function'."
-  (when (or (not noconfirm)
-           (and noconfirm (y-or-n-p "Clear buffer? ")))
-    (term-reset-terminal)
-    (term-send-raw-string "\C-l")))
-
-(defun jpk/term-mode-hook ()
-  (setq cua--ena-cua-keys-keymap nil)
-  (when (featurep 'yasnippet)
-    (yas-minor-mode 0))
-  (setq-local revert-buffer-function #'term-revert-buffer)
-  )
-(add-hook 'term-mode-hook 'jpk/term-mode-hook)
-
-(global-set-key (kbd "C-c t") 'sane-term)
 
 (defun shell-command-from-region (&optional arg output-buffer error-buffer)
   "Run the current line as a shell command.  If the region is
@@ -1882,31 +1859,6 @@ This effectively makes `smerge-command-prefix' unnecessary."
                                    "\n'"
                          " | sudo -S " cmd)
                  current-prefix-arg))
-
-(defun shell-command-on-region-or-buffer (start end command &optional output-buffer replace error-buffer display-error-buffer)
-  "Like `shell-command-on-region', but uses the whole buffer if the region is inactive."
-  (interactive (let (beg en string)
-                 (if (use-region-p)
-                     (setq beg (region-beginning)
-                           en (region-end))
-                   (setq beg (point-min)
-                         en (point-max)))
-		 ;; Do this before calling region-beginning
-		 ;; and region-end, in case subprocess output
-		 ;; relocates them while we are in the minibuffer.
-		 (setq string (read-shell-command "Shell command on region: "))
-		 ;; call-interactively recognizes region-beginning and
-		 ;; region-end specially, leaving them in the history.
-		 (list beg en
-		       string
-		       current-prefix-arg
-		       current-prefix-arg
-		       shell-command-default-error-buffer
-		       t)))
-  (shell-command-on-region start end command
-                           output-buffer replace error-buffer display-error-buffer))
-
-(global-set-key (kbd "M-|") 'shell-command-on-region-or-buffer)
 
 (defun copy-eterm-color-terminfo (hostspec)
   "Copy the eterm-color terminfo file to a remote host.
