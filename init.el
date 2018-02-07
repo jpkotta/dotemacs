@@ -122,9 +122,6 @@ files (e.g. directories, fifos, etc.)."
         openwith
         paren-face
         pkgbuild-mode
-        pydoc-info
-        pylint
-        python-info
         rainbow-mode
         sane-term
         save-visited-files
@@ -2980,6 +2977,10 @@ If region is inactive, use the entire current line."
   :config
   (add-hook 'rst-mode-hook #'flyspell-mode)
   )
+
+(use-package pydoc-info)
+
+(use-package python-info)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
