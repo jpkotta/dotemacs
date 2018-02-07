@@ -1122,8 +1122,10 @@ for `string-to-number'."
   (setq company-backends (standard-value 'company-backends))
   ;;(setq company-backends '(company-dabbrev-code company-dabbrev))
 
-  (setq company-dabbrev-code-everywhere t)
-  (setq company-dabbrev-code-other-buffers t) ;; same major-mode
+  (setq company-dabbrev-code-everywhere t
+        company-dabbrev-code-other-buffers t ;; same major-mode
+        company-dabbrev-downcase nil
+        company-dabbrev-ignore-case nil)
 
   :bind (:map company-active-map
          ;;("M-i" . company-select-previous)
@@ -2763,6 +2765,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     )
   (add-hook 'bitbake-mode-hook #'jpk/prog-mode-hook)
   (add-hook 'bitbake-mode-hook #'jpk/bitbake-mode-hook)
+
+  (with-eval-after-load 'company
+    (add-to-list 'company-dabbrev-code-modes 'bitbake-mode))
 
   :mode (("\\.bb\\(append\\|class\\)?\\'" . bitbake-mode)
          ("\\.inc\\'" . bitbake-mode)
