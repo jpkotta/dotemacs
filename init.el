@@ -289,9 +289,6 @@ files (e.g. directories, fifos, etc.)."
 
    '(term ((t (:foreground "lavender blush"))))
 
-   '(whitespace-space ((t (:inherit whitespace-newline))))
-   '(whitespace-tab ((t (:inherit whitespace-newline))))
-
    '(Info-quoted ((t (:family "Luxi Mono")))))
   )
 
@@ -330,7 +327,14 @@ files (e.g. directories, fifos, etc.)."
 
 (setq uniquify-buffer-name-style 'post-forward)
 
-(setq whitespace-style '(face spaces tabs newline space-mark tab-mark newline-mark))
+(use-package whitespace
+  :ensure nil
+  :config
+  (setq whitespace-style '(face tabs spaces lines newline space-mark tab-mark newline-mark))
+  (set-face-attribute 'whitespace-space nil :inherit whitespace-newline)
+  (set-face-attribute 'whitespace-tab nil :inherit whitespace-newline)
+  (set-face-attribute 'whitespace-line nil :underline t :foreground nil :background nil)
+  )
 
 (use-package face-remap
   :ensure nil
