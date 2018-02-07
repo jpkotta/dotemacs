@@ -96,10 +96,6 @@ files (e.g. directories, fifos, etc.)."
         csv-mode
         dictionary
         diff-hl
-        dired+ ;; deprecated
-        dired-imenu
-        dired-narrow
-        dired-ranger
         easy-repeat
         edit-list
         expand-region
@@ -2103,43 +2099,19 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
 
-(with-eval-after-load "dired"
-  (define-key dired-mode-map (kbd "C-s") 'dired-isearch-filenames)
-  (define-key dired-mode-map (kbd "C-M-s") 'dired-isearch-filenames-regexp)
-
-  (with-library 'dired+
-    (setq diredp-wrap-around-flag nil)
-    (toggle-diredp-find-file-reuse-dir 1)
-    (define-key dired-mode-map (kbd "<mouse-2>")
-      'diredp-mouse-find-file-reuse-dir-buffer)
-    (define-key dired-mode-map (kbd "f") 'diredp-up-directory-reuse-dir-buffer)
-    )
-
-  (require 'dired-imenu nil 'noerror)
-
-  (with-library 'dired-narrow
-    (define-key dired-mode-map (kbd "/") 'dired-narrow)
-    (define-key dired-mode-map (kbd "C-x n n") 'dired-narrow)
-    (define-key dired-mode-map (kbd "C-x n r") 'dired-narrow-regexp)
-    (define-key dired-mode-map (kbd "C-x n f") 'dired-narrow-fuzzy)
-    (define-key dired-mode-map (kbd "C-x n w") 'revert-buffer))
-
-  (setq dired-omit-files "^\\.?#\\|^\\.$\\|^\\.[^.].*$")
-  (with-library 'dired-x
-    (setq dired-omit-verbose nil)
-    (delete ".bin" dired-omit-extensions)
-    (define-key dired-mode-map (kbd "C-c C-o") 'dired-omit-mode)
-    (add-hook 'dired-mode-hook 'dired-omit-mode))
-
-  (define-key dired-mode-map (kbd "S-<return>")
-    'dired-find-file-other-window)
-  (define-key dired-mode-map (kbd "S-<down-mouse-2>")
-    'dired-mouse-find-file-other-window)
+(use-package dired
+  :ensure nil
+  :config
+  (require 'dired-x)
+  (setq dired-omit-files "^\\.?#\\|^\\.$\\|^\\.[^.].*$"
+        dired-omit-verbose nil)
+  (delete ".bin" dired-omit-extensions)
+  (add-hook 'dired-mode-hook #'dired-omit-mode)
 
   (setq dired-deletion-confirmer 'y-or-n-p
         dired-dwim-target t)
 
-  (setq wdired-allow-to-change-permissions t)
+  (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 
   (defun jpk/create-parent-dirs (&rest args)
     "Create parent directories if necessary."
@@ -2150,13 +2122,86 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
         (make-directory dir 'parents))))
   (advice-add 'dired-rename-file :before #'jpk/create-parent-dirs)
 
-  (with-library 'dired-ranger
-    (define-key dired-mode-map (kbd "C-c C-c") 'dired-ranger-copy)
-    (define-key dired-mode-map (kbd "C-c C-x") 'dired-ranger-move)
-    (define-key dired-mode-map (kbd "C-c C-v") 'dired-ranger-paste))
+  (setq wdired-allow-to-change-permissions t)
+
+  (defun jpk/dired-before-readin-hook ()
+    (visual-line-mode 0)
+    (hl-line-mode 1)
+    (setq truncate-lines t))
+  (add-hook 'dired-before-readin-hook #'jpk/dired-before-readin-hook)
+
+  :bind (:map dired-mode-map
+         ("C-s" . dired-isearch-filenames)
+         ("C-M-s" . dired-isearch-filenames-regexp)
+         ("S-<return>" . dired-find-file-other-window)
+         ("S-<down-mouse-2>" . dired-mouse-find-file-other-window)
+         ("C-c C-o" . dired-omit-mode))
   )
 
-(with-eval-after-load 'view
+(use-package dired-single
+  :after dired
+  :config
+  ;; stolen from diredp-up-directory
+  (defun dired-single-up-directory ()
+    "Like `dired-up-directory' but with `dired-single-buffer'."
+    (interactive)
+    (let* ((dir (dired-current-directory))
+           (up (file-name-directory (directory-file-name dir))))
+      (or (dired-goto-file (directory-file-name dir))
+         (and (cdr dired-subdir-alist) (dired-goto-subdir up))
+         (progn (dired-single-buffer up)
+                (dired-goto-file dir)))))
+
+  :bind (:map dired-mode-map
+         ("f" . dired-single-up-directory)
+         ([remap dired-up-directory] . dired-single-up-directory)
+         ([remap dired-find-file] . dired-single-buffer)
+         ([remap dired-mouse-find-file-other-window] . dired-single-buffer-mouse))
+  )
+
+(use-package diredfl
+  :after dired
+  :init
+  (add-hook 'dired-mode-hook #'diredfl-mode)
+  )
+
+(use-package dired+
+  ;; deprecated
+  ;; replaced by diredfl and dired-single
+  :disabled
+  :after dired
+  :config
+  (setq diredp-wrap-around-flag nil)
+  (toggle-diredp-find-file-reuse-dir 1)
+
+  :bind (:map dired-mode-map
+         ("<mouse-2>" . diredp-mouse-find-file-reuse-dir-buffer)
+         ("f" . diredp-up-directory-reuse-dir-buffer))
+  )
+
+(use-package dired-imenu
+  :after dired)
+
+(use-package dired-narrow
+  :after dired
+  :bind (:map dired-mode-map
+         ("/" . dired-narrow)
+         ("C-x n n" . dired-narrow)
+         ("C-x n r" . dired-narrow-regexp)
+         ("C-x n f" . dired-narrow-fuzzy)
+         ("C-x n w" . revert-buffer))
+  )
+
+(use-package dired-ranger
+  :bind (:map dired-mode-map
+         ("C-c C-c" . dired-ranger-copy)
+         ("C-c C-x" . dired-ranger-move)
+         ("C-c C-v" . dired-ranger-paste))
+  )
+
+(use-package view
+  :ensure nil
+  :config
   (defun dired-view-next (&optional reversed)
     "Move to next dired line and view."
     (interactive "P")
@@ -2174,19 +2219,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (interactive "P")
     (dired-view-next (not reversed)))
 
-  (define-key view-mode-map (kbd "n") 'dired-view-next)
-  (define-key view-mode-map (kbd "p") 'dired-view-prev)
+  :bind (:map view-mode-map
+         ("n" . dired-view-next)
+         ("p" . dired-view-prev))
   )
 
-;; word wrap looks terrible in dired buffers
-(defun jpk/dired-before-readin-hook ()
-  (visual-line-mode 0)
-  (hl-line-mode 1)
-  (setq truncate-lines t)
-  )
-(add-hook 'dired-before-readin-hook 'jpk/dired-before-readin-hook)
+(use-package openwith
+  :disabled
+  :init
+  (openwith-mode 1)
 
-(with-library 'openwith
+  :config
   (setq openwith-associations
         (list
          (list (openwith-make-extension-regexp
@@ -2212,7 +2255,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                "okular"
                '(file))
          ))
-  ;;(openwith-mode 1)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
