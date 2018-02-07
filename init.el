@@ -23,6 +23,9 @@ Only defcustoms usually have a `standard-value'."
   (setq gc-cons-threshold (standard-value 'gc-cons-threshold)))
 (add-hook 'emacs-startup-hook #'jpk/emacs-startup-hook)
 
+;; use Emacs bindings in all GTK apps:
+;; $ gsettings set org.gnome.desktop.interface gtk-key-theme Emacs
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TODO
 
@@ -84,8 +87,6 @@ files (e.g. directories, fifos, etc.)."
 
 (setq package-selected-packages
       '(
-        adaptive-wrap
-        atomic-chrome
         auctex
         backup-walker
         bm
@@ -97,7 +98,6 @@ files (e.g. directories, fifos, etc.)."
         dictionary
         diff-hl
         easy-repeat
-        edit-list
         expand-region
         fvwm-mode
         go-mode
@@ -121,7 +121,6 @@ files (e.g. directories, fifos, etc.)."
         mwim
         openwith
         paren-face
-        pkgbuild-mode
         rainbow-mode
         save-visited-files
         smart-shift
@@ -1041,6 +1040,8 @@ for `string-to-number'."
       (throw 'break t))))
 (setq browse-url-browser-function 'browse-url-chromium
       browse-url-new-window-flag t)
+
+(use-package atomic-chrome)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; completion
@@ -3109,8 +3110,7 @@ Lisp function does not specify a special indentation."
   (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
   (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
 
-(autoload 'edit-list "edit-list.el"
-  "Edit a lisp list in a buffer." t)
+(use-package edit-list)
 
 (use-package eldoc
   :ensure nil
@@ -4077,10 +4077,13 @@ of text."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; adaptive word wrap
 
-(with-library 'adaptive-wrap
+(use-package adaptive-wrap
+  :init
+  (add-hook 'visual-line-mode-hook #'adaptive-wrap-prefix-mode)
+
+  :config
   (put 'adaptive-wrap-extra-indent 'safe-local-variable 'integerp)
   (setq-default adaptive-wrap-extra-indent 2)
-  (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
