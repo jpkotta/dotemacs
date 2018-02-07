@@ -99,10 +99,8 @@ files (e.g. directories, fifos, etc.)."
         diff-hl
         easy-repeat
         expand-region
-        fvwm-mode
         go-mode
         go-scratch
-        hgrc-mode
         hide-lines
         highlight-numbers
         highlight-operators
@@ -110,7 +108,6 @@ files (e.g. directories, fifos, etc.)."
         htmlize
         ibuffer-projectile
         ibuffer-tramp
-        keychain-environment
         ;;list-unicode-display
         lua-mode
         markdown-mode
@@ -119,18 +116,14 @@ files (e.g. directories, fifos, etc.)."
         modeline-posn ; deprecated
         morlock
         mwim
-        openwith
         paren-face
         rainbow-mode
         save-visited-files
         smart-shift
         smart-tabs-mode
         sqlup-mode
-        ssh-config-mode
         syntax-subword
-        systemd
         undo-tree
-        yaml-mode
         ))
 
 (setq package-user-dir (expand-file-name
@@ -740,14 +733,14 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ssh
 
-;; keychain is a way to manage ssh-agents.  In particular, it looks
-;; for a running ssh-agent and stores it's env vars in a file, any
-;; program that knows how to read the file can use the agent.
-(with-library 'keychain-environment
-  (keychain-refresh-environment))
+(use-package keychain-environment
+  :init
+  (keychain-refresh-environment)
+  )
 
-(dolist (x '(".ssh/config\\'" "sshd?_config"))
-  (add-to-list 'auto-mode-alist `(,x . ssh-config-mode)))
+(use-package ssh-config-mode
+  :mode (".ssh/config\\'" "sshd?_config")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C SubWordMode
@@ -1428,6 +1421,8 @@ it's probably better to explicitly request a merge."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VC mode
+
+(use-package hgrc-mode)
 
 (setq vc-handled-backends '(Git Hg SVN))
 
@@ -3171,14 +3166,18 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; FVWM
 
-(defun jpk/fvwm-mode-hook ()
-  ;;(fvwm-enable-indentation)
-  (local-set-key (kbd "RET") 'newline)
-  (setq indent-line-function 'indent-relative-dwim)
-  (hl-line-mode 1)
-  (setq tab-width 4))
+(use-package fvwm-mode
+  :config
+  (defun jpk/fvwm-mode-hook ()
+    ;;(fvwm-enable-indentation)
+    (local-set-key (kbd "RET") 'newline)
+    (setq indent-line-function 'indent-relative-dwim)
+    (hl-line-mode 1)
+    (setq tab-width 4))
+  (add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
 
-(add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
+  :mode "\\.fvwm\\'"
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PKGBUILD
@@ -3209,12 +3208,17 @@ Lisp function does not specify a special indentation."
   :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'")
   )
 
+(use-package systemd)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; YAML mode
 
-(defun jpk/yaml-mode-hook ()
-  (setq tab-width 2))
-(add-hook 'yaml-mode-hook #'jpk/yaml-mode-hook)
+(use-package yaml-mode
+  :config
+  (defun jpk/yaml-mode-hook ()
+    (setq tab-width 2))
+  (add-hook 'yaml-mode-hook #'jpk/yaml-mode-hook)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; dts (flattened device tree)
@@ -3436,22 +3440,26 @@ server/database name."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; assembly
 
-(dolist (x '("\\.dsl\\'" "\\.lst\\'"))
-  (add-to-list 'auto-mode-alist `(,x . asm-mode)))
+(use-package asm-mode
+  :ensure nil
+  :mode ("\\.dsl\\'" "\\.lst\\'")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; UNDO/REDO
 
-;; treat edit history like the tree it is
-(with-library 'undo-tree
+(use-package undo-tree
+  :init
   (setq undo-tree-mode-lighter "")
   (global-undo-tree-mode 1)
-  (global-set-key (kbd "C-z") 'undo-tree-undo)
-  (global-set-key (kbd "C-S-z") 'undo-tree-redo))
 
-;; C-x u starts the undo-tree visualizer
-(advice-add 'undo-tree-visualize :before #'jpk/save-window-state)
-(advice-add 'undo-tree-visualizer-quit :after #'jpk/restore-window-state)
+  :config
+  (advice-add 'undo-tree-visualize :before #'jpk/save-window-state)
+  (advice-add 'undo-tree-visualizer-quit :after #'jpk/restore-window-state)
+
+  :bind (("C-z" . undo-tree-undo)
+         ("C-S-z" . undo-tree-redo))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; isearch
