@@ -116,7 +116,6 @@ files (e.g. directories, fifos, etc.)."
         markdown-mode
         mediawiki
         mic-paren
-        modeline-posn ; deprecated
         morlock
         mwim
         openwith
@@ -244,7 +243,6 @@ files (e.g. directories, fifos, etc.)."
    '(highlight ((t (:background "#001000"))))
 
    '(mode-line-buffer-id ((t (:weight bold))))
-   '(modelinepos-region ((t (:inverse-video t))))
 
    '(region ((t (:background "#400060"))))
    '(mouse ((t (:background "orange"))))
@@ -291,10 +289,12 @@ files (e.g. directories, fifos, etc.)."
    '(Info-quoted ((t (:family "Luxi Mono")))))
   )
 
-;; Indicates when you're beyond a column (e.g. 80) and also shows the
-;; size of the region if it's active.
-(require 'modeline-posn nil 'noerror)
-(setq modelinepos-column-limit 80)
+(use-package modeline-posn
+  :ensure nil
+  :config
+  (set-face-attribute 'modelinepos-region nil :inverse-video t)
+  (setq modelinepos-column-limit 80)
+  )
 
 ;; frame title
 (setq-default frame-title-format
