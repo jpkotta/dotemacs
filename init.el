@@ -499,7 +499,8 @@ files (e.g. directories, fifos, etc.)."
 ;; GTAGSLABEL has no effect unless there's a ~/.globalrc
 (let ((rcfile "~/.globalrc")
       (dist-rcfiles '("/usr/share/gtags/gtags.conf"
-                      "/usr/local/share/gtags/gtags.conf")))
+                      "/usr/local/share/gtags/gtags.conf"
+                      "/usr/share/doc/global/examples/gtags.conf")))
   (unless (file-exists-p rcfile)
     (dolist (dist-rcfile dist-rcfiles)
       (when (file-exists-p dist-rcfile)
@@ -1595,14 +1596,14 @@ it's probably better to explicitly request a merge."
   (interactive "*r")
   (save-restriction
     (narrow-to-region b e)
-    (while (re-search-forward "\\([^]\\)$" nil t)
-      (replace-match "\\1" nil nil))))
+    (while (re-search-forward "\\([^\x0D]\\)$" nil t)
+      (replace-match "\\1\x0D" nil nil))))
 
 (defun remove-CR-eol (b e)
   (interactive "*r")
   (save-restriction
     (narrow-to-region b e)
-    (while (re-search-forward "$" nil t)
+    (while (re-search-forward "\x0D$" nil t)
       (replace-match "" nil nil))))
 
 (defun diff-add-or-remove-trailing-CR-in-hunk (add-not-remove)
@@ -2149,6 +2150,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package dired-ranger
+  :after dired
   :bind (:map dired-mode-map
          ("C-c C-c" . dired-ranger-copy)
          ("C-c C-x" . dired-ranger-move)
@@ -2157,6 +2159,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (use-package view
   :ensure nil
+  :after dired
   :config
   (defun dired-view-next (&optional reversed)
     "Move to next dired line and view."
@@ -2446,7 +2449,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; Major modes can append more symbols before enabling prettify-symbols-mode.
 (setq-default
  prettify-symbols-alist
- '(("" . ?§)
+ '(("\x0C" . ?§)
    ("<=" . ?≤)
    (">=" . ?≥)
    ("alpha" . ?α)
