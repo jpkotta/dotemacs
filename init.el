@@ -187,8 +187,7 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
 
-;; store settings from customization system in a separate file
-(setq custom-file (concat user-emacs-directory "custom.el"))
+(setq custom-file (no-littering-expand-etc-file-name "custom.el"))
 (message "loading customizations from %s" custom-file)
 (load custom-file 'noerror)
 
@@ -1305,7 +1304,7 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Autosave
 
-(let ((dir (concat no-littering-var-directory "auto-save/")))
+(let ((dir (no-littering-expand-var-file-name "auto-save/")))
   (make-directory dir t)
   (setq auto-save-file-name-transforms `((".*" ,dir t))))
 
@@ -1352,10 +1351,10 @@ it's probably better to explicitly request a merge."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
 
-(let ((backup-dir (concat no-littering-var-directory "tramp/backup/")))
+(let ((backup-dir (no-littering-expand-var-file-name "tramp/backup/")))
   (setq tramp-backup-directory-alist nil
-        tramp-auto-save-directory (concat no-littering-var-directory
-                                          "tramp/auto-save/"))
+        tramp-auto-save-directory (no-littering-expand-var-file-name
+                                   "tramp/auto-save/"))
   (dolist (d (list tramp-auto-save-directory backup-dir))
     (make-directory d t)))
 
@@ -3823,7 +3822,7 @@ point."
 
 (use-package yankpad
   :config
-  (setq yankpad-file (expand-file-name "yankpad.org" no-littering-var-directory))
+  (setq yankpad-file (no-littering-expand-var-file-name "yankpad.org"))
 
   :bind (("C-c Y" . yankpad-insert))
   )
