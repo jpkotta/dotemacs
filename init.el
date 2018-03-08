@@ -89,7 +89,6 @@ files (e.g. directories, fifos, etc.)."
       '(
         auctex
         backup-walker
-        bm
         boxquote
         browse-kill-ring
         buffer-move
@@ -122,7 +121,6 @@ files (e.g. directories, fifos, etc.)."
         smart-tabs-mode
         sqlup-mode
         syntax-subword
-        undo-tree
         ))
 
 (setq package-user-dir (expand-file-name
@@ -1167,34 +1165,25 @@ for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Bookmarks
 
-(setq bookmark-save-flag nil)
+(use-package bm
+  :init
+  (setq bookmark-save-flag nil)
 
-;; bm.el is a visible bookmark package.  Bookmarks are indicated with
-;; highlighting in the text and/or the fringe.  They are optionally
-;; (per-buffer) persistent.
+  (setq bm-marker 'bm-marker-right
+        bm-recenter t
+        bm-highlight-style 'bm-highlight-only-fringe)
 
-(setq bm-marker 'bm-marker-right
-      bm-recenter t
-      bm-highlight-style 'bm-highlight-only-fringe)
-
-(global-set-key (kbd "C-c m m") 'bm-toggle)
-(global-set-key (kbd "<right-fringe> <mouse-5>") 'bm-next-mouse)
-(global-set-key (kbd "<right-fringe> <mouse-4>") 'bm-previous-mouse)
-(global-set-key (kbd "<right-fringe> <mouse-1>") 'bm-toggle-mouse)
-
-(with-eval-after-load "bm"
-  (defvar bm-mode-map
-    (let ((map (make-sparse-keymap)))
-      (define-key map (kbd "m") 'bm-toggle)
-      (define-key map (kbd "n") 'bm-next)
-      (define-key map (kbd "p") 'bm-previous)
-      (define-key map (kbd "L") 'bm-show-all)
-      (define-key map (kbd "l") 'bm-show)
-      (define-key map (kbd "s") 'bm-save)
-      (define-key map (kbd "r") 'bm-load-and-restore)
-      map)
-    "Keymap for `bm.el'.")
-  (global-set-key (kbd "C-c m") bm-mode-map)
+  :config
+  :bind (("C-c m l" . bm-show)
+         ("C-c m m" . bm-toggle)
+         ("C-c m n" . bm-next)
+         ("C-c m p" . bm-previous)
+         ("C-c m L" . bm-show-all)
+         ("C-c m s" . bm-save)
+         ("C-c m r" . bm-load-and-restore)
+         ("<right-fringe> <mouse-5>" . bm-next-mouse)
+         ("<right-fringe> <mouse-4>" . bm-previous-mouse)
+         ("<right-fringe> <mouse-1>" . bm-toggle-mouse))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3452,13 +3441,15 @@ server/database name."
 ;;; UNDO/REDO
 
 (use-package undo-tree
+  :defer 2
   :init
   (setq undo-tree-mode-lighter "")
-  (global-undo-tree-mode 1)
 
   :config
   (advice-add 'undo-tree-visualize :before #'jpk/save-window-state)
   (advice-add 'undo-tree-visualizer-quit :after #'jpk/restore-window-state)
+
+  (global-undo-tree-mode 1)
 
   :bind (("C-z" . undo-tree-undo)
          ("C-S-z" . undo-tree-redo))
