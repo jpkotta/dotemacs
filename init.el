@@ -96,7 +96,6 @@ files (e.g. directories, fifos, etc.)."
         csv-mode
         dictionary
         diff-hl
-        easy-repeat
         expand-region
         go-mode
         go-scratch
@@ -573,13 +572,20 @@ default label."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Repeatable Commands
 
-(with-library 'easy-repeat
-  (dolist (f '(bm-next bm-previous evil-numbers/inc-at-pt evil-numbers/dec-at-pt
-                       gud-next gud-step
-                       help-go-back help-go-forward
-                       next-buffer previous-buffer))
-    (add-to-list 'easy-repeat-command-list f))
-  (easy-repeat-mode 1))
+(use-package easy-repeat
+  :defer 1
+  :config
+  (defun easy-repeat-add (&rest commands)
+    "Add COMMANDS to `easy-repeat-command-list'."
+    (dolist (f commands)
+      (add-to-list 'easy-repeat-command-list f))
+    (easy-repeat-mode +1))
+
+  (easy-repeat-add 'help-go-back 'help-go-forward
+                   'next-buffer 'previous-buffer)
+
+  (easy-repeat-mode 1)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Org Mode
@@ -774,6 +780,9 @@ With prefix arg, insert a large ASCII art version.
 ;;; numbers and strings
 
 (use-package evil-numbers
+  :config
+  (easy-repeat-add 'evil-numbers/inc-at-pt 'evil-numbers/dec-at-pt)
+
   :bind (("C-c =" . evil-numbers/inc-at-pt)
          ("C-c -" . evil-numbers/dec-at-pt))
   )
@@ -1174,6 +1183,8 @@ for `string-to-number'."
         bm-highlight-style 'bm-highlight-only-fringe)
 
   :config
+  (easy-repeat-add 'bm-next 'bm-previous)
+
   :bind (("C-c m l" . bm-show)
          ("C-c m m" . bm-toggle)
          ("C-c m n" . bm-next)
@@ -2731,6 +2742,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (use-package gud
   :ensure nil
+  :config
+  (easy-repeat-add 'gud-next 'gud-step)
+
   :bind (:map gud-minor-mode-map
          ("C-c C-n" . gud-next)
          ("C-c C-s" . gud-step))
