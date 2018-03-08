@@ -2654,8 +2654,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (hl-line-mode 1)
 
-  ;;(add-hook 'after-save-hook 'imenu-force-rescan 'append 'local)
-
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (local-set-key (kbd "C-m") 'newline-and-indent)
   (local-set-key (kbd "C-a") 'mwim-beginning-of-line-or-code)
@@ -2669,12 +2667,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (add-hook 'prog-mode-hook 'jpk/prog-mode-hook)
 
-(defun imenu-force-rescan ()
-  "Doesn't rescan, but forces a rescan the next time imenu is invoked."
-  (interactive)
-  (save-excursion
-    (imenu--cleanup)
-    (setq imenu--index-alist nil)))
+(use-package imenu
+  :ensure nil
+  :defer 2
+  :config
+  (setq imenu-auto-rescan t
+        imenu-auto-rescan-maxout (* 1024 1024))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C programming language
@@ -2725,7 +2724,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (setq tab-width 4)
   (setq c-basic-offset 4
         c-default-style '((java-mode . "java") (awk-mode . "awk") (other . "bsd")))
-  (imenu-add-to-menubar "IMenu")
   (setq comment-start "// "
         comment-end "")
   (dolist (x '(("!=" . ?≠)
@@ -3159,7 +3157,7 @@ Lisp function does not specify a special indentation."
 (defun imenu-elisp-sections ()
   "Add an imenu expression to find lines like \";;; foobar\"."
   (setq imenu-prev-index-position-function nil)
-  (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
+  (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) 'append))
 
 (with-eval-after-load "lisp-mode"
   (dolist (hook '(lisp-mode-hook
