@@ -17,10 +17,18 @@ Only defcustoms usually have a `standard-value'."
       (error "No standard-value: %s" symbol))
     (eval (car sv))))
 
-(setq gc-cons-threshold most-positive-fixnum)
+(setq gc-cons-threshold (* 1024 (expt 2 20))
+      gc-cons-percentage 0.6
+      fnha-old file-name-handler-alist
+      file-name-handler-alist nil
+      )
 (defun jpk/emacs-startup-hook ()
   (message "init.el loaded in %s." (emacs-init-time))
-  (setq gc-cons-threshold (standard-value 'gc-cons-threshold)))
+  (setq gc-cons-threshold (standard-value 'gc-cons-threshold)
+        gc-cons-percentage (standard-value 'gc-cons-percentage)
+        file-name-handler-alist fnha-old)
+  (makunbound 'fnha-old)
+  (garbage-collect))
 (add-hook 'emacs-startup-hook #'jpk/emacs-startup-hook)
 
 ;; use Emacs bindings in all GTK apps:
@@ -167,7 +175,8 @@ files (e.g. directories, fifos, etc.)."
 (when init-file-debug ;; --debug-init
   (setq use-package-verbose 'debug
         use-package-debug t
-        use-package-minimum-reported-time 0))
+        use-package-minimum-reported-time 0
+        debug-on-error t))
 
 (add-hook 'package-menu-mode-hook #'hl-line-mode)
 
@@ -659,6 +668,8 @@ default label."
   :after org
   )
 
+;; TODO: check out ob-shstream.el
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
 
@@ -739,7 +750,8 @@ With prefix arg, insert a large ASCII art version.
 ;;; ssh
 
 (use-package keychain-environment
-  :init
+  :defer 2
+  :config
   (keychain-refresh-environment)
   )
 
@@ -969,15 +981,15 @@ for `string-to-number'."
 
 (use-package autorevert
   :ensure nil
+  :defer 1
   :diminish auto-revert-mode
-  :init
-  (global-auto-revert-mode 1)
-
   :config
   (setq auto-revert-verbose nil
         global-auto-revert-non-file-buffers t)
   (add-hook 'dired-mode-hook #'auto-revert-mode)
   (add-to-list 'revert-without-query "\\.rom\\'")
+
+  (global-auto-revert-mode 1)
 
   :bind (("<f5>" . revert-buffer))
   )
@@ -999,6 +1011,9 @@ for `string-to-number'."
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8)
+
+;; "coding" seems to be the standard spelling
+(put 'encoding 'safe-local-variable 'coding-system-p)
 
 (setq default-input-method "TeX"
       read-quoted-char-radix 16)
@@ -1103,7 +1118,6 @@ for `string-to-number'."
   :after auto-complete)
 
 (use-package company
-  ;;:disabled
   :pin melpa
   :diminish company-mode
   :init
@@ -1259,11 +1273,13 @@ it's probably better to explicitly request a merge."
 
 (use-package ido-completing-read+
   :after ido
-  :init
+  :defer 1
+  :config
   (ido-ubiquitous-mode 1))
 
 (use-package amx
-  :init
+  :defer 1
+  :config
   (amx-mode 1))
 
 (use-package smex
@@ -1402,15 +1418,14 @@ it's probably better to explicitly request a merge."
 ;; Save point position per-window instead of per-buffer.
 (use-package winpoint
   :disabled
-  :init
+  :defer 2
+  :config
   (winpoint-mode 1))
 
 (setq help-window-select 'never)
 
 (use-package shackle
-  :init
-  (shackle-mode 1)
-
+  :defer 2
   :config
   (setq shackle-default-rule '(:inhibit-window-quit t)
         shackle-rules
@@ -1418,6 +1433,8 @@ it's probably better to explicitly request a merge."
           (completion-list-mode :inhibit-window-quit nil :align 'below :size 0.3)
           (("*vc-incoming*" "*vc-outgoing*") :same t)
           ))
+
+  (shackle-mode 1)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1465,6 +1482,7 @@ it's probably better to explicitly request a merge."
   :init
   ;; show margin (author+time) in a magit log buffer with L d
   (setq magit-log-margin '(nil age-abbreviated magit-log-margin-width :author 11))
+
   :config
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
@@ -1544,6 +1562,7 @@ it's probably better to explicitly request a merge."
 
 (defun diff-delete-trailing-CR ()
   "Delete trailing carriage returns (^M) in a `diff-mode' buffer."
+  ;; TODO: with-silent-modifications, with-coding-priority
   (when (and (derived-mode-p 'diff-mode)
            (buffer-file-name)
            (save-excursion
@@ -3566,6 +3585,7 @@ Compatibility function for \\[next-error] invocations."
 (use-package grep
   :ensure nil
   :config
+  ;; FIXME: see new option grep-find-hide
   (defun jpk/grep/compilation-filter-hook ()
     (when (eq major-mode 'grep-mode)
       (setq adaptive-wrap-extra-indent 4)
