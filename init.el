@@ -3805,12 +3805,18 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Yasnippet (Yet Another Template Mode)
 
+(use-package yasnippet-snippets
+  :defer 2
+  )
+
 (use-package yasnippet
+  :after yasnippet-snippets
   :diminish yas-minor-mode
   :config
   (setq yas-prompt-functions (cons 'yas-ido-prompt
                                    (remove 'yas-ido-prompt
                                            yas-prompt-functions)))
+  (yas-global-mode 1)
 
   :bind (("C-c y" . yas-insert-snippet)
          :map yas-minor-mode-map
