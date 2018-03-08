@@ -3708,9 +3708,9 @@ The user is prompted at each instance like query-replace."
 (use-package wrap-region
   :diminish wrap-region-mode
   :config
-  (defun jpk/wrap-region-after-hook ()
-    (goto-char (1+ wrap-region-end)))
-  (add-hook 'wrap-region-after-hook #'jpk/wrap-region-after-hook)
+  (defun jpk/wrap-region-after-wrap-hook ()
+    (goto-char (1+ (region-end))))
+  (add-hook 'wrap-region-after-wrap-hook #'jpk/wrap-region-after-wrap-hook)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
