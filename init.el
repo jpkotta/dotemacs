@@ -3841,49 +3841,12 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Changing case (capitalization)
 
-;; enable the region case changing commands
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
-
-(defun downcase-region-or-word ()
-  "Downcase the current word if the region is inactive, otherwise
-  downcase the region."
-  (interactive "*")
-  (let ((deactivate-mark nil))
-    (if (use-region-p)
-        (downcase-region (region-beginning) (region-end))
-      (let ((bounds (bounds-of-thing-at-point 'word)))
-        (if bounds
-            (downcase-region (car bounds) (cdr bounds))
-          (message "Nothing to downcase."))))))
-
-(defun upcase-region-or-word ()
-  "Upcase the current word if the region is inactive, otherwise
-  upcase the region."
-  (interactive "*")
-  (let ((deactivate-mark nil))
-    (if (use-region-p)
-        (upcase-region (region-beginning) (region-end))
-      (let ((bounds (bounds-of-thing-at-point 'word)))
-        (if bounds
-            (upcase-region (car bounds) (cdr bounds))
-          (message "Nothing to upcase."))))))
-
-(defun capitalize-region-or-word ()
-  "Capitalize the current word if the region is inactive, otherwise
-  capitalize the region."
-  (interactive "*")
-  (let ((deactivate-mark nil))
-    (if (use-region-p)
-        (capitalize-region (region-beginning) (region-end))
-      (let ((bounds (bounds-of-thing-at-point 'word)))
-        (if bounds
-            (capitalize-region (car bounds) (cdr bounds))
-          (message "Nothing to capitalize."))))))
-
-(global-set-key (kbd "C-x C-u") 'upcase-region-or-word)
-(global-set-key (kbd "C-x C-i") 'capitalize-region-or-word)
-(global-set-key (kbd "C-x C-l") 'downcase-region-or-word)
+(use-package string-inflection
+  :config
+  (easy-repeat-add 'string-inflection-all-cycle)
+  :bind (("C-x C-l" . string-inflection-all-cycle)
+         ("C-x C-u" . string-inflection-all-cycle))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; delete things
