@@ -123,7 +123,6 @@ files (e.g. directories, fifos, etc.)."
         mwim
         paren-face
         rainbow-mode
-        save-visited-files
         smart-shift
         smart-tabs-mode
         sqlup-mode
@@ -1287,7 +1286,7 @@ it's probably better to explicitly request a merge."
          ("M-X" . smex-major-mode-commands)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Backup
+;;; backups, saving, restoring
 
 (setq make-backup-files t
       vc-make-backup-files t
@@ -1299,26 +1298,18 @@ it's probably better to explicitly request a merge."
 
 (defun force-backup-of-buffer ()
   (setq buffer-backed-up nil))
-(add-hook 'before-save-hook 'force-backup-of-buffer)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Autosave
+(add-hook 'before-save-hook #'force-backup-of-buffer)
 
 (let ((dir (no-littering-expand-var-file-name "auto-save/")))
   (make-directory dir t)
   (setq auto-save-file-name-transforms `((".*" ,dir t))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; save-visited-files
-;; Saves a list of the open files (via auto-save-hook), which can be
-;; restored with save-visited-files-restore.
-
-(setq save-visited-files-ignore-tramp-files t
-      save-visited-files-ignore-directories nil
-      save-visited-files-auto-restore t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; recentf (recently visited files)
+(use-package save-visited-files
+  :init
+  (setq save-visited-files-ignore-tramp-files t
+        save-visited-files-ignore-directories nil
+        save-visited-files-auto-restore t)
+)
 
 (setq recentf-max-saved-items 1024)
 
@@ -1335,18 +1326,27 @@ it's probably better to explicitly request a merge."
 
 (recentf-mode 1)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; savehist
-
 (setq history-delete-duplicates t)
 (savehist-mode 1)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; midnight
-
-(with-library 'midnight
+(use-package midnight
+  :ensure nil
+  :init
   (midnight-delay-set 'midnight-delay "04:00")
-  (midnight-mode 1))
+  (midnight-mode 1)
+
+  (defun midnight-make-all-buffers-cleanable ()
+    "Set `buffer-display-time' for all buffers.
+
+`clean-buffer-list' ignores buffers that have never been
+displayed (e.g. they were restored with `save-visited-files').
+This sets all buffers as displayed."
+    (interactive)
+    (save-window-excursion
+      (dolist (b (buffer-list))
+        (unless (midnight-buffer-display-time b)
+          (set-window-buffer (selected-window) b)))))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
