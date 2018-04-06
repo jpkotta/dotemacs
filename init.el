@@ -1004,10 +1004,7 @@ for `string-to-number'."
 
 ;; tip - use insert-char to insert unicode characters by name
 
-;; from Jonathan Arkell (http://stackoverflow.com/questions/154097/whats-in-your-emacs/154980#154980)
 (prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(setq-default buffer-file-coding-system 'utf-8)
 
 ;; "coding" seems to be the standard spelling
 (put 'encoding 'safe-local-variable 'coding-system-p)
@@ -1016,22 +1013,22 @@ for `string-to-number'."
       read-quoted-char-radix 16)
 
 (defun dos2unix ()
-  "Convert a DOS file ('\\r\\n') to Unix ('\\n')"
+  "Convert a DOS file (CRLF) to Unix (LF)"
   (interactive)
-  (set-buffer-file-coding-system 'undecided-unix t))
+  (set-buffer-file-coding-system 'unix 'force))
 
 (defun force-unix-line-endings ()
-  "Replace all occurances of \\r\\n with \\n."
+  "Replace all occurances of CRLF with LF."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (while (search-forward "\015\012" nil t)
-      (replace-match "\012" nil t))))
+    (while (search-forward "\x0d\x0a" nil t)
+      (replace-match "\x0a" nil t))))
 
 (defun unix2dos ()
-  "Convert a Unix ('\n') file to DOS ('\r\n')"
+  "Convert a Unix (LF) file to DOS (CRLF)"
   (interactive)
-  (set-buffer-file-coding-system 'undecided-dos t))
+  (set-buffer-file-coding-system 'dos 'force))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Daemon/Server
@@ -1562,7 +1559,7 @@ This sets all buffers as displayed."
 
 (defun diff-delete-trailing-CR ()
   "Delete trailing carriage returns (^M) in a `diff-mode' buffer."
-  ;; TODO: with-silent-modifications, with-coding-priority
+  ;; TODO: with-silent-modifications, with-coding-priority, set-buffer-file-coding-system
   (when (and (derived-mode-p 'diff-mode)
            (buffer-file-name)
            (save-excursion
