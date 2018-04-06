@@ -3604,12 +3604,20 @@ be specified with a numeric prefix."
   :if (executable-find "rg")
   :init
   (defalias 'rg 'ripgrep-regexp)
+
   :config
   (defun jpk/ripgrep-search-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
   (add-hook 'ripgrep-search-mode-hook #'jpk/ripgrep-search-mode-hook)
   (add-hook 'ripgrep-search-mode-hook #'wgrep-setup)
+
+  (defun rg-all ()
+    "Like `ripgrep-regexp', but add --no-ignore."
+    (interactive)
+    (let ((ripgrep-arguments ripgrep-arguments))
+      (push "--no-ignore" ripgrep-arguments)
+      (call-interactively #'ripgrep-regexp)))
 
   :bind (:map ripgrep-search-mode-map
          ("C-x C-q" . wgrep-change-to-wgrep-mode))
@@ -3646,6 +3654,15 @@ be specified with a numeric prefix."
   :after (wgrep ag)
   :bind (:map ag-mode-map
          ("C-x C-q" . wgrep-change-to-wgrep-mode))
+  )
+
+(use-package grep-context
+  :bind (:map grep-mode-map
+         ("+" . grep-context-more-around-point)
+         ("-" . grep-context-less-around-point)
+         :map ripgrep-search-mode-map
+         ("+" . grep-context-more-around-point)
+         ("-" . grep-context-less-around-point))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
