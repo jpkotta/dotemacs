@@ -96,7 +96,6 @@ files (e.g. directories, fifos, etc.)."
 (setq package-selected-packages
       '(
         auctex
-        backup-walker
         boxquote
         browse-kill-ring
         buffer-move
@@ -1299,6 +1298,8 @@ it's probably better to explicitly request a merge."
 (defun force-backup-of-buffer ()
   (setq buffer-backed-up nil))
 (add-hook 'before-save-hook #'force-backup-of-buffer)
+
+(use-package backup-walker)
 
 (let ((dir (no-littering-expand-var-file-name "auto-save/")))
   (make-directory dir t)
