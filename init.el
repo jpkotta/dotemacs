@@ -95,28 +95,19 @@ files (e.g. directories, fifos, etc.)."
 
 (setq package-selected-packages
       '(
-        auctex
         boxquote
         browse-kill-ring
         buffer-move
-        csharp-mode
-        csv-mode
         dictionary
         diff-hl
         expand-region
-        go-mode
-        go-scratch
         hide-lines
         highlight-numbers
         highlight-operators
         highlight-quoted
-        htmlize
         ibuffer-projectile
         ibuffer-tramp
         ;;list-unicode-display
-        lua-mode
-        markdown-mode
-        mediawiki
         mic-paren
         morlock
         mwim
@@ -2238,8 +2229,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; CSV mode
 
-(with-eval-after-load "csv-mode"
-
+(use-package csv-mode
+  :config
   ;; It seems silly to set csv separators for all buffers the same, so
   ;; this makes everything buffer local and easily settable from the
   ;; minibuffer.
@@ -2751,9 +2742,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (use-package groovy-mode)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; GUD (Grand Unified Debugger)
-
 (use-package gud
   :ensure nil
   :config
@@ -2764,12 +2752,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("C-c C-s" . gud-step))
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Make
-(add-to-list 'auto-mode-alist '("Makefile" . makefile-gmake-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; bitbake
+(use-package make-mode
+  :disabled ;; not necessary
+  :ensure nil
+  :mode (("Makefile" . makefile-gmake-mode))
+  )
 
 (use-package bitbake
   :config
@@ -2795,12 +2782,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("C-e" . mwim-end-of-line-or-code))
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; C#
-(add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; shell-script
+(use-package csharp-mode)
 
 (use-package sh-script
   :ensure nil
@@ -2833,23 +2815,30 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                (2 font-lock-variable-name-face t))))
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Perl
+(use-package cperl-mode
+  :ensure nil
+  :init
+  (defalias 'perl-mode #'cperl-mode)
 
-(defalias 'perl-mode 'cperl-mode)
+  :config
+  (setq cperl-invalid-face nil)
 
-(setq cperl-invalid-face nil)
-
-(defun jpk/cperl-mode-hook ()
-  (dolist (x '(("!=" . ?≠)
-               ("->" . ?→)
-               ("=>" . ?⇒)
-               ))
-    (add-to-list 'prettify-symbols-alist x))
-  (cperl-set-style "BSD")
+  (defun jpk/cperl-mode-hook ()
+    (dolist (x '(("!=" . ?≠)
+                 ("->" . ?→)
+                 ("=>" . ?⇒)
+                 ))
+      (add-to-list 'prettify-symbols-alist x))
+    (cperl-set-style "BSD"))
+  (add-hook 'cperl-mode-hook #'jpk/cperl-mode-hook)
   )
 
-(add-hook 'cperl-mode-hook 'jpk/cperl-mode-hook)
+(use-package go-mode)
+
+(use-package go-scratch
+  :after go-mode)
+
+(use-package lua-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
@@ -3184,41 +3173,21 @@ Lisp function does not specify a special indentation."
 ;; (let ((s "(let ((s %S)) (insert (format s s)))")) (insert (format s s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; FVWM
-
-(use-package fvwm-mode
-  :config
-  (defun jpk/fvwm-mode-hook ()
-    ;;(fvwm-enable-indentation)
-    (local-set-key (kbd "RET") 'newline)
-    (setq indent-line-function 'indent-relative-dwim)
-    (hl-line-mode 1)
-    (setq tab-width 4))
-  (add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
-
-  :mode "\\.fvwm\\'"
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; PKGBUILD
-
-(use-package pkgbuild-mode
-  :if (executable-find "pacman")
-  :mode ("\\`PKGBUILD\\'" "\.install\\'")
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML/XML
 
 (fset 'xml-mode 'nxml-mode)
 (fset 'html-mode 'nxml-mode)
 (fset 'sgml-mode 'nxml-mode)
 
-;; Not really HTML editing related, but this will make an HTML file of
-;; the buffer, with all the syntax highlighting.
-(with-library 'htmlize
-  (with-library 'htmlize-view
-    (htmlize-view-add-to-files-menu)))
+(use-package htmlize)
+
+(use-package htmlize-view
+  :ensure nil
+  :after htmlize
+  :init
+  ;;(htmlize-view-add-to-files-menu)
+  ;; M-x htmlize-view-buffer
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
@@ -3230,18 +3199,12 @@ Lisp function does not specify a special indentation."
 
 (use-package systemd)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; YAML mode
-
 (use-package yaml-mode
   :config
   (defun jpk/yaml-mode-hook ()
     (setq tab-width 2))
   (add-hook 'yaml-mode-hook #'jpk/yaml-mode-hook)
   )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; dts (flattened device tree)
 
 (use-package dts-mode
   :config
@@ -3260,8 +3223,26 @@ Lisp function does not specify a special indentation."
   :mode "\\.its\\'"
   )
 
+(use-package fvwm-mode
+  :config
+  (defun jpk/fvwm-mode-hook ()
+    ;;(fvwm-enable-indentation)
+    (local-set-key (kbd "RET") 'newline)
+    (setq indent-line-function 'indent-relative-dwim)
+    (hl-line-mode 1)
+    (setq tab-width 4))
+  (add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
+
+  :mode "\\.fvwm\\'"
+  )
+
+(use-package pkgbuild-mode
+  :if (executable-find "pacman")
+  :mode ("\\`PKGBUILD\\'" "\.install\\'")
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; text-mode
+;;; text and markup modes
 
 (defun jpk/text-mode-hook ()
   (setq indent-line-function 'indent-relative-dwim)
@@ -3275,33 +3256,40 @@ Lisp function does not specify a special indentation."
   (hl-line-mode 1)
   )
 
-(add-hook 'text-mode-hook 'jpk/text-mode-hook)
-(add-hook 'text-mode-hook 'text-mode-hook-identify)
+(add-hook 'text-mode-hook #'jpk/text-mode-hook)
+(add-hook 'text-mode-hook #'text-mode-hook-identify)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; LaTeX (AUCTeX mode)
+(use-package markdown-mode)
 
-(setq LaTeX-item-indent -1)
+(use-package auctex
+  :if (executable-find "pdflatex")
 
-(defun jpk/LaTeX-mode-hook ()
-  (setq adaptive-wrap-extra-indent 0)
-  (visual-line-mode 1)
-  (when (featurep 'flyspell)
-    (flyspell-mode 1))
-  (setq fill-column 80)
-  (local-set-key (kbd "C-M-;") 'insert-comment-bar)
-  (setq indent-line-function 'LaTeX-indent-line)
-  (when (featurp 'ac-math)
-    (dolist (x '(ac-source-math-unicode
-                 ac-source-math-latex
-                 ac-source-latex-commands))
-      (add-to-list 'ac-sources x)))
-  (local-set-key [remap next-error] nil)
-  (local-set-key [remap previous-error] nil)
-  (hl-line-mode 1)
+  :config
+  (setq LaTeX-item-indent -1)
+
+  (defun jpk/LaTeX-mode-hook ()
+    (setq adaptive-wrap-extra-indent 0)
+    (visual-line-mode 1)
+    (when (featurep 'flyspell)
+      (flyspell-mode 1))
+    (setq fill-column 80)
+    (setq indent-line-function #'LaTeX-indent-line)
+    (when (featurep 'ac-math)
+      (dolist (x '(ac-source-math-unicode
+                   ac-source-math-latex
+                   ac-source-latex-commands))
+        (add-to-list 'ac-sources x)))
+    (hl-line-mode 1)
+    )
+  (add-hook 'LaTeX-mode-hook #'jpk/LaTeX-mode-hook)
+
+  :bind (:map LaTeX-mode-map
+         ([remap next-error] . nil)
+         ([remap previous-error] . nil)
+         ("C-M-;" . insert-comment-bar))
   )
 
-(add-hook 'LaTeX-mode-hook 'jpk/LaTeX-mode-hook)
+(use-package mediawiki)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; SQL
