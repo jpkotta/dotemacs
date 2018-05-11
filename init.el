@@ -2995,6 +2995,14 @@ If region is inactive, use the entire current line."
                          "--disable=C,R,locally-disabled"
                          ))
 
+  (if (executable-find "pylint3")
+      ;; debian
+      (setq pylint-command "pylint3"
+            pylint-alternate-pylint-command "pylint")
+    ;; arch
+    (setq pylint-command "pylint"
+          pylint-alternate-pylint-command "pylint2"))
+
   :bind (:map python-mode-map
          ("C-c C-v" . pylint)
          ("C-c C-i" . pylint-insert-ignore-comment))
