@@ -554,6 +554,12 @@ default label."
   :bind (("M-/" . xref-find-references))
   )
 
+(use-package xref
+  :ensure nil
+  :config
+  (add-hook 'xref--xref-buffer-mode-hook #'hl-line-mode)
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Projectile
 
@@ -564,7 +570,8 @@ default label."
   (setq projectile-indexing-method 'alien
         projectile-enable-caching t
         projectile-tags-backend 'xref
-        projectile-tags-command "gtags -f \"%s\" %s")
+        projectile-tags-command "gtags -f \"%s\" %s"
+        projectile-switch-project-action #'projectile-dired)
   (projectile-global-mode 1)
   )
 
@@ -617,6 +624,7 @@ default label."
           (C . t)
           ))
 
+  ;; https://blog.d46.us/advanced-emacs-startup/
   (defun org-babel-reload-languages ()
     (interactive)
     (org-babel-do-load-languages
@@ -747,6 +755,9 @@ With prefix arg, insert a large ASCII art version.
 
 (use-package ssh-config-mode
   :mode (".ssh/config\\'" "sshd?_config")
+  :bind (:map ssh-config-mode-map
+         ("C-<up>" . nil)
+         ("C-<down>" . nil))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1264,6 +1275,13 @@ it's probably better to explicitly request a merge."
   :config
   (ido-ubiquitous-mode 1))
 
+(use-package crm-custom
+  :after ido-completing-read+
+  :defer 1
+  :config
+  (crm-custom-mode 1)
+  )
+
 (use-package amx
   :defer 1
   :config
@@ -1490,7 +1508,7 @@ This sets all buffers as displayed."
       (switch-to-buffer buffer)))
 
   :bind (("C-x g" . magit-status)
-         ("C-x C-g" . magit-switch-to-status-buffer)
+         ("C-c g" . magit-switch-to-status-buffer)
          ("C-x M-g" . magit-dispatch-popup))
   )
 
@@ -1746,6 +1764,11 @@ This effectively makes `smerge-command-prefix' unnecessary."
     (interactive)
     (term-send-raw-string "\ex"))
 
+  (defun term-send-esc ()
+    "Send escape char in `term-mode'."
+    (interactive)
+    (term-send-raw-string "\e"))
+
   (defun term-interrupt-subjob-or-C-c ()
     "Run `term-interrupt-subjob' or send `C-c'."
     (interactive)
@@ -1829,7 +1852,8 @@ This effectively makes `smerge-command-prefix' unnecessary."
          ("<C-prior>" . sane-term-prev)
          ("<C-next>" . sane-term-next)
          ("C-c C-v" . term-send-raw) ;; quote
-         ("C-c C-x" . term-send-raw)) ;; C-x
+         ("C-c C-x" . term-send-raw) ;; C-x
+         ("C-c b" . nil))
   )
 
 (defun shell-command-from-region (&optional arg output-buffer error-buffer)
@@ -1917,6 +1941,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (insert (completing-read
              "Eshell history: "
              (delete-dups (ring-elements eshell-history-ring)))))
+
+  (require 'em-term)
+  (add-to-list 'eshell-visual-subcommands '("make" "menuconfig"))
+  (add-to-list 'eshell-visual-subcommands '("git" "log" "diff" "show"))
+  (add-to-list 'eshell-visual-commands "htop")
+  (add-to-list 'eshell-visual-commands "iftop")
+  (add-to-list 'eshell-visual-commands "iotop")
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2059,6 +2090,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
+
+;; TODO:
+;; https://truongtx.me/tmtxt-dired-async.html
+;; dired-rsync
 
 (use-package dired
   :ensure nil
@@ -2515,7 +2550,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-Wall -g3"))
-               ("%repo-dir" . (locate-repo-dir))))
+               ("%repo-dir" . (expand-file-name (locate-repo-dir)))))
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
@@ -2524,7 +2559,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                    ("make-repo" .
                     "make -k --no-print-directory -C '%repo-dir'")
                    ("make-top" .
-                    "make -k --no-print-directory -C '%make-dir'")))
+                    "make -k --no-print-directory -C '%make-dir'")
+                   ("u-boot" .
+                    "source '%repo-dir'/sourceme.sh && make -C '%repo-dir' -k --no-print-directory u-boot-with-spl.imx")))
           (c-mode . (("c-simple" .
                       "gcc -o '%file-sans' %cflags '%file-name'")
                      ("c-simple32" .
@@ -2755,9 +2792,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package make-mode
-  :disabled ;; not necessary
   :ensure nil
   :mode (("Makefile" . makefile-gmake-mode))
+  :bind (:map makefile-gmake-mode-map
+         ("M-n" . isearch-forward-symbol-dwim)
+         ("M-p" . isearch-backward-symbol-dwim))
   )
 
 (use-package bitbake
@@ -3209,9 +3248,7 @@ Lisp function does not specify a special indentation."
 (use-package htmlize-view
   :ensure nil
   :after htmlize
-  :init
-  ;;(htmlize-view-add-to-files-menu)
-  ;; M-x htmlize-view-buffer
+  :commands (htmlize-view-buffer)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
