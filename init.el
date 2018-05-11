@@ -127,6 +127,8 @@ files (e.g. directories, fifos, etc.)."
 (setq package-archives '(("melpa-stable" . "http://stable.melpa.org/packages/")
                          ("melpa" . "http://melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
+(add-to-list 'package-archives
+             '("onpa" . "https://olanilsson.bitbucket.io/packages/"))
 (setq package-archive-priorities '(("melpa-stable" . 20)
                                    ("gnu" . 10)
                                    ("melpa" . 0)))
@@ -2759,6 +2761,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package bitbake
+  :disabled
   :config
   (defun jpk/bitbake-mode-hook ()
     ;; FIXME upstream
@@ -2780,6 +2783,28 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("C-M-;" . insert-comment-bar)
          ("C-a" . mwim-beginning-of-line-or-code)
          ("C-e" . mwim-end-of-line-or-code))
+  )
+
+(use-package bitbake-modes
+  :config
+  (with-eval-after-load 'company
+    (add-to-list 'company-dabbrev-code-modes 'bitbake-mode))
+
+  (dolist (f '(bitbake-python-function-face
+               bitbake-python-task-face
+               bitbake-python-expansion-face
+               bitbake-shell-function-face))
+    (set-face-attribute f nil :background "#1f241f"))
+
+  (defun bitbake-deploy-dir-dired (&optional bb-file)
+    "Open the deploy dir of BB-FILE with `dired'."
+    (interactive)
+    (let ((dir (bitbake-recipe-build-dir bb-file)))
+      (dired (expand-file-name "tmp/deploy/" dir))))
+
+  :bind (:map bitbake-mode-map
+         ("C-c C-d" . bitbake-deploy-dir-dired)
+         ("C-c C-f" . bitbake-recipe-build-dir-dired))
   )
 
 (use-package csharp-mode)
