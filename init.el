@@ -2205,6 +2205,30 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("C-c C-v" . dired-ranger-paste))
   )
 
+(use-package dired-open
+  :after dired
+  :config
+  (dolist (prog-exts
+           '(("geeqie"
+              . ("xbm" "pbm" "pgm" "ppm" "pnm" "png" "gif" "bmp" "tif" "jpeg" "jpg" "svg"))
+             ("vlc"
+              . ("mpg" "mpeg" "mp3" "mp4" "asf" "avi" "wmv" "wav" "mov" "flv" "ogm" "ogg" "mkv"))
+             ("libreoffice"
+              . ("doc" "docx" "xls" "ppt" "odt" "ods" "odg" "odp"))
+             ("okular"
+              . ("pdf" "ps" "ps.gz" "dvi"))))
+    (dolist (ext (cdr prog-exts))
+      (add-to-list 'dired-open-extensions (cons ext (car prog-exts)))))
+  (setq dired-open-functions '(dired-open-by-extension)
+        dired-open-find-file-function #'dired-single-buffer)
+  )
+
+(use-package dired-avfs
+  :disabled ;; kinda broken
+  :config
+  (setq dired-avfs-file-size-threshold (expt 2 30))
+  )
+
 (use-package view
   :ensure nil
   :after dired
