@@ -1726,6 +1726,15 @@ This effectively makes `smerge-command-prefix' unnecessary."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
+(use-package eterm-256color
+  :init
+  (add-hook 'term-mode-hook #'eterm-256color-mode)
+
+  :config
+  (set-face-attribute 'eterm-256color-default nil :inherit 'term)
+  (setq eterm-256color-disable-bold t) ;; makes "bold" mean "bright"
+  )
+
 (use-package sane-term
   :bind (("C-c t" . sane-term))
   )
