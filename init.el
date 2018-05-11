@@ -2578,7 +2578,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
            (file-dir (if (file-directory-p file-or-dir)
                          file-or-dir
                        (file-name-directory file-or-dir)))
-           (root-dir (vc-call-backend (vc-deduce-backend) 'root file-dir)))
+           (backend (or (vc-deduce-backend) (vc-responsible-backend file-dir)))
+           (root-dir (vc-call-backend backend 'root file-dir)))
       root-dir))
 
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
