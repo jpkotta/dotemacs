@@ -1043,17 +1043,11 @@ for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Web Browser
 
-(setq eww-search-prefix "https://google.com/search?q=")
-(setq shr-color-visible-luminance-min 70)
-
-;; default is "chromium"
-(catch 'break
-  (dolist  (e '("google-chrome-beta" "google-chrome" "google-chrome-stable"))
-    (when (executable-find e)
-      (setq browse-url-chromium-program e)
-      (throw 'break t))))
-(setq browse-url-browser-function 'browse-url-chromium
-      browse-url-new-window-flag t)
+(setq browse-url-browser-function #'eww-browse-url
+      browse-url-new-window-flag t
+      eww-search-prefix "https://google.com/search?q="
+      shr-color-visible-luminance-min 70
+      shr-external-browser #'browse-url-chrome)
 
 (use-package atomic-chrome)
 
