@@ -3,6 +3,10 @@
                         (format "elpa-test")
                         user-emacs-directory))
 
+(when (and (file-directory-p package-user-dir)
+         (yes-or-no-p (format "Delete %s? " package-user-dir)))
+  (delete-directory package-user-dir 'recursive))
+
 (package-initialize)
 (setq package-archives '(("melpa-stable" . "http://stable.melpa.org/packages/")
                          ("melpa" . "http://melpa.org/packages/")
