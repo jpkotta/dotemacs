@@ -55,26 +55,32 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
     (with-parsed-tramp-file-name path nil
       (string= method "sudo"))))
 
+;; tramp API compat
+(if (version< tramp-version "2.3.2")
+    (defalias 'sudo-toggle--make-file-name #'tramp-make-tramp-file-name)
+  (defun sudo-toggle--make-file-name (method user host local &optional hop)
+    (tramp-make-tramp-file-name method user nil host nil local hop)))
+
 (defun sudo-toggle--internal (path &optional sudo-user)
   "Convert PATH to its sudoed version.
 root is used by default unless SUDO-USER is provided."
   (let ((path (expand-file-name path)))
     (if (not (tramp-tramp-file-p path))
         ;; local, no sudo
-        (tramp-make-tramp-file-name "sudo" sudo-user nil path)
+        (sudo-toggle--make-file-name "sudo" sudo-user nil path)
       (with-parsed-tramp-file-name path nil
         (if (not (string= method "sudo"))
             ;; add sudo
-            (tramp-make-tramp-file-name
+            (sudo-toggle--make-file-name
              "sudo" sudo-user host localname
              (let ((tramp-postfix-host-format tramp-postfix-hop-format)
                    (tramp-prefix-format nil))
-               (tramp-make-tramp-file-name
+               (sudo-toggle--make-file-name
                 method user host "" hop)))
           ;; already has sudo, remove
           (if hop
               ;; remove sudo (last hop)
-              (tramp-make-tramp-file-name
+              (sudo-toggle--make-file-name
                nil nil nil localname
                (replace-regexp-in-string ;; remove trailing "|"
                 (format "%s$" (regexp-quote tramp-postfix-hop-format))
