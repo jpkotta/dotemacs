@@ -93,32 +93,6 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 
-(setq package-selected-packages
-      '(
-        boxquote
-        browse-kill-ring
-        buffer-move
-        dictionary
-        diff-hl
-        expand-region
-        hide-lines
-        highlight-numbers
-        highlight-operators
-        highlight-quoted
-        ibuffer-projectile
-        ibuffer-tramp
-        ;;list-unicode-display
-        mic-paren
-        morlock
-        mwim
-        paren-face
-        rainbow-mode
-        smart-shift
-        smart-tabs-mode
-        sqlup-mode
-        syntax-subword
-        ))
-
 (setq package-user-dir (expand-file-name
                         (format "elpa-%d" emacs-major-version)
                         user-emacs-directory))
@@ -133,26 +107,7 @@ files (e.g. directories, fifos, etc.)."
                                    ("gnu" . 10)
                                    ("melpa" . 0)))
 
-(defun jpk/install-selected-packages (&optional arg)
-  (interactive "p")
-  (if (not arg) ;; not called interactively, see called-interactively-p
-      (cl-letf (((symbol-function 'y-or-n-p)
-                 (lambda (prompt) t)))
-        (when (null package-archive-contents)
-          (package-refresh-contents))
-        ;;(package-autoremove)
-        (package-install-selected-packages))
-    (package-refresh-contents)
-    ;;(package-autoremove)
-    (package-install-selected-packages)))
-
-(jpk/install-selected-packages)
-
-(defmacro with-library (feature &rest body)
-  "Evaluate BODY only if FEATURE is provided.  (require FEATURE) will be attempted."
-  (declare (indent defun))
-  `(when (require ,feature nil 'noerror)
-     ,@body))
+(byte-recompile-directory extra-lisp-directory 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -332,8 +287,18 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ergomovement
 
-(with-library 'ergo-movement-mode
-  (ergo-movement-mode 1))
+(use-package ergo-movement-mode
+  :ensure nil
+  :commands (ergo-movement-mode)
+  :init
+  (ergo-movement-mode 1)
+  )
+
+(use-package mwim
+  :bind (:map prog-mode-map
+         ("C-a" . mwim-beginning-of-line-or-code)
+         ("C-e" . mwim-end-of-line-or-code))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
@@ -478,9 +443,13 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
 
-(with-library 'printing
+(use-package printing
+  :ensure nil
+  :disabled
+  :config
   (setq pr-gv-command "okular")
-  (pr-update-menus t))
+  (pr-update-menus t)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; tags
@@ -767,7 +736,8 @@ With prefix arg, insert a large ASCII art version.
 ;; FIXME reimplement using subword-{forward,backward}-function
 ;; (no need to remap bindings, etc.)
 
-(with-library 'syntax-subword
+(use-package syntax-subword
+  :init
   (setq syntax-subword-skip-spaces 'consistent)
   (global-syntax-subword-mode 1)
   )
@@ -1068,7 +1038,6 @@ for `string-to-number'."
   :disabled
   :diminish auto-complete-mode
   :init
-  (use-package fuzzy)
   (ac-config-default)
   (when (boundp 'global-company-mode)
     (global-company-mode 0))
@@ -1093,6 +1062,15 @@ for `string-to-number'."
 
   (add-to-list 'ac-modes 'text-mode)
 
+  (defun jpk/ielm-mode-hook ()
+    (dolist (x '(ac-source-functions
+                 ac-source-variables
+                 ac-source-features
+                 ac-source-symbols
+                 ac-source-words-in-same-mode-buffers))
+      (add-to-list 'ac-sources x)))
+  (add-hook 'ielm-mode-hook #'jpk/ielm-mode-hook)
+
   :bind (("C-<tab>" . auto-complete)
          :map ac-completing-map
          ("C-n" . ac-next)
@@ -1104,9 +1082,26 @@ for `string-to-number'."
          ("C-s" . ac-isearch))
   )
 
+(use-package fuzzy
+  :disabled
+  :requires auto-complete
+  )
+
 (use-package ac-c-headers
-  :after auto-complete)
+  :disabled
+  :requires auto-complete
+  :after auto-complete
+  :config
+  (defun jpk/ac-c-headers ()
+    (add-to-list 'ac-sources 'ac-source-c-headers)
+    (add-to-list 'ac-sources 'ac-source-c-header-symbols 'append))
+
+  (add-hook 'c-mode-common-hook #'jpk/ac-c-headers)
+  )
+
 (use-package ac-math
+  :disabled
+  :requires auto-complete
   :after auto-complete)
 
 (use-package company
@@ -1204,16 +1199,14 @@ for `string-to-number'."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; re-builder
 
 (setq reb-re-syntax 'string)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; hide-lines
-
-(global-set-key (kbd "C-c s a") 'hide-lines-show-all)
-(global-set-key (kbd "C-c s s") 'hide-lines-not-matching)
-(global-set-key (kbd "C-c s d") 'hide-lines-matching)
+(use-package hide-lines
+  :bind (("C-c s a" . hide-lines-show-all)
+         ("C-c s s" . hide-lines-not-matching)
+         ("C-c s d" . hide-lines-matching))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ido - Interactively Do Things
@@ -1367,7 +1360,10 @@ This sets all buffers as displayed."
 (setq tramp-copy-size-limit nil) ; for Edison
 
 ;; normally this is bound to find-file-read-only
-(global-set-key (kbd "C-x C-r") 'sudo-toggle)
+(use-package sudo-toggle
+  :ensure nil
+  :bind ("C-x C-r" . sudo-toggle)
+  )
 
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
 ;; sudo on remote: /ssh:user@remote|sudo:remote:/path/to/file
@@ -1548,8 +1544,10 @@ This sets all buffers as displayed."
 ;; show fine differences
 (setq-default ediff-auto-refine 'on)
 
-(autoload 'commit-patch-buffer "commit-patch-buffer.el"
-  "Use diff-mode buffers as commits for VC." t)
+(use-package commit-patch-buffer
+  :ensure nil
+  :commands (commit-patch-buffer)
+  )
 
 (with-eval-after-load "diff-mode"
   (define-key diff-mode-map (kbd "C-c C-k") 'diff-hunk-kill)
@@ -1658,9 +1656,6 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
   (interactive "*")
   (diff-add-or-remove-trailing-CR-in-hunk nil))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; smerge-mode
-
 (use-package smerge-mode
   :ensure nil
   :init
@@ -1686,13 +1681,13 @@ This effectively makes `smerge-command-prefix' unnecessary."
   :bind-keymap ("C-c c" . smerge-mode-map)
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; diff-hl
-
-(with-library 'diff-hl
-  (setq diff-hl-fringe-bmp-function 'diff-hl-fringe-bmp-from-type)
+(use-package diff-hl
+  :init
   (global-diff-hl-mode 1)
-  (add-hook 'dired-mode-hook 'diff-hl-dir-mode)
+
+  :config
+  (setq diff-hl-fringe-bmp-function #'diff-hl-fringe-bmp-from-type)
+  (add-hook 'dired-mode-hook #'diff-hl-dir-mode)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1730,7 +1725,11 @@ This effectively makes `smerge-command-prefix' unnecessary."
   )
 
 (use-package sane-term
-  :bind (("C-c t" . sane-term))
+  :bind (("C-c t" . sane-term)
+         :map term-raw-map
+         ("C-S-t" . sane-term-create)
+         ("<C-prior>" . sane-term-prev)
+         ("<C-next>" . sane-term-next))
   )
 
 (use-package term
@@ -2343,52 +2342,24 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; IBuffer
 
-(setq ibuffer-default-sorting-mode 'major-mode
-      ibuffer-formats '((mark modified read-only " "
-                              (name 28 28 :left :elide) " "
-                              (size 9 -1 :right) " "
-                              (mode 16 16 :left :elide) " "
-                              filename-and-process)
-                        (mark " " (name 16 -1) " " filename))
-      ibuffer-movement-cycle nil
-      ibuffer-saved-filter-groups nil
-      ibuffer-saved-filters nil
-      ibuffer-show-empty-filter-groups nil)
+(use-package ibuffer
+  :ensure nil
+  :init
+  (setq ibuffer-default-sorting-mode 'major-mode
+        ibuffer-formats '((mark modified read-only " "
+                                (name 28 28 :left :elide) " "
+                                (size 9 -1 :right) " "
+                                (mode 16 16 :left :elide) " "
+                                filename-and-process)
+                          (mark " " (name 16 -1) " " filename))
+        ibuffer-movement-cycle nil
+        ibuffer-saved-filter-groups nil
+        ibuffer-saved-filters nil
+        ibuffer-show-empty-filter-groups nil)
 
-(with-eval-after-load "ibuffer"
+  :config
   (require 'ibuf-ext)
   (require 'ibuf-macs)
-
-  (define-key ibuffer-mode-map
-    (kbd "/ M") 'ibuffer-set-filter-groups-by-mode)
-  (define-key ibuffer-mode-map
-    (kbd "/ m") 'ibuffer-filter-by-used-mode)
-
-  (with-library 'ibuffer-directory
-    (define-key ibuffer-mode-map
-      (kbd "s p") 'ibuffer-do-sort-by-directory)
-    (define-key ibuffer-mode-map
-      (kbd "/ D") 'ibuffer-set-filter-groups-by-directory)
-    (define-key ibuffer-mode-map
-      (kbd "/ d") 'ibuffer-filter-by-directory))
-
-  (with-library 'ibuffer-projectile
-    ;; from ibuffer-projectile
-    (define-key ibuffer-mode-map
-      (kbd "/ P") 'ibuffer-projectile-set-filter-groups)
-    ;; from projectile
-    (define-key ibuffer-mode-map
-      (kbd "/ p") 'ibuffer-filter-by-projectile-files))
-
-  (with-library 'ibuffer-unsaved
-    (define-key ibuffer-mode-map
-      (kbd "/ 8") 'ibuffer-filter-by-unsaved)
-    (define-key ibuffer-mode-map
-      (kbd "/ *") 'ibuffer-set-filter-groups-by-unsaved))
-
-  (with-library 'ibuffer-tramp
-    (define-key ibuffer-mode-map
-      (kbd "/ T") 'ibuffer-tramp-set-filter-groups-by-tramp-connection))
 
   ;; TODO make cycling work with count
   (defun ibuffer-forward-filter-group (&optional count)
@@ -2432,15 +2403,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (ibuffer-backward-filter-group 1))
     (ibuffer-forward-line 0))
 
-  (define-key ibuffer-mode-map
-    (kbd "<down>") 'ibuffer-forward-line)
-  (define-key ibuffer-mode-map
-    (kbd "<up>") 'ibuffer-backward-line)
-  (define-key ibuffer-mode-map
-    (kbd "C-<down>") 'ibuffer-forward-filter-group)
-  (define-key ibuffer-mode-map
-    (kbd "C-<up>") 'ibuffer-backward-filter-group)
-
   (defun jpk/recenter (&rest args)
     "Recenter"
     (recenter))
@@ -2460,32 +2422,61 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                  (if (eq (ibuffer-current-mark) ibuffer-marked-char)
                      (ibuffer-mark-interactive arg ?\s 0)
                    (ibuffer-mark-interactive arg ibuffer-marked-char 0))))
-  (define-key ibuffer-mode-map (kbd "SPC") 'ibuffer-mark-toggle)
+
+  ;; run when ibuffer buffer is created
+  (defun jpk/ibuffer-mode-hook ()
+    (ibuffer-auto-mode 1)
+    (hl-line-mode 1)
+    (setq truncate-lines t))
+  (add-hook 'ibuffer-mode-hook #'jpk/ibuffer-mode-hook)
+
+  ;; run when ibuffer command is invoked
+  (defun jpk/ibuffer-hook ()
+    (ibuffer-set-filter-groups-by-mode)
+    (setq ibuffer-sorting-mode 'pathname))
+  (add-hook 'ibuffer-hook #'jpk/ibuffer-hook)
+
+  ;; jump to most recent buffer
+  (defun jpk/jump-to-most-recent (orig &rest args)
+    "Move point to most recent."
+    (let ((recent-buffer-name (buffer-name)))
+      (apply orig args)
+      (unless (string-match-p "*Ibuffer*" recent-buffer-name)
+        (ibuffer-jump-to-buffer recent-buffer-name))))
+  (advice-add 'ibuffer :around #'jpk/jump-to-most-recent)
+
+  :bind (("C-x C-b" . ibuffer)
+         :map ibuffer-mode-map
+         ("/ M" . ibuffer-set-filter-groups-by-mode)
+         ("/ m" . ibuffer-filter-by-used-mode)
+         ("<down>" . ibuffer-forward-line)
+         ("<up>" . ibuffer-backward-line)
+         ("C-<down>" . ibuffer-forward-filter-group)
+         ("C-<up>" . ibuffer-backward-filter-group)
+         ("SPC" . ibuffer-mark-toggle))
   )
 
-;; run when ibuffer buffer is created
-(defun jpk/ibuffer-mode-hook ()
-  (ibuffer-auto-mode 1)
-  (hl-line-mode 1)
-  (setq truncate-lines t))
-(add-hook 'ibuffer-mode-hook 'jpk/ibuffer-mode-hook)
+(use-package ibuffer-projectile
+  :after (projectile ibuffer)
+  :bind (:map ibuffer-mode-map
+         ("/ P" . ibuffer-projectile-set-filter-groups)
+         ("/ p" . ibuffer-filter-by-projectile-files))
+  )
 
-;; run when ibuffer command is invoked
-(defun jpk/ibuffer-hook ()
-  (ibuffer-set-filter-groups-by-mode)
-  (setq ibuffer-sorting-mode 'pathname))
-(add-hook 'ibuffer-hook 'jpk/ibuffer-hook)
+(use-package ibuffer-directory
+  :ensure nil
+  :after ibuffer
+  :bind (:map ibuffer-mode-map
+         ("s p" . ibuffer-do-sort-by-directory)
+         ("/ D" . ibuffer-set-filter-groups-by-directory)
+         ("/ d" . ibuffer-filter-by-directory))
+  )
 
-;; jump to most recent buffer
-(defun jpk/jump-to-most-recent (orig &rest args)
-  "Move point to most recent."
-  (let ((recent-buffer-name (buffer-name)))
-    (apply orig args)
-    (unless (string-match-p "*Ibuffer*" recent-buffer-name)
-      (ibuffer-jump-to-buffer recent-buffer-name))))
-(advice-add 'ibuffer :around #'jpk/jump-to-most-recent)
-
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+(use-package ibuffer-tramp
+  :after ibuffer
+  :bind (:map ibuffer-mode-map
+         ("/ T" . ibuffer-tramp-set-filter-groups-by-tramp-connection))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; immortal-scratch
@@ -2499,7 +2490,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; figlet
+
+(use-package boxquote)
 
 (use-package figlet
   :if (executable-find "figlet")
@@ -2678,6 +2670,33 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ([remap query-replace-regexp] . vr/query-replace))
   )
 
+(use-package paren-face
+  :commands (paren-face-mode)
+  :init
+  (add-hook 'prog-mode-hook #'paren-face-mode)
+  :config
+  (setq paren-face-regexp (regexp-opt '("[" "]" "(" ")" "{" "}")))
+  (set-face-attribute 'parenthesis nil :foreground "cyan3")
+  )
+
+(use-package highlight-operators
+  :commands (highlight-operators-mode)
+  :init
+  (add-hook 'prog-mode-hook #'highlight-operators-mode)
+  )
+
+(use-package highlight-numbers
+  :commands (highlight-numbers-mode)
+  :init
+  (add-hook 'prog-mode-hook #'highlight-numbers-mode)
+  )
+
+(use-package rainbow-mode
+  :commands (rainbow-mode)
+  )
+
+(add-hook 'prog-mode-hook #'hl-line-mode)
+
 (defun jpk/prog-mode-hook ()
   ;;(smart-tabs-mode 0) ;; default to using spaces
 
@@ -2686,39 +2705,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (flyspell-mode 0)
     (flyspell-prog-mode))
 
-  ;; e.g. insert '(' and ')' around the region if it is active and '('
-  ;; is typed; works for other delimiters too
-  (with-library 'wrap-region
-    (wrap-region-mode 1))
-
-  ;; highlight numeric literals
-  (with-library 'highlight-numbers
-    (highlight-numbers-mode 1))
-
-  ;; highlight brackets
-  (with-library 'paren-face
-    (setq paren-face-regexp (regexp-opt '("[" "]" "(" ")" "{" "}")))
-    (set-face-attribute 'parenthesis nil :foreground "cyan3")
-    (paren-face-mode 1))
-
-  ;; highlight operators like '+' and '&'
-  (with-library 'highlight-operators
-    (highlight-operators-mode 1))
-
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
 
-  (hl-line-mode 1)
-
   (local-set-key (kbd "C-M-;") 'insert-comment-bar)
   (local-set-key (kbd "C-m") 'newline-and-indent)
-  (local-set-key (kbd "C-a") 'mwim-beginning-of-line-or-code)
-  (local-set-key (kbd "C-e") 'mwim-end-of-line-or-code)
   (local-set-key (kbd "C-M-a") 'previous-defun)
   (local-set-key (kbd "C-M-e") 'next-defun)
 
-  (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
-    (add-to-list 'ac-sources x))
+  (when (featurep 'auto-complete)
+    (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
+      (add-to-list 'ac-sources x)))
   )
 
 (add-hook 'prog-mode-hook 'jpk/prog-mode-hook)
@@ -2734,73 +2731,59 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C programming language
 
-(defun cpp-highlight-if-0/1 ()
-  "Modify the face of things in between #if 0 ... #endif."
-  (interactive)
-  (setq cpp-known-face '(background-color . "dim gray"))
-  (setq cpp-unknown-face 'default)
-  (setq cpp-face-type 'dark)
-  (setq cpp-known-writable 't)
-  (setq cpp-unknown-writable 't)
-  (setq cpp-edit-list
-        '((#("1" 0 1
-             (fontified nil))
-           nil
-           (background-color . "dim gray")
-           both nil)
-          (#("0" 0 1
-             (fontified nil))
-           (background-color . "dim gray")
-           nil
-           both nil)))
-  (cpp-highlight-buffer t))
+(use-package cc-mode
+  :ensure nil
+  :config
+  (setq c-types-regexp
+        (concat
+         "\\<[_a-zA-Z][_a-zA-Z0-9]*_t\\>" "\\|"
+         (regexp-opt '("unsigned" "int" "char" "float" "void") 'words)))
+  (dolist (m '(c-mode c++-mode))
+    (font-lock-add-keywords m `((,c-types-regexp . 'font-lock-type-face))))
 
-(setq c-types-regexp
-      (concat
-       "\\<[_a-zA-Z][_a-zA-Z0-9]*_t\\>" "\\|"
-       (regexp-opt '("unsigned" "int" "char" "float" "void") 'words)))
+  (defun jpk/c-mode-common-hook ()
+    (setq tab-width 4)
+    (setq c-basic-offset 4
+          c-default-style '((java-mode . "java") (awk-mode . "awk") (other . "bsd")))
+    (setq comment-start "// "
+          comment-end "")
+    (dolist (x '(("!=" . ?≠)
+                 ("NULL" . ?∅)
+                 ("&&" . ?⋀)
+                 ("||" . ?⋁)
+                 ("!" . ?¬)
+                 ("HUGE_VAL" . ?∞)
+                 ("->" . ?→)
+                 ("M_PI" . ?π)
+                 ))
+      (add-to-list 'prettify-symbols-alist x))
+    (electric-indent-local-mode 1)
+    )
 
-(with-eval-after-load "cc-mode"
-  (font-lock-add-keywords
-   'c-mode
-   (list
-    (cons c-types-regexp 'font-lock-type-face)))
-  (font-lock-add-keywords
-   'c++-mode
-   (list
-    (cons c-types-regexp 'font-lock-type-face)))
+  (add-hook 'c-mode-common-hook #'jpk/c-mode-common-hook)
+)
 
+(use-package hideif
+  :disabled
+  :ensure nil
+  :config
+  (setq hide-ifdef-initially t
+        hide-ifdef-shadow t)
+  (add-hook 'c-mode-common-hook #'hide-ifdef-mode)
+
+  (defun jpk/hide-ifdefs-on-save ()
+    (add-hook 'after-save-hook #'hide-ifdefs 'append 'local))
+  (add-hook 'c-mode-common-hook #'jpk/hide-ifdefs-on-save)
+  )
+
+(use-package ffap
+  :ensure nil
+  :config
   ;; TODO find a better way to do this
-  (with-library 'ffap
-    (add-to-list 'ffap-c-path "/usr/lib/avr/include/"))
+  (let ((avr-include-dir "/usr/avr/include"))
+    (when (file-directory-p avr-include-dir)
+      (add-to-list 'ffap-c-path avr-include-dir)))
   )
-
-(defun jpk/c-mode-common-hook ()
-  (smart-tabs-mode 1)
-  (setq tab-width 4)
-  (setq c-basic-offset 4
-        c-default-style '((java-mode . "java") (awk-mode . "awk") (other . "bsd")))
-  (setq comment-start "// "
-        comment-end "")
-  (dolist (x '(("!=" . ?≠)
-               ("NULL" . ?∅)
-               ("&&" . ?⋀)
-               ("||" . ?⋁)
-               ("!" . ?¬)
-               ("HUGE_VAL" . ?∞)
-               ("->" . ?→)
-               ("M_PI" . ?π)
-               ))
-    (add-to-list 'prettify-symbols-alist x))
-  (electric-indent-local-mode 1)
-  (with-library 'ac-c-headers
-    (add-to-list 'ac-sources 'ac-source-c-headers)
-    (add-to-list 'ac-sources 'ac-source-c-header-symbols 'append))
-  ;;(cpp-highlight-if-0/1)
-  ;;(add-hook 'after-save-hook 'cpp-highlight-if-0/1 'append 'local)
-  )
-
-(add-hook 'c-mode-common-hook 'jpk/c-mode-common-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; miscellaneous programming modes
@@ -2874,7 +2857,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("C-c C-f" . bitbake-recipe-build-dir-dired))
   )
 
-(use-package csharp-mode)
+(use-package csharp-mode
+  :disabled)
 
 (use-package sh-script
   :ensure nil
@@ -3048,6 +3032,10 @@ If region is inactive, use the entire current line."
 
 (use-package python-info)
 
+(use-package pynt
+  :disabled
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
 
@@ -3210,9 +3198,11 @@ Lisp function does not specify a special indentation."
                (method
                 (funcall method indent-point state))))))))
 
-(with-library 'morlock
-  (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)
-  (font-lock-add-keywords 'lisp-interaction-mode morlock-font-lock-keywords))
+(use-package morlock
+  :defer 1
+  :init
+  (global-morlock-mode 1)
+  )
 
 (use-package edit-list)
 
@@ -3221,12 +3211,17 @@ Lisp function does not specify a special indentation."
   :diminish eldoc-mode
   )
 
+(use-package highlight-quoted
+  :commands (highlight-quoted-mode)
+  :init
+  (add-hook 'lisp-mode-hook #'highlight-quoted-mode)
+  (add-hook 'emacs-lisp-mode-hook #'highlight-quoted-mode)
+  )
+
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
   (local-set-key (kbd "C-M-S-x") 'eval-region)
-  (with-library 'highlight-quoted
-    (highlight-quoted-mode 1))
-  (with-library 'highlight-operators
+  (when (featurep 'highlight-operators)
     (highlight-operators-mode -1))
   (dolist (x (append
               (default-value 'prettify-symbols-alist)
@@ -3245,29 +3240,24 @@ Lisp function does not specify a special indentation."
   "Add an imenu expression to find lines like \";;; foobar\"."
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) 'append))
+(add-hook 'emacs-lisp-mode-hook #'imenu-elisp-sections)
 
-(with-eval-after-load "lisp-mode"
-  (dolist (hook '(lisp-mode-hook
-                  emacs-lisp-mode-hook
-                  lisp-interaction-mode-hook))
-    (add-hook hook 'jpk/lisp-modes-hook))
-
-  (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
-  )
-
-(defun jpk/ielm-mode-hook ()
-  (when (featurep 'auto-complete
-    (dolist (x '(ac-source-functions
-                 ac-source-variables
-                 ac-source-features
-                 ac-source-symbols
-                 ac-source-words-in-same-mode-buffers))
-      (add-to-list 'ac-sources x)))))
-(add-hook 'ielm-mode-hook 'jpk/ielm-mode-hook)
-
-(add-hook 'ielm-mode-hook 'jpk/lisp-modes-hook)
+(add-hook 'lisp-mode-hook #'jpk/lisp-modes-hook)
+(add-hook 'emacs-lisp-mode-hook #'jpk/lisp-modes-hook)
+(add-hook 'ielm-mode-hook #'jpk/lisp-modes-hook)
 
 (defalias 'emacs-repl 'ielm)
+
+(use-package elisp-def
+  :disabled
+  :init
+  (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+    (add-hook hook #'elisp-def-mode))
+  )
+
+(use-package bug-hunter
+  :commands (bug-hunter-init-file)
+  )
 
 ;; just for fun, an ielm quine:
 ;; (let ((s "(let ((s %S)) (insert (format s s)))")) (insert (format s s)))
@@ -3405,15 +3395,18 @@ Lisp function does not specify a special indentation."
           (insert ";")))))
   (comint-send-input no-newline artificial))
 
+(use-package sqlup-mode
+  :commands (sqlup-mode)
+  :init
+  (add-hook 'sql-mode-hook #'sqlup-mode)
+  )
+
 (defun jpk/sql-mode-hook ()
   (setq adaptive-wrap-extra-indent 2)
   (visual-line-mode 1)
 
-  (with-library 'wrap-region
+  (when (featurep 'wrap-region)
     (wrap-region-add-wrapper "`" "`"))
-
-  (with-library 'sqlup-mode
-    (sqlup-mode 1))
 
   (sql-highlight-ansi-keywords))
 
@@ -3804,22 +3797,23 @@ The user is prompted at each instance like query-replace."
       locate-update-when-revert t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Paren insertion
 
 (use-package wrap-region
   :diminish wrap-region-mode
+  :commands (wrap-region-mode)
+  :init
+  (add-hook 'prog-mode-hook #'wrap-region-mode)
   :config
   (defun jpk/wrap-region-after-wrap-hook ()
     (goto-char (1+ (region-end))))
   (add-hook 'wrap-region-after-wrap-hook #'jpk/wrap-region-after-wrap-hook)
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Paren Highlighting
-
 (show-paren-mode 1)
 
-(with-library 'mic-paren
+(use-package mic-paren
+  :defer 1
+  :config
   (setq paren-max-message-length 80)
   (paren-activate))
 
@@ -3884,13 +3878,13 @@ point."
 (global-set-key (kbd "C-S-<iso-lefttab>") 'bounce-string-or-list)
 (global-set-key (kbd "C-%") 'bounce-string-or-list)
 
-(with-library 'transpose-params
-  (global-set-key (kbd "C-M-S-t") 'transpose-params))
+(use-package transpose-params
+  :ensure nil
+  :bind (("C-M-S-t" . transpose-params))
+  )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; expand-region
-
-(with-library 'expand-region
+(use-package expand-region
+  :config
   (defun isearch-yank-selection ()
     "Put selection from buffer into search string."
     (interactive)
@@ -3899,8 +3893,9 @@ point."
     (let ((isearch-case-fold-search nil))
       (isearch-yank-internal (lambda () (mark)))))
 
-  (global-set-key (kbd "C-=") 'er/expand-region)
-  (define-key isearch-mode-map (kbd "C-S-y") 'isearch-yank-selection)
+  :bind (("C-=" . er/expand-region)
+         :isearch-mode-map
+         ("C-S-y" . isearch-yank-selection))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3988,13 +3983,16 @@ point."
 
 (global-set-key (kbd "C-S-k") 'copy-line)
 
-(with-library 'browse-kill-ring
+(use-package browse-kill-ring
+  :defer 2
+  :config
   (defun jpk/maybe-browse-kill-ring (orig &rest args)
     "Run `browse-kill-ring' if last command was not `yank'."
     (if (eq last-command 'yank)
         (apply orig args)
       (browse-kill-ring)))
-  (advice-add 'yank-pop :around #'jpk/maybe-browse-kill-ring))
+  (advice-add 'yank-pop :around #'jpk/maybe-browse-kill-ring)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Indentation
@@ -4058,8 +4056,11 @@ If called repeatedly, cycle the indent as follows:
 (setq-default tab-width 4
               indent-tabs-mode nil)
 
-;; smart-tabs-mode will indent with tabs, align with spaces
-(with-library 'smart-tabs-mode
+(use-package smart-tabs-mode
+  :commands (smart-tabs-mode)
+  :init
+  (add-hook 'c-mode-common-hook #'smart-tabs-mode)
+  :config
   (smart-tabs-advice cperl-indent-line cperl-indent-level)
   (smart-tabs-advice c-indent-line     c-basic-offset)
   (smart-tabs-advice c-indent-region   c-basic-offset)
@@ -4096,27 +4097,32 @@ Positive arg means right; negative means left"
   (interactive "*r\np")
   (move-left-1 beg en (- arg)))
 
-(require 'smart-shift nil 'noerror)
-(defun move-left-dwim (beg en &optional arg)
-  "Move the active region or the current line The Right Number of columns to the left."
-  (interactive "*r\np")
-  (let* ((shift (or (and (boundp 'smart-shift-indentation-level)
-                     smart-shift-indentation-level)
-                  (and (functionp 'smart-shift-infer-indentation-level)
-                     (smart-shift-infer-indentation-level))
-                  tab-width))
-         (indent-tabs-mode (or indent-tabs-mode smart-tabs-mode)))
-    (move-left-1 beg en (* arg shift))))
+(global-set-key (kbd "C-0") #'move-left-1)
+(global-set-key (kbd "C-9") #'move-right-1)
 
-(defun move-right-dwim (beg en &optional arg)
-  "Move the active region or the current line The Right Number of columns to the right."
-  (interactive "*r\np")
-  (move-left-dwim beg en (- arg)))
+(use-package smart-shift
+  :defer 1
+  :config
+  (defun move-left-dwim (beg en &optional arg)
+    "Move the active region or the current line The Right Number of columns to the left."
+    (interactive "*r\np")
+    (let* ((shift (or (and (boundp 'smart-shift-indentation-level)
+                        smart-shift-indentation-level)
+                     (and (functionp 'smart-shift-infer-indentation-level)
+                        (smart-shift-infer-indentation-level))
+                     tab-width))
+           (indent-tabs-mode (or indent-tabs-mode
+                                (and (boundp 'smart-tabs-mode) smart-tabs-mode))))
+      (move-left-1 beg en (* arg shift))))
 
-(global-set-key (kbd "C-0") 'move-left-1)
-(global-set-key (kbd "C-9") 'move-right-1)
-(global-set-key (kbd "C-)") 'move-left-dwim)
-(global-set-key (kbd "C-(") 'move-right-dwim)
+  (defun move-right-dwim (beg en &optional arg)
+    "Move the active region or the current line The Right Number of columns to the right."
+    (interactive "*r\np")
+    (move-left-dwim beg en (- arg)))
+
+  :bind (("C-)" . move-left-dwim)
+         ("C-(" . mode-right-dwim))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fill
@@ -4204,14 +4210,24 @@ of text."
       )
 
 ;; scroll the other buffer
-(global-set-key (kbd "S-<next>") 'scroll-other-window)
-(global-set-key (kbd "S-<prior>") 'scroll-other-window-down)
+(global-set-key (kbd "S-<next>") #'scroll-other-window)
+(global-set-key (kbd "S-<prior>") #'scroll-other-window-down)
 
-(with-library 'smart-hscroll
-  ;;(smart-hscroll-mode 1) ;; interferes with rectangle-mark-mode
-  (mouse-hscroll-mode 1)
-  (global-set-key (kbd "C->") 'scroll-left-8)
-  (global-set-key (kbd "C-<") 'scroll-right-8))
+(setq mouse-wheel-tilt-scroll t
+      mouse-wheel-flip-direction t)
+
+(defun scroll-left-8 ()
+  "Like `scroll-left' with an arg of 8."
+  (interactive)
+  (scroll-left 8))
+
+(defun scroll-right-8 ()
+  "Like `scroll-right' with an arg of 8."
+  (interactive)
+  (scroll-right 8))
+
+(global-set-key (kbd "M-<mouse-5>") #'scroll-left-8)
+(global-set-key (kbd "M-<mouse-4>") #'scroll-right-8)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
