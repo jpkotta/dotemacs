@@ -5,6 +5,7 @@ repos
 etc
 var
 url
+test
 
 lisp/local-init.el
-lisp/lisp-autoloads.el
+lisp/*.elc

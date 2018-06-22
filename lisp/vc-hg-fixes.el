@@ -1,5 +1,12 @@
+;;; -*- lexical-binding: t -*-
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; fix super slow `hg stat -A`
+
+(eval-and-compile
+  (require 'vc-hg)
+  (require 'log-view)
+  (require 'vc-annotate))
 
 (defun vc-hg-state (file)
   "Hg-specific version of `vc-state'."

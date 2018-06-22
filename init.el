@@ -1,4 +1,4 @@
-;;; init.el --- jpkotta's emacs init file
+;;; init.el --- jpkotta's emacs init file -*- lexical-binding: t -*-
 
 ;; Copyright (C) Jonathan Kotta
 
@@ -70,19 +70,16 @@ files (e.g. directories, fifos, etc.)."
              (cl-remove-if-not #'file-regular-p
                                (directory-files dirname t))))
 
-(defvar extra-lisp-directory (concat user-emacs-directory "lisp/")
+(defvar extra-lisp-directory (expand-file-name "lisp/" user-emacs-directory)
   "Directory for Emacs lisp files that are not part of Emacs or in packages.")
 (add-to-list 'load-path extra-lisp-directory)
-(let* ((prefix "lisp")
-       (autoload-file (concat extra-lisp-directory prefix "-autoloads.el")))
-  (unless (and (file-exists-p autoload-file)
-             (file-newer-than-all-in-dir-p autoload-file extra-lisp-directory))
-    (require 'package)
-    (package-generate-autoloads prefix extra-lisp-directory))
-  (load-file autoload-file))
+
+(defvar test-lisp-directory (expand-file-name "test/" user-emacs-directory)
+  "Directory for Emacs lisp files that in an unfinished state.")
+(add-to-list 'load-path test-lisp-directory)
 
 ;; set up specific to the local machine
-(let ((local-init-file (concat extra-lisp-directory "local-init.el")))
+(let ((local-init-file (expand-file-name "local-init.el" extra-lisp-directory)))
   (when (file-exists-p local-init-file)
     (load-file local-init-file)))
 
@@ -1536,7 +1533,8 @@ This sets all buffers as displayed."
     (setq switches "-u -r -w"))
   (diff old new switches no-async))
 
-(require 'ediff-tweak)
+(with-eval-after-load "ediff"
+  (require 'ediff-tweak))
 
 (advice-add 'ediff-setup-windows :around #'jpk/allow-window-shrinking)
 

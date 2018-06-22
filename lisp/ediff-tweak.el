@@ -1,4 +1,4 @@
-;;; ediff-tweak --- Things to make ediff more pleasant.
+;;; ediff-tweak --- Things to make ediff more pleasant. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2014 Jonathan Kotta
 
@@ -197,7 +197,9 @@ error."
             (lambda (orig &rest args)
               "Honor `ediff-tweak-copy-diff-silent'."
               (if ediff-tweak-copy-diff-silent
-                  (cl-flet ((yes-or-no-p (prompt) t))
+                  (cl-flet ((yes-or-no-p
+                             (prompt)
+                             (progn (ignore prompt) t)))
                     (apply orig args))
                 (apply orig args))))
 

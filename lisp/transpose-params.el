@@ -1,5 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; transpose params
+;;; transpose params -*- lexical-binding: t -*-
 
 ;; from Magnar Sveen
 
@@ -33,8 +32,12 @@
           (delete-char 1)
           (insert new-quotes)
           (set-marker start (point))
-          (replace-string new-quotes (concat "\\" new-quotes) nil start end)
-          (replace-string (concat "\\" old-quotes) old-quotes nil start end)))
+          (goto-char start)
+          (when (search-forward new-quotes end)
+            (replace-match (concat "\\" new-quotes)))
+          (goto-char start)
+          (when (search-forward (concat "\\" old-quotes) end)
+            (replace-match old-quotes))))
     (error "Point isn't in a string")))
 
 (defun move-forward-out-of-param ()
@@ -45,10 +48,10 @@
      (t (forward-char)))))
 
 (defun move-backward-out-of-param ()
-  (while (not (looking-back "(\\|, \\|{ ?\\|\\[ ?"))
+  (while (not (looking-back "(\\|, \\|{ ?\\|\\[ ?" nil))
     (cond
      ((point-is-in-string-p) (move-point-backward-out-of-string))
-     ((looking-back ")\\|}\\|\\]") (backward-list))
+     ((looking-back ")\\|}\\|\\]" nil) (backward-list))
      (t (backward-char)))))
 
 (defun transpose-params ()
@@ -56,8 +59,8 @@
   (interactive)
   (let* ((end-of-first (cond
                         ((looking-at ", ") (point))
-                        ((and (looking-back ",") (looking-at " ")) (- (point) 1))
-                        ((looking-back ", ") (- (point) 2))
+                        ((and (looking-back "," nil) (looking-at " ")) (- (point) 1))
+                        ((looking-back ", " nil) (- (point) 2))
                         (t (error "Place point between params to transpose."))))
          (start-of-first (save-excursion
                            (goto-char end-of-first)

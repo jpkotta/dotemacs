@@ -1,4 +1,4 @@
-;;; sudo-toggle.el --- toggle opening a file with sudo via tramp
+;;; sudo-toggle.el --- toggle opening a file with sudo via tramp -*- lexical-binding: t -*-
 
 ;; Copyright 2017 Jonathan Kotta
 
@@ -56,10 +56,11 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
       (string= method "sudo"))))
 
 ;; tramp API compat
-(if (version< tramp-version "2.3.2")
-    (defalias 'sudo-toggle--make-file-name #'tramp-make-tramp-file-name)
-  (defun sudo-toggle--make-file-name (method user host local &optional hop)
-    (tramp-make-tramp-file-name method user nil host nil local hop)))
+(eval-and-compile
+  (if (version< tramp-version "2.3.2")
+      (defalias 'sudo-toggle--make-file-name #'tramp-make-tramp-file-name)
+    (defun sudo-toggle--make-file-name (method user host local &optional hop)
+      (tramp-make-tramp-file-name method user nil host nil local hop))))
 
 (defun sudo-toggle--internal (path &optional sudo-user)
   "Convert PATH to its sudoed version.
@@ -137,7 +138,10 @@ If called with a prefix argument, ask for username."
     (when fname
       (setq fname (sudo-toggle--internal fname sudo-user))
       (cl-letf (((symbol-function 'server-buffer-done)
-                 (lambda (buffer &optional for-killing) nil))
+                 (lambda (buffer &optional for-killing)
+                   (ignore buffer)
+                   (ignore for-killing)
+                   nil))
                 ((symbol-function 'server-kill-buffer-query-function)
                  (lambda () t)))
         (find-alternate-file fname))

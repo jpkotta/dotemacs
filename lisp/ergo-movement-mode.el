@@ -1,4 +1,4 @@
-;; ergo-movement-mode.el --- use M-ijkl for cursor movement
+;; ergo-movement-mode.el --- use M-ijkl for cursor movement -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009 Teemu Likonen <tlikonen@iki.fi>
 
@@ -104,10 +104,6 @@
         (read-kbd-macro (car k))
         (ergo-movement--make-func (cdr k) t)))
     map))
-
-(setq ergo-movement-mode-map (ergo-movement--make-keymap))
-
-;;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 (defvar ergo-movement-mode-map
   (ergo-movement--make-keymap)

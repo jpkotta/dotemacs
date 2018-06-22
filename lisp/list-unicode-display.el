@@ -1,4 +1,4 @@
-;;; list-unicode-display.el --- Search for and list unicode characters by name
+;;; list-unicode-display.el --- Search for and list unicode characters by name -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2015  Steve Purcell
 

@@ -38,9 +38,11 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-(require 'ibuf-ext)
-(require 'ibuf-macs)
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'ibuffer)
+  (require 'ibuf-ext)
+  (require 'ibuf-macs))
 
 (defun ibuffer-directory--buffer-directory (buffer)
   "Get buffer's directory if a regular file or dired buffer, nil otherwise."
@@ -55,9 +57,9 @@
   "Return a list of all directories that have at least one file being visited."
   (interactive)
   (let ((dirnames (mapcar #'ibuffer-directory--buffer-directory (buffer-list))))
-    (setq dirnames (remove-if-not #'identity dirnames))
+    (setq dirnames (cl-remove-if-not #'identity dirnames))
     (setq dirnames (sort dirnames #'string<))
-    (setq dirnames (remove-duplicates dirnames :test #'string=))
+    (setq dirnames (cl-remove-duplicates dirnames :test #'string=))
     dirnames))
 
 (define-ibuffer-sorter directory

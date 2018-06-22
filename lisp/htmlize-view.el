@@ -1,4 +1,4 @@
-;;; htmlize-view.el --- View current buffer as html in web browser
+;;; htmlize-view.el --- View current buffer as html in web browser -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2005 by Lennart Borgman
 

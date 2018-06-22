@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; no-byte-compile: t -*-
 
 (setq package-user-dir (expand-file-name
                         (format "elpa-test")
