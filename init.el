@@ -1155,6 +1155,7 @@ for `string-to-number'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Flyspell
 
+;; FIXME try enchant
 (use-package flyspell
   :ensure nil
   :diminish flyspell-mode
@@ -1225,7 +1226,7 @@ for `string-to-number'."
         ido-show-dot-for-dired t
         ido-work-directory-match-only nil
         ido-auto-merge-work-directories-length -1
-        ido-use-virtual-buffers 'auto
+        ido-use-virtual-buffers t
         ido-use-filename-at-point 'guess
         ido-use-url-at-point t)
 
@@ -1299,7 +1300,7 @@ it's probably better to explicitly request a merge."
 
 (let ((dir (no-littering-expand-var-file-name "auto-save/")))
   (make-directory dir t)
-  (setq auto-save-file-name-transforms `((".*" ,dir t))))
+  (add-to-list 'auto-save-file-name-transforms `(".*" ,dir t) 'append))
 
 (use-package save-visited-files
   :init
@@ -1359,7 +1360,7 @@ This sets all buffers as displayed."
 (with-eval-after-load 'tramp
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
 
-(setq tramp-copy-size-limit nil) ; for Edison
+;;(setq tramp-copy-size-limit nil) ; for Edison
 
 ;; normally this is bound to find-file-read-only
 (use-package sudo-toggle
@@ -1746,6 +1747,8 @@ This effectively makes `smerge-command-prefix' unnecessary."
   (setq term-suppress-hard-newline nil)
   (setq term-buffer-maximum-size 32768)
 
+  (setq serial-speed-history '("115200"))
+
   (defun term-send-backward-kill-word ()
     "Backward kill word in `term-mode'."
     (interactive)
@@ -1848,46 +1851,6 @@ This effectively makes `smerge-command-prefix' unnecessary."
          ("C-c b" . nil))
   )
 
-(defun shell-command-from-region (&optional arg output-buffer error-buffer)
-  "Run the current line as a shell command.  If the region is
-  active, use that for the command instead.  With a prefix
-  argument, insert the command output into the current buffer,
-  just below the region.  Otherwise, send the output to
-  OUTPUT-BUFFER, just like `shell-command'.  See also
-  `shell-command-on-region' (\\[shell-command-on-region])."
-
-  (interactive "P")
-  (let ((beg (if (region-active-p)
-                 (region-beginning)
-               (line-beginning-position)))
-        (end (if (region-active-p)
-                 (region-end)
-               (line-end-position))))
-    (if arg
-        (save-excursion
-          (goto-char end)
-          (end-of-line)
-          (insert "\n")
-          (insert (shell-command-to-string
-                   (buffer-substring beg end))))
-      (shell-command (buffer-substring beg end) output-buffer error-buffer))))
-
-(global-set-key (kbd "C-<kp-enter>") 'shell-command-from-region)
-(global-set-key (kbd "C-!") 'shell-command-from-region)
-
-(defun sudo-shell-command (cmd &optional output-buffer error-buffer)
-  "Works just like `shell-command', but runs the command with
-  sudo.  If you have sudo configured to remember authentication
-  for a period of time, you can just hit enter when it asks for a
-  password if your previous authentication hasn't expired."
-  (interactive "sShell command: ")
-  (shell-command (concat "echo '" (read-passwd
-                                   (concat "[sudo] password for "
-                                           user-real-login-name ": "))
-                                   "\n'"
-                         " | sudo -S " cmd)
-                 current-prefix-arg))
-
 (defun copy-eterm-color-terminfo (hostspec)
   "Copy the eterm-color terminfo file to a remote host.
 HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
@@ -1913,6 +1876,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (use-package eshell
   :ensure nil
+  :commands (eshell)
   :config
   (require 'em-smart)
   (add-hook 'eshell-mode-hook #'eshell-smart-initialize)
@@ -1923,12 +1887,20 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (setq-local revert-buffer-function #'eshell--revert-buffer-function))
   (add-hook 'eshell-mode-hook #'jpk/eshell-mode-hook)
 
+  (require 'em-prompt)
   (defun jpk/eshell-prompt-function ()
     (format "[%s][%s]\n$ "
             (format-time-string "%H:%M:%S")
             (abbreviate-file-name (eshell/pwd))))
   (setq eshell-prompt-function #'jpk/eshell-prompt-function
         eshell-prompt-regexp "^[$] ")
+
+  (set-face-attribute 'eshell-prompt nil
+                      :foreground "cyan3" :background "grey11")
+
+  ;; (defun jpk/eshell-default-face ()
+  ;;   (face-remap-add-relative 'default '(:background "grey12")))
+  ;; (add-hook 'eshell-mode-hook #'jpk/eshell-default-face)
 
   (defun eshell-insert-history ()
     (interactive)
@@ -2558,11 +2530,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                        (file-name-directory file-or-dir)))
            (backend (or (vc-deduce-backend) (vc-responsible-backend file-dir)))
            (root-dir (vc-call-backend backend 'root file-dir)))
-      root-dir))
+      (expand-file-name root-dir)))
 
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-Wall -g3"))
-               ("%repo-dir" . (expand-file-name (locate-repo-dir)))))
+               ("%repo-dir" . (locate-repo-dir))))
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
@@ -2572,8 +2544,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                     "make -k --no-print-directory -C '%repo-dir'")
                    ("make-top" .
                     "make -k --no-print-directory -C '%make-dir'")
-                   ("u-boot" .
-                    "source '%repo-dir'/sourceme.sh && make -C '%repo-dir' -k --no-print-directory u-boot-with-spl.imx")))
+                   ("build.sh" "bash build.sh" (locate-repo-dir))))
           (c-mode . (("c-simple" .
                       "gcc -o '%file-sans' %cflags '%file-name'")
                      ("c-simple32" .
@@ -2585,21 +2556,21 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; hl-todo
+;;; Generic Programming
 
 (use-package hl-todo
+  :defer 1
   :init
-  (add-hook 'prog-mode-hook #'hl-todo-mode)
-  (add-hook 'bitbake-mode-hook #'hl-todo-mode)
+  ;;(add-hook 'prog-mode-hook #'hl-todo-mode)
+
+  ;; FIXME bitbake-mode breaks without global mode, because of mmm
+  (global-hl-todo-mode 1)
 
   :config
   (setq hl-todo-keyword-faces
         (mapcar (lambda (w) (cons w "red"))
                 '("TODO" "FIXME" "KLUDGE" "XXX" "DEBUG")))
   )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Generic Programming
 
 (setq jit-lock-stealth-time 5)
 
@@ -2654,7 +2625,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (define-key isearch-mode-map (kbd "M-p") #'isearch-backward-symbol-dwim)
 
 (use-package iedit
-  :bind (("C-c i" . iedit-mode))
+  :commands (iedit-mode)
   )
 
 (use-package visual-regexp
@@ -2690,8 +2661,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (add-hook 'prog-mode-hook #'hl-line-mode)
 
 (defun jpk/prog-mode-hook ()
-  ;;(smart-tabs-mode 0) ;; default to using spaces
-
   ;; check spelling on the fly, but only in comments and strings
   (when (featurep 'flyspell)
     (flyspell-mode 0)
@@ -2828,6 +2797,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package bitbake-modes
+  :init
+  ;; Basically bitbake-modes.el only requires other libraries in the
+  ;; the package, but nothing autoloads bitbake-modes, so :config
+  ;; never runs unless we require it manually.
+  (with-eval-after-load 'bitbake
+    (require 'bitbake-modes))
+
   :config
   (with-eval-after-load 'company
     (add-to-list 'company-dabbrev-code-modes 'bitbake-mode))
@@ -3288,6 +3264,25 @@ Lisp function does not specify a special indentation."
 
 (use-package dts-mode
   :config
+  (defun dts--calculate-indentation ()
+    (interactive)
+    (save-excursion
+      (let ((end (point-at-eol))
+            (cnt 0)
+            (initial-point (point)))
+        (goto-char 0)
+        (while (re-search-forward "\\([{}<>]\\)" end t)
+          (if (string-match "[{<]" (match-string-no-properties 0))
+              (setq cnt (1+ cnt))
+            (setq cnt (1- cnt))))
+        ;; subtract one if the current line has an opening brace since we
+        ;; shouldn't add the indentation level until the following line
+        (goto-char initial-point)
+        (beginning-of-line)
+        (when (re-search-forward "[{<]" (point-at-eol) t)
+          (setq cnt (1- cnt)))
+        cnt)))
+
   (defun jpk/dts-mode-hook ()
     (setq indent-tabs-mode t)
     (setq tab-width 4)
@@ -3607,34 +3602,6 @@ match.  It should be idempotent."
 
 ;; recenter after running next-error
 (setq next-error-recenter '(4))
-
-(defun occur-next-error (&optional argp reset)
-  "Move to the Nth (default 1) next match in an Occur mode buffer.
-Compatibility function for \\[next-error] invocations."
-  (interactive "p")
-  ;; we need to run occur-find-match from within the Occur buffer
-  (with-current-buffer
-      ;; Choose the buffer and make it current.
-      (if (next-error-buffer-p (current-buffer))
-          (current-buffer)
-        (next-error-find-buffer nil nil
-                                (lambda ()
-                                  (eq major-mode 'occur-mode))))
-
-    (goto-char (cond (reset (point-min))
-                     ((< argp 0) (line-beginning-position))
-                     ((> argp 0) (line-end-position))
-                     ((point))))
-    (occur-find-match
-     (abs argp)
-     (if (> 0 argp)
-         #'previous-single-property-change
-       #'next-single-property-change)
-     "No more matches")
-    ;; In case the *Occur* buffer is visible in a nonselected window.
-    (let ((win (get-buffer-window (current-buffer) t)))
-      (if win (set-window-point win (point))))
-    (occur-mode-goto-occurrence)))
 
 (defun jpk/next-error-hook ()
   (let ((win (get-buffer-window next-error-last-buffer))
