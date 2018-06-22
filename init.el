@@ -233,6 +233,8 @@ files (e.g. directories, fifos, etc.)."
    '(Info-quoted ((t (:family "Luxi Mono")))))
   )
 
+(setq mode-line-percent-position '(6 . "%q"))
+
 (use-package modeline-posn
   :ensure nil
   :config
@@ -769,6 +771,8 @@ With prefix arg, insert a large ASCII art version.
   :bind (("C-c =" . evil-numbers/inc-at-pt)
          ("C-c -" . evil-numbers/dec-at-pt))
   )
+
+(setq display-raw-bytes-as-hex t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hexl mode
@@ -1340,8 +1344,9 @@ This sets all buffers as displayed."
     (interactive)
     (save-window-excursion
       (dolist (b (buffer-list))
-        (unless (midnight-buffer-display-time b)
+        (unless (with-current-buffer b buffer-display-time)
           (set-window-buffer (selected-window) b)))))
+  (add-hook 'save-visited-files-mode-hook #'midnight-make-all-buffers-cleanable)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1378,6 +1383,8 @@ This sets all buffers as displayed."
       mouse-drag-copy-region t
       mouse-wheel-progressive-speed nil
       mouse-wheel-scroll-amount '(3 ((shift) . 1) ((control))))
+
+(setq mouse-drag-and-drop-region t)
 
 ;; move mouse pointer away when the cursor gets near
 (mouse-avoidance-mode 'cat-and-mouse)
@@ -1751,16 +1758,6 @@ This effectively makes `smerge-command-prefix' unnecessary."
     (interactive)
     (term-send-raw-string "\ed"))
 
-  (defun term-send-backward-word ()
-    "Move backward word in `term-mode'."
-    (interactive)
-    (term-send-raw-string "\eb"))
-
-  (defun term-send-forward-word ()
-    "Move forward word in `term-mode'."
-    (interactive)
-    (term-send-raw-string "\ef"))
-
   (defun term-send-M-x ()
     "Send `M-x' in `term-mode'."
     (interactive)
@@ -1821,8 +1818,10 @@ This effectively makes `smerge-command-prefix' unnecessary."
     "Clear the buffer.  Suitable for `revert-buffer-function'."
     (when (or (not noconfirm)
              (and noconfirm (y-or-n-p "Clear buffer? ")))
-      (term-reset-terminal)
-      (term-send-raw-string "\C-l")))
+      (let ((inhibit-read-only t))
+        (setq term-terminal-state 0)
+        (term-reset-terminal)
+        (term-send-raw-string "\C-l"))))
 
   (defun jpk/term-mode-hook ()
     (setq cua--ena-cua-keys-keymap nil)
@@ -1840,19 +1839,12 @@ This effectively makes `smerge-command-prefix' unnecessary."
          ("C-s" . isearch-forward)
          ("C-r" . isearch-backward)
          ("C-v" . nil)
-         ("C-<right>" . term-send-forward-word)
-         ("C-<left>" . term-send-backward-word)
          ("C-<backspace>" . term-send-backward-kill-word)
          ("C-<delete>" . term-send-forward-kill-word)
-         ("C-k" . term-send-raw)
-         ("C-y" . term-send-raw)
          ("C-c C-c" . term-interrupt-subjob-or-C-c)
          ("C-c C-z" . term-stop-subjob-or-C-z)
          ("C-c C-y" . term-paste)
          ("C-c C-u" . universal-argument)
-         ("C-S-t" . sane-term-create)
-         ("<C-prior>" . sane-term-prev)
-         ("<C-next>" . sane-term-next)
          ("C-c C-v" . term-send-raw) ;; quote
          ("C-c C-x" . term-send-raw) ;; C-x
          ("C-c b" . nil))
@@ -1915,6 +1907,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
       (dired-create-directory destdir))
     (copy-file (concat data-directory "e/eterm-color")
                (concat destdir "eterm-color"))))
+
+(setq shell-command-dont-erase-buffer 'beg-last-out)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; eshell
@@ -3553,9 +3547,6 @@ server/database name."
   (setq undo-tree-mode-lighter "")
 
   :config
-  (advice-add 'undo-tree-visualize :before #'jpk/save-window-state)
-  (advice-add 'undo-tree-visualizer-quit :after #'jpk/restore-window-state)
-
   (global-undo-tree-mode 1)
 
   :bind (("C-z" . undo-tree-undo)
@@ -4200,14 +4191,10 @@ of text."
 
 (setq hscroll-margin 1 ;; how close to the edge to get before scrolling
       hscroll-step 1 ;; how many columns to scroll once past hscroll-margin
-      auto-hscroll-mode t)
-
-(setq scroll-preserve-screen-position t)
-
-;; makes scrolling less jittery
-(setq auto-window-vscroll nil
-      scroll-conservatively most-positive-fixnum
-      )
+      auto-hscroll-mode t
+      scroll-preserve-screen-position t
+      auto-window-vscroll nil ;; less jittery
+      scroll-conservatively most-positive-fixnum)
 
 ;; scroll the other buffer
 (global-set-key (kbd "S-<next>") #'scroll-other-window)
