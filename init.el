@@ -349,7 +349,7 @@ files (e.g. directories, fifos, etc.)."
       (message "Use `M-x suspend-frame' instead.")
     (suspend-frame)))
 
-(global-set-key (kbd "C-x C-z") 'suspend-frame-if-not-gui)
+(global-set-key (kbd "C-x C-z") #'suspend-frame-if-not-gui)
 
 ;; Don't create the .#filename files and don't ask about stealing.
 (setq create-lockfiles nil)
@@ -382,7 +382,7 @@ files (e.g. directories, fifos, etc.)."
 (advice-add 'mouse-set-region :before-until #'jpk/mouse-select-window)
 
 ;; cancel everything, including active minibuffers and recursive edits
-(global-set-key (kbd "C-M-g") 'top-level)
+(global-set-key (kbd "C-M-g") #'top-level)
 
 ;;(delete-selection-mode 1)
 
@@ -422,14 +422,14 @@ files (e.g. directories, fifos, etc.)."
   (interactive)
   (push-mark (point) t nil)
   (message "Pushed mark to ring"))
-(global-set-key (kbd "C-`") 'push-mark-no-activate)
+(global-set-key (kbd "C-`") #'push-mark-no-activate)
 
 (defun jump-to-mark ()
   "Jumps to the local mark, respecting the `mark-ring' order.
   This is the same as using \\[set-mark-command] with the prefix argument."
   (interactive)
   (set-mark-command 1))
-(global-set-key (kbd "M-`") 'jump-to-mark)
+(global-set-key (kbd "M-`") #'jump-to-mark)
 
 (defun exchange-point-and-mark-no-activate ()
   "Identical to \\[exchange-point-and-mark] but will not activate the region."
@@ -437,7 +437,7 @@ files (e.g. directories, fifos, etc.)."
   (exchange-point-and-mark)
   (deactivate-mark nil))
 (global-set-key [remap exchange-point-and-mark]
-                'exchange-point-and-mark-no-activate)
+                #'exchange-point-and-mark-no-activate)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
@@ -671,7 +671,7 @@ With prefix arg, insert a large ASCII art version.
             " \\___/         \\___/\n"
             "       ======= \n")
     ))
-(global-set-key (kbd "C-c w t f") 'insert-look-of-disapproval)
+(global-set-key (kbd "C-c w t f") #'insert-look-of-disapproval)
 
 (defun insert-awesome-face (arg)
   "Insert a happy face (☻).
@@ -1033,7 +1033,7 @@ for `string-to-number'."
 (defun jpk/dabbrev-friend-buffer (other-buffer)
   (and (dabbrev--same-major-mode-p other-buffer)
      (< (buffer-size other-buffer) (* 1 1024 1024))))
-(setq dabbrev-friend-buffer-function 'jpk/dabbrev-friend-buffer)
+(setq dabbrev-friend-buffer-function #'jpk/dabbrev-friend-buffer)
 
 (use-package auto-complete
   :disabled
@@ -1118,7 +1118,7 @@ for `string-to-number'."
   (company-tng-configure-default)
   (setq company-idle-delay 0.1
         company-auto-complete nil
-        company-search-regexp-function 'company-search-flex-regexp
+        company-search-regexp-function #'company-search-flex-regexp
         company-tooltip-align-annotations t)
 
   ;;(setq company-frontends (standard-value 'company-frontends))
@@ -1468,7 +1468,7 @@ This sets all buffers as displayed."
       (forward-line (1- line))
       (move-to-column col)))
 
-  (define-key vc-dir-mode-map (kbd "SPC") 'vc-dir-toggle)
+  (define-key vc-dir-mode-map (kbd "SPC") #'vc-dir-toggle)
 
   )
 
@@ -1540,7 +1540,7 @@ This sets all buffers as displayed."
 (advice-add 'ediff-setup-windows :around #'jpk/allow-window-shrinking)
 
 ;; put the ediff control window in the same frame
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+(setq ediff-window-setup-function #'ediff-setup-windows-plain)
 
 ;; Skip over whitespace-only differences in ediff mode.  Still finds
 ;; such regions, only changes navigation.  Toggle with # # in ediff
@@ -1556,14 +1556,14 @@ This sets all buffers as displayed."
   )
 
 (with-eval-after-load "diff-mode"
-  (define-key diff-mode-map (kbd "C-c C-k") 'diff-hunk-kill)
-  (define-key diff-mode-map (kbd "C-c C-S-k") 'diff-file-kill)
+  (define-key diff-mode-map (kbd "C-c C-k") #'diff-hunk-kill)
+  (define-key diff-mode-map (kbd "C-c C-S-k") #'diff-file-kill)
   (define-key diff-mode-map (kbd "K") nil) ;; diff-file-kill
   (define-key diff-mode-map (kbd "M-K") nil) ;; diff-file-kill
-  (define-key diff-mode-map (kbd "C-c C-c") 'commit-patch-buffer)
-  (define-key diff-mode-map (kbd "C-c C-m") 'diff-add-trailing-CR-in-hunk)
-  (define-key diff-mode-map (kbd "C-c C-j") 'diff-remove-trailing-CR-in-hunk)
-  (define-key diff-mode-map (kbd "C-c C-o") 'diff-goto-source)
+  (define-key diff-mode-map (kbd "C-c C-c") #'commit-patch-buffer)
+  (define-key diff-mode-map (kbd "C-c C-m") #'diff-add-trailing-CR-in-hunk)
+  (define-key diff-mode-map (kbd "C-c C-j") #'diff-remove-trailing-CR-in-hunk)
+  (define-key diff-mode-map (kbd "C-c C-o") #'diff-goto-source)
   )
 
 (defun diff-delete-trailing-CR ()
@@ -1711,9 +1711,9 @@ This effectively makes `smerge-command-prefix' unnecessary."
 ;; used for interactive terminals
 (with-eval-after-load "comint"
   (define-key comint-mode-map
-    (kbd "<up>") 'comint-previous-matching-input-from-input)
+    (kbd "<up>") #'comint-previous-matching-input-from-input)
   (define-key comint-mode-map
-    (kbd "<down>") 'comint-next-matching-input-from-input)
+    (kbd "<down>") #'comint-next-matching-input-from-input)
   )
 
 (autoload 'ansi-color-for-comint-mode-on "ansi-color")
@@ -1830,7 +1830,7 @@ This effectively makes `smerge-command-prefix' unnecessary."
       (yas-minor-mode 0))
     (setq-local revert-buffer-function #'term-revert-buffer)
     )
-  (add-hook 'term-mode-hook 'jpk/term-mode-hook)
+  (add-hook 'term-mode-hook #'jpk/term-mode-hook)
 
   :bind (:map term-raw-map
          ("C-x" . nil)
@@ -2001,13 +2001,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   "I always think that this should be called 'delete'.  It's not
   getting saved to the kill-ring...")
 
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+(add-hook 'after-save-hook #'executable-make-buffer-file-executable-if-script-p)
 
 ;; set-fill-column is dumb
-(global-set-key (kbd "C-x f") 'find-file-at-point)
+(global-set-key (kbd "C-x f") #'find-file-at-point)
 
 ;; this will e.g. find a .h find if you're looking at the .c file
-(global-set-key (kbd "C-x F") 'ff-find-related-file)
+(global-set-key (kbd "C-x F") #'ff-find-related-file)
 
 (defun get-file-name-in-path (dirs suffixes)
   "Use completing-read to select a file DIRS is a list of strings
@@ -2052,7 +2052,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (if (buffer-file-name)
       (save-buffer args)
     (error "Buffer is not associated with a file.  Use `write-file' instead.")))
-(global-set-key [remap save-buffer] 'jpk/save-buffer-maybe)
+(global-set-key [remap save-buffer] #'jpk/save-buffer-maybe)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
@@ -2249,8 +2249,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;; image-mode
 
 (with-eval-after-load "image-mode"
-  (define-key image-mode-map (kbd "<next>") 'image-scroll-up)
-  (define-key image-mode-map (kbd "<prior>") 'image-scroll-down)
+  (define-key image-mode-map (kbd "<next>") #'image-scroll-up)
+  (define-key image-mode-map (kbd "<prior>") #'image-scroll-down)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2512,12 +2512,12 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                       (bury-buffer buf)
                       (switch-to-prev-buffer (get-buffer-window buf) 'kill))
                     buffer)))
-(add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
+(add-hook 'compilation-finish-functions #'bury-compile-buffer-if-successful)
 
 (setq compilation-read-command nil) ;; only prompt when compile is run with prefix
 
-(global-set-key (kbd "C-c b") 'compile)
-(global-set-key (kbd "C-x ~") 'previous-error)
+(global-set-key (kbd "C-c b") #'compile)
+(global-set-key (kbd "C-x ~") #'previous-error)
 
 (use-package multi-compile
   :config
@@ -2669,17 +2669,17 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (setq adaptive-wrap-extra-indent 1)
   (visual-line-mode 1)
 
-  (local-set-key (kbd "C-M-;") 'insert-comment-bar)
-  (local-set-key (kbd "C-m") 'newline-and-indent)
-  (local-set-key (kbd "C-M-a") 'previous-defun)
-  (local-set-key (kbd "C-M-e") 'next-defun)
+  (local-set-key (kbd "C-M-;") #'insert-comment-bar)
+  (local-set-key (kbd "C-m") #'newline-and-indent)
+  (local-set-key (kbd "C-M-a") #'previous-defun)
+  (local-set-key (kbd "C-M-e") #'next-defun)
 
   (when (featurep 'auto-complete)
     (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
       (add-to-list 'ac-sources x)))
   )
 
-(add-hook 'prog-mode-hook 'jpk/prog-mode-hook)
+(add-hook 'prog-mode-hook #'jpk/prog-mode-hook)
 
 (use-package imenu
   :ensure nil
@@ -2903,7 +2903,7 @@ If region is inactive, use the entire current line."
                (concat "python -c " (shell-quote-argument
                                      (concat "print(repr(" str "))"))))))))
 
-(global-set-key (kbd "C-c e p") 'jpk/python-eval-insert-region)
+(global-set-key (kbd "C-c e p") #'jpk/python-eval-insert-region)
 
 (defun python-2to3 ()
   "Run 2to3 on the current buffer and put the diff in a new buffer."
@@ -2976,7 +2976,7 @@ If region is inactive, use the entire current line."
                ))
     (add-to-list 'prettify-symbols-alist x))
   )
-(add-hook 'python-mode-hook 'jpk/python-mode-hook)
+(add-hook 'python-mode-hook #'jpk/python-mode-hook)
 
 (use-package sphinx-doc
   :after python
@@ -3022,11 +3022,11 @@ If region is inactive, use the entire current line."
 ;;   )
 
 (defun jpk/octave-mode-hook ()
-  (local-set-key (kbd "C-c C-s") 'octave-send-buffer)
-  (local-set-key (kbd "C-c C-l") 'octave-send-line)
-  (local-set-key (kbd "C-c C-r") 'octave-send-region))
+  (local-set-key (kbd "C-c C-s") #'octave-send-buffer)
+  (local-set-key (kbd "C-c C-l") #'octave-send-line)
+  (local-set-key (kbd "C-c C-r") #'octave-send-region))
 
-(add-hook 'octave-mode-hook 'jpk/octave-mode-hook)
+(add-hook 'octave-mode-hook #'jpk/octave-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Verilog
@@ -3047,7 +3047,7 @@ If region is inactive, use the entire current line."
                ))
     (add-to-list 'prettify-symbols-alist x))
   )
-(add-hook 'verilog-mode-hook 'jpk/verilog-mode-hook)
+(add-hook 'verilog-mode-hook #'jpk/verilog-mode-hook)
 
 (add-to-list 'auto-mode-alist '("\\.vams\\'" . verilog-mode))
 
@@ -3082,7 +3082,7 @@ If region is inactive, use the entire current line."
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
-(global-set-key (kbd "C-c e") 'eval-and-replace-last-sexp)
+(global-set-key (kbd "C-c e") #'eval-and-replace-last-sexp)
 
 (setq print-length 256
       print-level 16
@@ -3188,7 +3188,7 @@ Lisp function does not specify a special indentation."
 
 (defun jpk/lisp-modes-hook ()
   (eldoc-mode 1)
-  (local-set-key (kbd "C-M-S-x") 'eval-region)
+  (local-set-key (kbd "C-M-S-x") #'eval-region)
   (when (featurep 'highlight-operators)
     (highlight-operators-mode -1))
   (dolist (x (append
@@ -3302,11 +3302,11 @@ Lisp function does not specify a special indentation."
   :config
   (defun jpk/fvwm-mode-hook ()
     ;;(fvwm-enable-indentation)
-    (local-set-key (kbd "RET") 'newline)
-    (setq indent-line-function 'indent-relative-dwim)
+    (local-set-key (kbd "RET") #'newline)
+    (setq indent-line-function #'indent-relative-dwim)
     (hl-line-mode 1)
     (setq tab-width 4))
-  (add-hook 'fvwm-mode-hook 'jpk/fvwm-mode-hook)
+  (add-hook 'fvwm-mode-hook #'jpk/fvwm-mode-hook)
 
   :mode "\\.fvwm\\'"
   )
@@ -3320,7 +3320,7 @@ Lisp function does not specify a special indentation."
 ;;; text and markup modes
 
 (defun jpk/text-mode-hook ()
-  (setq indent-line-function 'indent-relative-dwim)
+  (setq indent-line-function #'indent-relative-dwim)
   (when (featurep 'flyspell)
     (flyspell-mode 1))
   (when (featurep 'auto-complete)
@@ -3399,7 +3399,7 @@ Lisp function does not specify a special indentation."
 
 (with-eval-after-load "sql"
 
-  (define-key sql-interactive-mode-map (kbd "RET") 'insert-semicolon-and-send-input)
+  ;;(define-key sql-interactive-mode-map (kbd "RET") #'insert-semicolon-and-send-input)
 
   ;;;;
 
@@ -3495,8 +3495,8 @@ server/database name."
           ;; Use the name we've got
           name))))
 
-  (add-hook 'sql-interactive-mode-hook 'sql-rename-buffer)
-  (add-hook 'sql-mode-hook 'jpk/sql-mode-hook)
+  (add-hook 'sql-interactive-mode-hook #'sql-rename-buffer)
+  (add-hook 'sql-mode-hook #'jpk/sql-mode-hook)
   )
 
 (defun sql-mysql-diff-tables (user host passwd database table-a table-b)
@@ -3556,7 +3556,7 @@ server/database name."
 
 ;; normally M-<tab> which is obviously not going to work
 ;; get a literal tab with C-q <tab>
-(define-key isearch-mode-map (kbd "<tab>") 'isearch-complete)
+(define-key isearch-mode-map (kbd "<tab>") #'isearch-complete)
 
 (defun jpk/isearch-update-post-hook ()
   (when (and isearch-success (not isearch-just-started))
@@ -3565,7 +3565,7 @@ server/database name."
 (add-hook 'isearch-update-post-hook #'jpk/isearch-update-post-hook)
 
 ;; make backspace behave in a more intuitive way
-(define-key isearch-mode-map (kbd "<backspace>") 'isearch-del-char)
+(define-key isearch-mode-map (kbd "<backspace>") #'isearch-del-char)
 
 (defun isearch-unfail ()
   "Like `isearch-abort', but will not quit isearch.  Effectively,
@@ -3578,7 +3578,7 @@ match.  It should be idempotent."
     (isearch-pop-state))
   (isearch-update))
 
-(define-key isearch-mode-map (kbd "<C-backspace>") 'isearch-unfail)
+(define-key isearch-mode-map (kbd "<C-backspace>") #'isearch-unfail)
 
 (define-key isearch-mode-map (kbd "M-k") nil)
 
@@ -3715,9 +3715,9 @@ be specified with a numeric prefix."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Search and replace
 
-(define-key query-replace-map (kbd "b") 'backup)
-(define-key query-replace-map (kbd "B") 'backup)
-(define-key query-replace-map (kbd "RET") 'act-and-show)
+(define-key query-replace-map (kbd "b") #'backup)
+(define-key query-replace-map (kbd "B") #'backup)
+(define-key query-replace-map (kbd "RET") #'act-and-show)
 
 (defun query-exchange (string-1 string-2)
   "Exchange string-1 and string-2 interactively.
@@ -3734,14 +3734,14 @@ The user is prompted at each instance like query-replace."
   (let ((ret (search-forward string bound noerror count)))
     (recenter)
     ret))
-(setq replace-search-function 'search-forward-and-center)
+(setq replace-search-function #'search-forward-and-center)
 
 (defun re-search-forward-and-center (regexp &optional bound noerror count)
   "Just like `re-search-forward', but centers the point in the window."
   (let ((ret (re-search-forward regexp bound noerror count)))
     (recenter)
     ret))
-(setq replace-re-search-function 're-search-forward-and-center)
+(setq replace-re-search-function #'re-search-forward-and-center)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; locate
@@ -3831,8 +3831,8 @@ point."
       ;; FIXME apparently strings aren't things anymore
       (bounce-thing-boundary 'string)
     (goto-match-paren)))
-(global-set-key (kbd "C-S-<iso-lefttab>") 'bounce-string-or-list)
-(global-set-key (kbd "C-%") 'bounce-string-or-list)
+(global-set-key (kbd "C-S-<iso-lefttab>") #'bounce-string-or-list)
+(global-set-key (kbd "C-%") #'bounce-string-or-list)
 
 (use-package transpose-params
   :ensure nil
@@ -3888,7 +3888,7 @@ point."
 ;; the best way to find the symbol for a key is to run C-h k <key>
 
 ;; normally bound to C-<mouse-3>
-(global-set-key (kbd "<down-mouse-3>") 'mouse-popup-menubar-stuff)
+(global-set-key (kbd "<down-mouse-3>") #'mouse-popup-menubar-stuff)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Changing case (capitalization)
@@ -3903,9 +3903,9 @@ point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; delete things
 
-(global-set-key (kbd "M-SPC") 'cycle-spacing)
-(global-set-key (kbd "M-S-SPC") 'delete-blank-lines)
-(global-set-key (kbd "C-d") 'delete-forward-char)
+(global-set-key (kbd "M-SPC") #'cycle-spacing)
+(global-set-key (kbd "M-S-SPC") #'delete-blank-lines)
+(global-set-key (kbd "C-d") #'delete-forward-char)
 
 (defalias 'delete-vertical-space 'delete-blank-lines)
 
@@ -3937,7 +3937,7 @@ point."
   (interactive "p")
   (delete-instead-of-kill (kill-word arg)))
 
-(global-set-key (kbd "C-S-k") 'copy-line)
+(global-set-key (kbd "C-S-k") #'copy-line)
 
 (use-package browse-kill-ring
   :defer 2
@@ -4006,7 +4006,7 @@ If called repeatedly, cycle the indent as follows:
     (when (or (bolp) (looking-back "^[[:space:]]+" (point-min)))
       (beginning-of-line-text))))
 
-(setq-default indent-line-function 'indent-relative-dwim)
+(setq-default indent-line-function #'indent-relative-dwim)
 
 ;; new buffers default to using 4 spaces for indent
 (setq-default tab-width 4
@@ -4023,8 +4023,8 @@ If called repeatedly, cycle the indent as follows:
   )
 
 ;; shift-tab should undo what tab does
-(global-set-key (kbd "<backtab>") 'delete-indentation)
-(global-set-key (kbd "S-TAB") 'delete-indentation)
+(global-set-key (kbd "<backtab>") #'delete-indentation)
+(global-set-key (kbd "S-TAB") #'delete-indentation)
 
 ;; rigidly indent
 ;; see EmacsWiki://MovingRegionHorizontally
