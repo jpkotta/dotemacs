@@ -180,6 +180,8 @@ files (e.g. directories, fifos, etc.)."
   (custom-theme-set-faces
    'calmer-forest
 
+   '(fixed-pitch ((t (:family "Luxi Mono"))))
+
    '(fringe ((t (:background "grey10" :foreground "dark green"))))
    '(highlight ((t (:background "#001000"))))
 
@@ -1227,8 +1229,8 @@ for `string-to-number'."
         ido-work-directory-match-only nil
         ido-auto-merge-work-directories-length -1
         ido-use-virtual-buffers t
-        ido-use-filename-at-point 'guess
-        ido-use-url-at-point t)
+        ido-use-filename-at-point nil
+        ido-use-url-at-point nil)
 
   (dolist (e '("-pkg.el" "-autoloads.el"))
     (add-to-list 'completion-ignored-extensions e))
@@ -2027,13 +2029,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                        (lambda (x) (string-match-p (concat (regexp-opt suffixes t) "$") x)))
                      nil nil nil def)))
 
-(defun find-file-in-path (dirs suffixes)
-  "Find a file with a certain extension in a list of directories.
-  See `get-file-name-in-path' for more info."
-  (let* ((library (get-file-name-in-path dirs suffixes))
-         (buf (find-file-noselect (locate-file library dirs))))
-    (condition-case nil (switch-to-buffer buf) (error (pop-to-buffer buf)))))
-
 (defun create-directory-if-necessary ()
   "Create the directory tree above `buffer-file-name', if it
   doesn't completely exist yet.  For use in `find-file-hook'."
@@ -2538,7 +2533,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
-        '((".*" . (("make-simple" .
+        `((".*" . (("make-simple" .
                     "make -k")
                    ("make-repo" .
                     "make -k --no-print-directory -C '%repo-dir'")
@@ -2551,6 +2546,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                       "gcc -o '%file-sans' %cflags -m32 '%file-name'")))
           (c++-mode . (("c++-simple" .
                         "g++ -o '%file-sans' %cxxflags '%file-name'")))))
+
+  (require 'ansi-color)
+  (defun colorize-compilation-buffer ()
+    (toggle-read-only)
+    (ansi-color-apply-on-region compilation-filter-start (point))
+    (toggle-read-only))
+  (add-hook 'compilation-filter-hook #'colorize-compilation-buffer)
 
   :bind (("C-c b" . multi-compile-run))
   )
@@ -3248,7 +3250,7 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
 
-(use-package config-mode
+(use-package conf-mode
   :ensure nil
   :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'")
   )
@@ -3653,6 +3655,8 @@ be specified with a numeric prefix."
   (defalias 'rg 'ripgrep-regexp)
 
   :config
+  (setq ripgrep-arguments '("--smart-case"))
+
   (defun jpk/ripgrep-search-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
