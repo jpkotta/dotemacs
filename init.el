@@ -1323,20 +1323,25 @@ it's probably better to explicitly request a merge."
         save-visited-files-auto-restore t)
 )
 
-(setq recentf-max-saved-items 1024)
+(use-package recentf
+  :ensure nil
+  :defer 2
+  :config
+  (setq recentf-max-saved-items 1024)
 
-(defun jpk/recentf-keep-predicate (file)
-  "Faster than `recentf-keep-default-predicate'."
-  (cond
-   ((file-remote-p file nil t) (file-readable-p file))
-   ((file-remote-p file))
-   ;; file-readable-p can be slow for network filesystems, hopefully
-   ;; file-exists-p mitigates that
-   ((file-exists-p file) (file-readable-p file))))
+  (defun jpk/recentf-keep-predicate (file)
+    "Faster than `recentf-keep-default-predicate'."
+    (cond
+     ((file-remote-p file nil t) (file-readable-p file))
+     ((file-remote-p file))
+     ;; file-readable-p can be slow for network filesystems, hopefully
+     ;; file-exists-p mitigates that
+     ((file-exists-p file) (file-readable-p file))))
 
-(setq recentf-keep (list #'jpk/recentf-keep-predicate))
+  (setq recentf-keep (list #'jpk/recentf-keep-predicate))
 
-(recentf-mode 1)
+  (recentf-mode 1)
+  )
 
 (setq history-delete-duplicates t)
 (savehist-mode 1)
