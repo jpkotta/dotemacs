@@ -286,6 +286,9 @@ files (e.g. directories, fifos, etc.)."
   :diminish buffer-face-mode
   )
 
+(setq delete-selection-save-to-register ?d)
+(delete-selection-mode 1)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ergomovement
 
