@@ -2200,9 +2200,12 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package dired-avfs
-  :disabled ;; kinda broken
+  :if (executable-find "mountavfs")
+  :after dired
   :config
-  (setq dired-avfs-file-size-threshold (expt 2 30))
+  (setq dired-avfs-file-size-threshold 1000) ;; MB
+  (unless (= 0 (shell-command "mountavfs"))
+    (message "Could not start avfs."))
   )
 
 (use-package view
