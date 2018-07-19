@@ -1029,7 +1029,12 @@ for `string-to-number'."
       shr-color-visible-luminance-min 70
       shr-external-browser #'browse-url-chrome)
 
-(use-package atomic-chrome)
+(use-package atomic-chrome
+  :defer 5
+  :init
+  (when (daemonp)
+    (atomic-chrome-start-server))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; completion
