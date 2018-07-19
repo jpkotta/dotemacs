@@ -310,7 +310,7 @@ files (e.g. directories, fifos, etc.)."
   (dolist (w (append (window-list) (window-list)))
     (let* ((buf (window-buffer w))
            (bufname (buffer-name buf))
-           (all-window-bufs (mapcar 'window-buffer (window-list))))
+           (all-window-bufs (mapcar #'window-buffer (window-list))))
       (when (or (string-match-p "^\\*.*\\*$" bufname)
                (memq buf (cdr (memq buf all-window-bufs))))
         (unless (eq w (selected-window))
@@ -709,7 +709,7 @@ With prefix arg, insert a large ASCII art version.
                       ("datetime" "%F %T")
                       ("iso" "%FT%T%z")))
          (type (completing-read "Type: "
-                                (mapcar 'car fmt-alist)
+                                (mapcar #'car fmt-alist)
                                 nil t nil nil "datetime"))
          (fmt (cadr (assoc type fmt-alist))))
     (insert (format-time-string fmt (current-time)))))
@@ -1860,9 +1860,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
    (let ((hosts (mapcar (lambda (x) (cond ((stringp x) x)
                                      ((null (car x)) (cadr x))
                                      (t (concat (car x) "@" (cadr x)))))
-                        (apply 'append
+                        (apply #'append
                                (mapcar
-                                (lambda (x) (cl-remove-if-not 'identity (apply (car x) (cdr x))))
+                                (lambda (x) (cl-remove-if-not #'identity (apply (car x) (cdr x))))
                                 (tramp-get-completion-function "ssh"))))))
      (list (completing-read "Hostname: " hosts nil 'confirm nil nil hosts nil))))
   (let ((destdir (format "/ssh:%s:.terminfo/e/" hostspec)))
@@ -2023,7 +2023,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                    def)))
     (completing-read (if def (format "File name (default %s): " def)
                        "File name: ")
-                     (apply-partially 'locate-file-completion-table
+                     (apply-partially #'locate-file-completion-table
                                       dirs suffixes)
                      (when suffixes
                        (lambda (x) (string-match-p (concat (regexp-opt suffixes t) "$") x)))
@@ -2290,9 +2290,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                 (error "Invalid separator: %s" x)))
           separators)
     (setq csv-separators separators)
-    (setq csv-separator-chars (mapcar 'string-to-char separators)
-          csv-skip-regexp (apply 'concat "^\n" csv-separators)
-          csv-separator-regexp (apply 'concat `("[" ,@separators "]"))
+    (setq csv-separator-chars (mapcar #'string-to-char separators)
+          csv-skip-regexp (apply #'concat "^\n" csv-separators)
+          csv-separator-regexp (apply #'concat `("[" ,@separators "]"))
           csv-font-lock-keywords
           ;; NB: csv-separator-face variable evaluates to itself.
           `((,csv-separator-regexp . csv-separator-face))))
@@ -3446,9 +3446,9 @@ server/database name."
 
       ;; Build a name using the :sqli-login setting
       (setq name
-            (apply 'concat
+            (apply #'concat
                    (cdr
-                    (apply 'append nil
+                    (apply #'append nil
                            (sql-for-each-login
                             (sql-get-product-feature sql-product :sqli-login)
                             (lambda (token plist)
