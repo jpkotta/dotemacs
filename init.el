@@ -636,6 +636,13 @@ default label."
   :after org
   )
 
+(use-package ob-http
+  :after org
+  :config
+  (add-to-list 'org-babel-load-languages '(http . t))
+  (org-babel-reload-languages)
+  )
+
 ;; TODO: check out ob-shstream.el
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2886,6 +2893,38 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (use-package lua-mode)
 
+(use-package js2-mode
+  :config
+  (setq js2-strict-trailing-comma-warning nil
+        js-switch-indent-offset 2)
+
+  (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+
+  (defun jpk/js2-mode-hook ()
+    (setq tab-width 2
+          js2-basic-offset 2))
+  (add-hook 'js2-mode-hook #'jpk/js2-mode-hook)
+
+  (require 'compile-eslint)
+  (push 'eslint compilation-error-regexp-alist)
+
+  :mode "\\.js\\'"
+  :bind (:map js2-mode-map
+         ("M-." . nil))
+  )
+
+(use-package json-mode)
+
+(use-package xref-js2
+  :after js2-mode
+  :init
+  (defun jpk/xref-js2/js2-mode-hook ()
+    (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil 'local))
+  (add-hook 'js2-mode-hook #'jpk/xref-js2/js2-mode-hook)
+  )
+
+(use-package handlebars-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Python
 
@@ -3252,7 +3291,8 @@ Lisp function does not specify a special indentation."
 
 (use-package conf-mode
   :ensure nil
-  :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'")
+  :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'"
+         "\\.env\\.sample\\'")
   )
 
 (use-package systemd)
