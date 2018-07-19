@@ -267,6 +267,7 @@ files (e.g. directories, fifos, etc.)."
       eol-mnemonic-unix "(LF)")
 
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+(put 'visual-line-mode 'safe-local-variable 'booleanp)
 (setq-default indicate-empty-lines t)
 
 (setq uniquify-buffer-name-style 'post-forward)
@@ -1153,6 +1154,7 @@ for `string-to-number'."
          ("<tab>" . company-complete-common-or-cycle)
          ("TAB" . company-complete-common-or-cycle)
          ("C-s" . company-filter-candidates)
+         ("SPC" . nil)
          :map company-search-map
          ;;("M-i" . company-select-previous)
          ;;("M-k" . company-select-next)
@@ -1160,6 +1162,7 @@ for `string-to-number'."
          ("<backtab>" . company-select-previous)
          ("<tab>" . company-complete-common-or-cycle)
          ("TAB" . company-complete-common-or-cycle)
+         ("SPC" . nil)
          )
   )
 
@@ -1429,6 +1432,7 @@ This sets all buffers as displayed."
     (other-window 1)))
 
 (use-package ace-window
+  :commands (ace-window)
   :config
   (setf (alist-get ?o aw-dispatch-alist) '(aw-flip-window))
   (setq aw-scope 'frame)
