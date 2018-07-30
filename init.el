@@ -2449,15 +2449,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("/ p" . ibuffer-filter-by-projectile-files))
   )
 
-(use-package ibuffer-directory
-  :ensure nil
-  :after ibuffer
-  :bind (:map ibuffer-mode-map
-         ("s p" . ibuffer-do-sort-by-directory)
-         ("/ D" . ibuffer-set-filter-groups-by-directory)
-         ("/ d" . ibuffer-filter-by-directory))
-  )
-
 (use-package ibuffer-tramp
   :after ibuffer
   :bind (:map ibuffer-mode-map
