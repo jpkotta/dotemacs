@@ -1387,10 +1387,12 @@ This sets all buffers as displayed."
 
 ;;(setq tramp-copy-size-limit nil) ; for Edison
 
-;; normally this is bound to find-file-read-only
-(use-package sudo-toggle
-  :ensure nil
-  :bind ("C-x C-r" . sudo-toggle)
+(use-package sudo-edit
+  :pin melpa
+  :defer 2
+  :config
+  (sudo-edit-indicator-mode 1)
+  :bind ("C-x C-r" . sudo-edit)
   )
 
 ;; Multihop: /ssh:gwuser@gateway|ssh:user@remote:/path/to/file
