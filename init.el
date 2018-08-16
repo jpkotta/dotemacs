@@ -39,7 +39,6 @@ Only defcustoms usually have a `standard-value'."
 
 ;; Patches
 ;;
-;; ibuffer
 ;; graphlog stuff in vc-hg
 
 ;; a better way to do global key bindings
@@ -48,11 +47,10 @@ Only defcustoms usually have a `standard-value'."
 ;; ;; override function but retain original definition!
 ;; ;; doesn't seem to work in :around advice
 ;; (defun foo ()
-;;   (message "old foo"))
-;; (cl-letf (((symbol-function 'old-foo) (symbol-function 'foo))
-;;           ((symbol-function 'foo) (lambda () (message "new foo"))))
-;;   (foo)
-;;   (old-foo))
+;;   (message "orig foo"))
+;; (cl-letf (((symbol-function 'orig-foo) (symbol-function 'foo))
+;;           ((symbol-function 'foo) (lambda () (orig-foo) (message "and new foo"))))
+;;   (foo))
 
 ;; rectangle-mark-mode
 
@@ -82,10 +80,6 @@ files (e.g. directories, fifos, etc.)."
 (let ((local-init-file (expand-file-name "local-init.el" extra-lisp-directory)))
   (when (file-exists-p local-init-file)
     (load-file local-init-file)))
-
-;; info directory
-(with-eval-after-load "info"
-  (add-to-list 'Info-additional-directory-list "~/.info/"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
@@ -172,7 +166,6 @@ files (e.g. directories, fifos, etc.)."
                       :family (if (string= system-type "windows-nt")
                                   "Consolas"
                                 "DejaVu Sans Mono")
-                      :foreground "green1"
                       :height 100)
   (set-face-attribute 'mode-line nil :height 1.0)
 
@@ -790,6 +783,12 @@ With prefix arg, insert a large ASCII art version.
   :bind (("C-h C-f" . find-function))
 )
 
+(use-package info
+  :ensure nil
+  :config
+  (add-to-list 'Info-additional-directory-list "~/.info/")
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; numbers and strings
 
@@ -1269,8 +1268,11 @@ for `string-to-number'."
         ido-use-filename-at-point nil
         ido-use-url-at-point nil)
 
+  ;; this also affects dired-omit-extensions
   (dolist (e '("-pkg.el" "-autoloads.el"))
     (add-to-list 'completion-ignored-extensions e))
+  (dolist (e '(".bin" ".so" ".a"))
+    (delete e completion-ignored-extensions))
 
   (ido-mode 'both) ;; both buffers and files
   (ido-everywhere 1)
@@ -1304,6 +1306,7 @@ it's probably better to explicitly request a merge."
   (ido-ubiquitous-mode 1))
 
 (use-package crm-custom
+  :disabled
   :after ido-completing-read+
   :defer 1
   :config
@@ -2107,7 +2110,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (require 'dired-x)
   (setq dired-omit-files "^\\.?#\\|^\\.$\\|^\\.[^.].*$"
         dired-omit-verbose nil)
-  (delete ".bin" dired-omit-extensions)
   (add-hook 'dired-mode-hook #'dired-omit-mode)
 
   (setq dired-deletion-confirmer 'y-or-n-p
@@ -3324,7 +3326,7 @@ Lisp function does not specify a special indentation."
 (use-package conf-mode
   :ensure nil
   :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'"
-         "\\.env\\.sample\\'")
+         "\\.env\\.sample\\'" "mkosi\\.default\\'")
   )
 
 (use-package systemd)
@@ -3596,6 +3598,12 @@ server/database name."
         (ediff-buffers table-a-buf table-b-buf)
       (kill-buffer table-a-buf)
       (kill-buffer table-b-buf))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package dockerfile-mode)
+
+(use-package docker-tramp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; assembly
