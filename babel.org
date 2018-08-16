@@ -1,0 +1,67 @@
+* mongo
+#+PROPERTY: header-args:mongo :db dbname :host localhost :port 33621 :user username :password passwd
+
+#+BEGIN_SRC mongo
+db.things.findOne();
+#+END_SRC
+
+* sql
+#+PROPERTY: header-args:sql :engine "postgresql" :cmdline "postgres://user:passwd@host:port/db
+
+#+BEGIN_SRC sql :results drawer
+select 1+1
+#+END_SRC
+
+* shell
+#+BEGIN_SRC shell :dir / :results raw drawer
+pwd
+ls
+#+END_SRC
+
+#+BEGIN_SRC shell :dir /sudo:root@localhost:/
+whoami
+#+END_SRC
+
+#+BEGIN_SRC shell :async
+echo "slow"
+sleep 3
+echo "done"
+#+END_SRC
+
+* python
+#+BEGIN_SRC python :results output
+print("asdf")
+#+END_SRC
+
+#+BEGIN_SRC python :async
+import time
+time.sleep(1)
+print("stdout")
+return 1
+#+END_SRC
+
+* lisp
+#+BEGIN_SRC emacs-lisp
+(message "hello")
+#+END_SRC
+
+* C
+#+BEGIN_SRC C
+printf("two = %d\n", 1+1);
+#+END_SRC
+
+* js
+#+BEGIN_SRC js
+console.log(1+1)
+#+END_SRC
+
+* http
+#+BEGIN_SRC http
+GET https://httpbin.org/get?arg=val&arg2=val2
+FOO: bar
+#+END_SRC
+
+* ipython
+#+BEGIN_SRC ipython :session the-session
+print("hello")
+#+END_SRC

@@ -596,6 +596,7 @@ default label."
           (sql . t) ;; see also ob-sql-mode
           (sqlite . t)
           (C . t)
+          (js . t)
           ))
 
   ;; https://blog.d46.us/advanced-emacs-startup/
@@ -630,6 +631,9 @@ default label."
   )
 
 (use-package ob-ipython
+  :disabled
+  :if (and (executable-find "ipython")
+         (= 0 (shell-command "python -c 'import jupyter_client ; import jupyter_console'")))
   :after org
   :config
   (add-to-list 'org-babel-load-languages '(ipython . t))
@@ -645,6 +649,21 @@ default label."
   :config
   (add-to-list 'org-babel-load-languages '(http . t))
   (org-babel-reload-languages)
+  )
+
+(use-package ob-mongo
+  :after org
+  :config
+  (add-to-list 'org-babel-load-languages '(mongo . t))
+  (org-babel-reload-languages)
+
+  ;; example:
+
+  ;; #+PROPERTY: header-args:mongo :db dbname :host localhost :port 33621 :user username :password passwd
+
+  ;; #+BEGIN_SRC mongo
+  ;; db.things.findOne();
+  ;; #+END_SRC
   )
 
 ;; TODO: check out ob-shstream.el
