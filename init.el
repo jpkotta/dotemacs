@@ -724,6 +724,12 @@ With prefix arg, insert a large ASCII art version.
             "  '-./____-'  \n")
     ))
 
+(setq calendar-latitude 46.877222
+      calendar-longitude -96.789444
+      calendar-location-name "Fargo, ND, USA"
+      calendar-standard-time-zone-name "CST"
+      calendar-daylight-time-zone-name "CDT")
+
 (defun insert-current-time ()
   "Insert the current date and time in the buffer."
   (interactive "*")
@@ -1254,7 +1260,8 @@ for `string-to-number'."
 (use-package ido
   :ensure nil
   :config
-  (setq ido-confirm-unique-completion t
+  (setq ido-case-fold t
+        ido-confirm-unique-completion t
         ido-default-buffer-method 'selected-window
         ido-default-file-method 'selected-window
         ido-enable-flex-matching t
@@ -1396,13 +1403,6 @@ This sets all buffers as displayed."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
-
-(let ((backup-dir (no-littering-expand-var-file-name "tramp/backup/")))
-  (setq tramp-backup-directory-alist nil
-        tramp-auto-save-directory (no-littering-expand-var-file-name
-                                   "tramp/auto-save/"))
-  (dolist (d (list tramp-auto-save-directory backup-dir))
-    (make-directory d t)))
 
 (with-eval-after-load 'tramp
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
