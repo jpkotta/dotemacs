@@ -156,6 +156,7 @@ files (e.g. directories, fifos, etc.)."
 
 (setq font-lock-maximum-decoration t)
 
+(setq frame-resize-pixelwise t)
 (setq default-frame-alist '((vertical-scroll-bars . right)
                             (menu-bar-lines . 0)
                             (background-mode . dark)
@@ -308,19 +309,6 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
-(defun jpk/bury-some-buffers ()
-  "Bury uninteresting/duplicate buffers."
-  (interactive)
-  (dolist (w (append (window-list) (window-list)))
-    (let* ((buf (window-buffer w))
-           (bufname (buffer-name buf))
-           (all-window-bufs (mapcar #'window-buffer (window-list))))
-      (when (or (string-match-p "^\\*.*\\*$" bufname)
-               (memq buf (cdr (memq buf all-window-bufs))))
-        (unless (eq w (selected-window))
-          (bury-buffer buf)
-          (switch-to-prev-buffer w 'bury))))))
-
 (defun jpk/startup ()
   "Set up emacs the way I like it."
   (interactive)
@@ -335,7 +323,9 @@ files (e.g. directories, fifos, etc.)."
         (when (y-or-n-p "Tramp files? ")
           (setq save-visited-files-ignore-tramp-files t))
         (save-visited-files-mode 1))))
-  (jpk/bury-some-buffers))
+  (dolist (w (window-list))
+    (with-selected-window w
+      (switch-to-buffer "*scratch*"))))
 
 (when (and (string= system-type "windows-nt")
          (executable-find "bash"))
@@ -799,7 +789,7 @@ With prefix arg, insert a large ASCII art version.
 (use-package info
   :ensure nil
   :config
-  (add-to-list 'Info-additional-directory-list "~/.info/")
+  (add-to-list 'Info-additional-directory-list "~/.local/share/info/")
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1064,6 +1054,19 @@ for `string-to-number'."
       shr-color-visible-luminance-min 70
       shr-external-browser #'browse-url-chrome)
 
+(use-package eww
+  :ensure nil
+  :config
+  (defun eww-browse-with-external-browser-and-quit (&optional url)
+    (interactive)
+    (eww-browse-with-external-browser url)
+    (quit-window))
+
+  :bind (:map eww-mode-map
+         ([remap eww-browse-with-external-browser]
+          . eww-browse-with-external-browser-and-quit))
+  )
+
 (use-package atomic-chrome
   :defer 5
   :init
@@ -1183,8 +1186,8 @@ for `string-to-number'."
   :bind (:map company-active-map
          ;;("M-i" . company-select-previous)
          ;;("M-k" . company-select-next)
-         ("S-TAB" . company-select-previous)
-         ("<backtab>" . company-select-previous)
+         ("S-TAB" . company-select-previous-or-abort)
+         ("<backtab>" . company-select-previous-or-abort)
          ("<tab>" . company-complete-common-or-cycle)
          ("TAB" . company-complete-common-or-cycle)
          ("C-s" . company-filter-candidates)
@@ -1192,10 +1195,11 @@ for `string-to-number'."
          :map company-search-map
          ;;("M-i" . company-select-previous)
          ;;("M-k" . company-select-next)
-         ("S-TAB" . company-select-previous)
-         ("<backtab>" . company-select-previous)
-         ("<tab>" . company-complete-common-or-cycle)
-         ("TAB" . company-complete-common-or-cycle)
+         ("S-<iso-lefttab>" . company-select-previous-or-abort)
+         ("S-TAB" . company-select-previous-or-abort)
+         ("<backtab>" . company-select-previous-or-abort)
+         ("<tab>" . company-select-next-or-abort)
+         ("TAB" . company-select-next-or-abort)
          ("SPC" . nil)
          )
   )
@@ -1230,8 +1234,6 @@ for `string-to-number'."
 
 (use-package bm
   :init
-  (setq bookmark-save-flag nil)
-
   (setq bm-marker 'bm-marker-right
         bm-recenter t
         bm-highlight-style 'bm-highlight-only-fringe)
@@ -2742,6 +2744,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   :config
   (setq imenu-auto-rescan t
         imenu-auto-rescan-maxout (* 1024 1024))
+  :bind (("C-c i" . imenu))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2979,6 +2982,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package lua-mode)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; javascript
 
 (use-package js2-mode
   :config
