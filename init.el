@@ -497,6 +497,8 @@ files (e.g. directories, fifos, etc.)."
 ;; is a package to use global as an xref backend.  Once xref is more
 ;; mature, it will probably be better than ggtags.
 
+;; FIXME gxref appears to be unmaintained
+
 (use-package gxref
   :after xref
   :if (executable-find "global")
@@ -513,7 +515,66 @@ default label."
     (let ((gxref-gtags-label "pygments"))
       (gxref-create-db project-root-dir)))
 
+  (defun gxref--global-to-list-async (file-name args)
+    "Like `gxref--global-to-list', but asynchronous."
+    (let* ((process-environment (gxref--prepare-process-environment))
+           (name (format "*Gxref Update %s*" file-name))
+           (proc-buffer (get-buffer name))
+           (cmd (mapconcat #'shell-quote-argument (cons gxref-global-exe args) " ")))
+      ;; only one proc-buffer at a time
+      (unless proc-buffer
+        (setq proc-buffer (get-buffer-create name))
+        (set-process-sentinel
+         (start-file-process-shell-command name proc-buffer cmd)
+         (lambda (_proc event)
+           (let ((regexp (regexp-opt '("finished" "exit" "deleted" "failed")))
+                 (inhibit-message t))
+             (message "%s: %s" name (replace-regexp-in-string "\n+$" "" event))
+             (when (string-match regexp event)
+               (kill-buffer proc-buffer))))))))
+
+  (defun gxref-update-db ()
+    "Update GTAGS project database for current project."
+    (interactive)
+    (let ((root (gxref--find-project-root)))
+      (unless root (error "Not under a GTAGS project"))
+      (gxref--global-to-list-async root '("-u"))))
+
+  (defun gxref-single-update-db ()
+    "Update GTAGS project database for the current file."
+    (interactive)
+    (let ((root (gxref--find-project-root))
+          (bfn (buffer-file-name)))
+      (unless root (error "Not under a GTAGS project"))
+      (unless bfn (error "Buffer has no file associated with it"))
+      (gxref--global-to-list-async bfn (list "--single-update" bfn))))
+
   (add-hook 'xref-backend-functions #'gxref-xref-backend)
+
+  ;; see projectile-command-map
+  (defun gxref-create-db-projectile ()
+    "Like `gxref-create-db', but uses `projectile-project-root' to set the directory."
+    (interactive)
+    (gxref-create-db (projectile-project-root)))
+
+  (defun gxref-create-db-pygments-projectile ()
+    "Like `gxref-create-db-pygments', but uses `projectile-project-root' to set the directory."
+    (interactive)
+    (gxref-create-db-pygments (projectile-project-root)))
+
+  ;; FIXME make the completion table cache every time the db is updated
+  (defvar gxref-enable-completion-table t
+    "If nil, create an empty completion-table, because it can be slow.")
+  (make-variable-buffer-local 'gxref-enable-completion-table)
+  (setq-default gxref-enable-completion-table nil)
+
+  (cl-defmethod
+    xref-backend-identifier-completion-table ((_backend (eql gxref)))
+  "Return a list of terms for completions taken from the symbols in the current buffer.
+The current implementation returns all the words in the buffer,
+which is really sub optimal."
+  (when gxref-enable-completion-table
+    (gxref--global-to-list '("-c"))))
 
   :bind (("M-/" . xref-find-references))
   )
@@ -531,12 +592,16 @@ default label."
   :defer 2
   :diminish projectile-mode
   :config
-  (setq projectile-indexing-method 'alien
+  (setq projectile-indexing-method 'alien ;; FIXME 'turbo-alien
         projectile-enable-caching t
         projectile-tags-backend 'xref
-        projectile-tags-command "gtags -f \"%s\" %s"
+        ;;projectile-tags-command "gtags"
+        projectile-tags-command ""
         projectile-switch-project-action #'projectile-dired)
   (projectile-global-mode 1)
+
+  :bind (:map projectile-command-map
+         ("R" . gxref-create-db-projectile))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
