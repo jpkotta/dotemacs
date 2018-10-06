@@ -121,6 +121,13 @@ files (e.g. directories, fifos, etc.)."
   :pin melpa
   )
 
+(use-package async
+  :commands (async-bytecomp-package-mode)
+  :config
+  (async-bytecomp-package-mode 1)
+  (setq async-bytecomp-allowed-packages '(all))
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
 
@@ -2133,6 +2140,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     (hl-line-mode 1)
     (setq truncate-lines t))
   (add-hook 'dired-before-readin-hook #'jpk/dired-before-readin-hook)
+
+  (when (featurep 'dired-async)
+    (dired-async-mode 1))
 
   :bind (:map dired-mode-map
          ("C-s" . dired-isearch-filenames)
