@@ -2724,6 +2724,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (add-hook 'prog-mode-hook #'jpk/prog-mode-hook)
 
+(use-package lsp-mode)
+
 (use-package imenu
   :ensure nil
   :defer 2
@@ -2920,10 +2922,51 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (add-hook 'cperl-mode-hook #'jpk/cperl-mode-hook)
   )
 
-(use-package go-mode)
+(use-package go-mode
+  :config
+  (when (executable-find "goimports")
+    (setq gofmt-command "goimports"))
+  (defun jpk/go-mode-hook ()
+    (add-hook 'before-save-hook #'gofmt-before-save nil 'local))
+  (add-hook 'go-mode-hook #'jpk/go-mode-hook)
+  )
+
+(use-package lsp-go
+  :after lsp-mode
+  :if (executable-find "go-langserver")
+  :config
+  ;; gocodecompletion causes high cpu?
+  (setq lsp-go-language-server-flags
+        (delete "-gocodecompletion" lsp-go-language-server-flags))
+
+  (add-hook 'go-mode-hook #'lsp-go-enable)
+
+  (defun jpk/lsp-go-revert-hook ()
+    (add-hook 'after-revert-hook #'lsp-restart-workspace nil 'local))
+  ;;(add-hook 'go-mode-hook #'jpk/lsp-go-revert-hook)
+  )
+
+(use-package company-go
+  :after (company go-mode)
+  :if (executable-find "gocode")
+  )
 
 (use-package go-scratch
-  :after go-mode)
+  :after go-mode
+  )
+
+(use-package protobuf-mode
+  :init
+  (defun jpk/protobuf-mode-hook ()
+    (c-add-style "jpk/protobuf-style"
+                 '((c-basic-offset . 3)
+                   (indent-tabs-mode . nil))
+                 'set-p)
+    (smart-tabs-mode 0))
+  (add-hook 'protobuf-mode-hook #'jpk/protobuf-mode-hook)
+  (add-hook 'protobuf-mode-hook #'highlight-operators-mode)
+  (add-hook 'protobuf-mode-hook #'paren-face-mode)
+  )
 
 (use-package lua-mode)
 
