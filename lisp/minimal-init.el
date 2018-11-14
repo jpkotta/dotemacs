@@ -4,8 +4,12 @@
                         (format "elpa-test")
                         user-emacs-directory))
 
+(setq jpk/delete-elpa 'ask) ; t, ask, nil
 (when (and (file-directory-p package-user-dir)
-         (yes-or-no-p (format "Delete %s? " package-user-dir)))
+         jpk/delete-elpa
+         (if (eq jpk/delete-elpa 'ask)
+             (yes-or-no-p (format "Delete %s? " package-user-dir))
+           t))
   (delete-directory package-user-dir 'recursive))
 
 (package-initialize)
