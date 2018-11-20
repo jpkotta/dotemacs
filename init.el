@@ -293,6 +293,13 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ergomovement
 
+(use-package hydra
+  :config
+  ;; teal and amaranth are like magit popups
+  ;; pink is like a minor mode
+  (setq lv-use-separator t)
+  )
+
 (use-package ergo-movement-mode
   :ensure nil
   :commands (ergo-movement-mode)
@@ -605,25 +612,13 @@ which is really sub optimal."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Repeatable Commands
-
-(use-package easy-repeat
-  :defer 1
-  :config
-  (defun easy-repeat-add (&rest commands)
-    "Add COMMANDS to `easy-repeat-command-list'."
-    (dolist (f commands)
-      (add-to-list 'easy-repeat-command-list f))
-    (easy-repeat-mode +1))
-
-  (easy-repeat-add 'help-go-back 'help-go-forward
-                   'next-buffer 'previous-buffer)
-
-  (easy-repeat-mode 1)
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Org Mode
+
+;; TODO: add to hydra
+;; org-previous-visible-heading
+;; org-next-visible-heading
+;; org-forward-heading-same-level
+;; org-backward-heading-same-level
 
 (use-package org
   ;;:pin gnu
@@ -861,11 +856,19 @@ With prefix arg, insert a large ASCII art version.
 ;;; numbers and strings
 
 (use-package evil-numbers
-  :config
-  (easy-repeat-add 'evil-numbers/inc-at-pt 'evil-numbers/dec-at-pt)
+  :init
+  (defhydra hydra/evil-numbers (:color red
+                                :hint nil)
+    "Evil Numbers"
+    ("=" evil-numbers/inc-at-pt "increase")
+    ("+" evil-numbers/inc-at-pt "increase")
+    ("-" evil-numbers/dec-at-pt "decrease")
+    ("_" evil-numbers/dec-at-pt "decrease")
+    ("q" nil "quit")
+    )
 
-  :bind (("C-c =" . evil-numbers/inc-at-pt)
-         ("C-c -" . evil-numbers/dec-at-pt))
+  :bind (("C-c =" . hydra/evil-numbers/body)
+         ("C-c -" . hydra/evil-numbers/body))
   )
 
 (setq display-raw-bytes-as-hex t)
@@ -993,58 +996,41 @@ With prefix arg, insert a large ASCII art version.
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; CUA mode
+;;; rectangles
 
-(use-package cua-rect
+(use-package rect
   :ensure nil
+  :defer t
   :config
-  (defun string-to-number-c (str &optional base)
-    "Like `string-to-number', but with C-style prefixes for
-non-decimal strings. This can be used as a drop-in replacement
-for `string-to-number'."
-  (let ((case-fold-search t))
-    (cond
-     ((string-match-p "0x[0-9A-F]+" str)
-      (string-to-number (replace-regexp-in-string "0x" "" str) 16))
-     ((string-match-p "0o[0-7]+" str)
-      (string-to-number (replace-regexp-in-string "0o" "" str) 8))
-     ((string-match-p "0d[0-9]+" str)
-      (string-to-number (replace-regexp-in-string "0d" "" str) 10))
-     ((string-match-p "0b[01]+" str)
-      (string-to-number (replace-regexp-in-string "0b" "" str) 2))
-     (t
-      (string-to-number str base)))))
+  (setq rectangle-preview t)
 
-  (defvar cua--sequence-rectangle-first-hist ()
-    "History list for the initial value in `cua-sequence-rectangle'.")
-  (defvar cua--sequence-rectangle-incr-hist ()
-    "History list for the increment in `cua-sequence-rectangle'.")
-
-  (defun jpk/rectangle-args (&rest args)
-    "Use `string-to-number-c' instead of
-`string-to-number', and save more history."
+  (defun rectangle-number-lines-format ()
+    "Like `rectangle-number-lines' with a `current-prefix-arg'."
     (interactive)
-    (list (if current-prefix-arg
-              (prefix-numeric-value current-prefix-arg)
-            (string-to-number-c
-             (read-string "Start value: "
-                          (if cua--sequence-rectangle-first-hist
-                              (car cua--sequence-rectangle-first-hist)
-                            "0")
-                          'cua--sequence-rectangle-first-hist
-                          "0")))
-          (string-to-number-c
-           (read-string "Increment: "
-                        (if cua--sequence-rectangle-incr-hist
-                            (car cua--sequence-rectangle-incr-hist)
-                          "1")
-                        'cua--sequence-rectangle-incr-hist
-                        "1"))
-          (read-string (concat "Format: (" cua--rectangle-seq-format ") "))))
+    (let ((current-prefix-arg '(4)))
+      (call-interactively #'rectangle-number-lines)))
 
-  (advice-add 'cua-sequence-rectangle :filter-args #'jpk/rectangle-args)
+  (defhydra hydra/rectangle (:body-pre (rectangle-mark-mode 1)
+                             :color pink
+                             :hint nil
+                             :post (deactivate-mark))
+    "Rectangle"
+    ("d" kill-rectangle "kill" :color blue)
+    ("y" yank-rectangle "yank" :color blue)
+    ("w" copy-rectangle-as-kill "copy" :color blue)
+    ("o" open-rectangle "open" :color blue)
+    ("t" string-rectangle "string" :color blue)
+    ("c" clear-rectangle "clear" :color blue)
+    ("e" rectangle-exchange-point-and-mark "exchange")
+    ("n" rectangle-number-lines "number" :color blue)
+    ("N" rectangle-number-lines-format "number (fmt)" :color blue)
+    ("r" (if (region-active-p)
+             (deactivate-mark)
+           (rectangle-mark-mode 1)) "toggle mark")
+    ("C-<return>" nil "quit")
+    )
 
-  :bind (("C-<return>" . cua-rectangle-mark-mode))
+  :bind (("C-<return>" . hydra/rectangle/body))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1304,15 +1290,19 @@ for `string-to-number'."
         bm-highlight-style 'bm-highlight-only-fringe)
 
   :config
-  (easy-repeat-add 'bm-next 'bm-previous)
+  (defhydra hydra/bookmarks (:color blue)
+    "Bookmarks"
+    ("m" bm-toggle "toggle")
+    ("n" bm-next "next" :color red)
+    ("p" bm-previous "previous" :color red)
+    ("l" bm-show "show")
+    ("L" bm-show-all "show all")
+    ("s" bm-save "save")
+    ("r" bm-load-and-restore "restore")
+    ("q" nil "quit")
+    )
 
-  :bind (("C-c m l" . bm-show)
-         ("C-c m m" . bm-toggle)
-         ("C-c m n" . bm-next)
-         ("C-c m p" . bm-previous)
-         ("C-c m L" . bm-show-all)
-         ("C-c m s" . bm-save)
-         ("C-c m r" . bm-load-and-restore)
+  :bind (("C-c m" . hydra/bookmarks/body)
          ("<right-fringe> <mouse-5>" . bm-next-mouse)
          ("<right-fringe> <mouse-4>" . bm-previous-mouse)
          ("<right-fringe> <mouse-1>" . bm-toggle-mouse))
@@ -1323,9 +1313,15 @@ for `string-to-number'."
 (setq reb-re-syntax 'string)
 
 (use-package hide-lines
-  :bind (("C-c s a" . hide-lines-show-all)
-         ("C-c s s" . hide-lines-not-matching)
-         ("C-c s d" . hide-lines-matching))
+  :config
+  (defhydra hydra/hide-lines (:color blue)
+    ("a" hide-lines-show-all "all")
+    ("s" hide-lines-not-matching "non-matching")
+    ("d" hide-lines-matching "only-matching")
+    ("q" nil "quit")
+    )
+
+  :bind (("C-c s" . hydra/hide-lines/body))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1792,23 +1788,25 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
   (setq smerge-command-prefix (read-kbd-macro "C-c c"))
 
   :config
-  (defun smerge-help ()
-    "Describe keybindings for `smerge-mode'."
-    (interactive)
-    (with-temp-buffer
-      (smerge-mode 1) ;; ensure smerge-mode-map is active
-      (describe-bindings smerge-command-prefix)))
+  (defhydra hydra/smerge (:color pink)
+    "SMerge"
+    ("RET" smerge-keep-current "keep current")
+    ("C" smerge-combine-with-next "combine with next")
+    ("E" smerge-ediff "ediff" :color blue)
+    ("R" smerge-refine "refine")
+    ("a" smerge-keep-all "keep all")
+    ("b" smerge-keep-base "keep base")
+    ("l" smerge-keep-lower "keep lower")
+    ("u" smerge-keep-upper "keep upper")
+    ("n" smerge-next "next")
+    ("p" smerge-prev "prev")
+    ("r" smerge-resolve "resolve")
+    ("<" smerge-diff-base-upper "diff base upper")
+    ("=" smerge-diff-upper-lower "diff upper lower")
+    (">" smerge-diff-base-lower "diff base lower")
+    )
 
-  (defun smerge-quick-keys ()
-    "Set `smerge-basic-map' as the transient keymap.
-This effectively makes `smerge-command-prefix' unnecessary."
-    (interactive)
-    (set-transient-map smerge-basic-map t))
-
-  :bind (:map smerge-basic-map
-         ("h" . smerge-help)
-         ("c" . smerge-quick-keys))
-  :bind-keymap ("C-c c" . smerge-mode-map)
+  :bind (("C-c c" . hydra/smerge/body))
   )
 
 (use-package diff-hl
@@ -2632,6 +2630,20 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (global-set-key (kbd "C-c b") #'compile)
 (global-set-key (kbd "C-x ~") #'previous-error)
 
+(defhydra hydra/goto (:color red
+                     :hint nil)
+  "GOTO"
+  ("TAB" move-to-column "goto column" :color blue)
+  ("c" goto-char "goto char" :color blue)
+  ("g" goto-line "goto line" :color blue)
+  ("n" next-error "next error")
+  ("p" previous-error "previous error")
+  ("M-g" goto-line :color blue)
+  ("M-n" next-error)
+  ("M-p" previous-error)
+  )
+(global-set-key (kbd "M-g") #'hydra/goto/body)
+
 (use-package multi-compile
   :config
 
@@ -2879,8 +2891,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (use-package gud
   :ensure nil
   :config
-  (easy-repeat-add 'gud-next 'gud-step)
-
   :bind (:map gud-minor-mode-map
          ("C-c C-n" . gud-next)
          ("C-c C-s" . gud-step))
@@ -4103,9 +4113,21 @@ point."
 
 (use-package string-inflection
   :config
-  (easy-repeat-add 'string-inflection-all-cycle)
-  :bind (("C-x C-l" . string-inflection-all-cycle)
-         ("C-x C-u" . string-inflection-all-cycle))
+  (defhydra hydra/string-inflection (:color blue)
+    "String Inflection"
+    ("c" string-inflection-lower-camelcase "camelCase")
+    ("C" string-inflection-camelcase "CamelCase")
+    ("m" string-inflection-camelcase "CamelCase")
+    ("_" string-inflection-underscore "under_score")
+    ("l" string-inflection-underscore "under_score")
+    ("k" string-inflection-kebab-case "kebab-case")
+    ("-" string-inflection-kebab-case "kebab-case")
+    ("t" string-inflection-capital-underscore "Title_Case")
+    ("i" string-inflection-capital-underscore "Title_Case")
+    ("u" string-inflection-upcase "UP_CASE")
+    )
+  :bind (("C-x C-l" . hydra/string-inflection/body)
+         ("C-x C-u" . hydra/string-inflection/body))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
