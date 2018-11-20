@@ -3493,6 +3493,8 @@ Lisp function does not specify a special indentation."
   :mode ("\\`PKGBUILD\\'" "\.install\\'")
   )
 
+(use-package pacfiles-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; text and markup modes
 
