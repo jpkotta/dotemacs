@@ -37,10 +37,6 @@ Only defcustoms usually have a `standard-value'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TODO
 
-;; Patches
-;;
-;; graphlog stuff in vc-hg
-
 ;; a better way to do global key bindings
 ;; http://shallowsky.com/blog/linux/editors/emacs-global-key-bindings.html
 
@@ -1559,38 +1555,13 @@ This sets all buffers as displayed."
 
 (setq vc-handled-backends '(Git Hg SVN))
 
-(setq vc-hg-log-switches '("-v"))
-
-(with-eval-after-load "vc-hg"
-  (require 'vc-hg-fixes)
+(use-package vc-hgcmd
+  :if (executable-find "hg")
+  :config
+  (let ((idx (seq-position vc-handled-backends 'Hg)))
+    (when idx
+      (setf (seq-elt vc-handled-backends 1) 'Hgcmd)))
   )
-
-(with-eval-after-load "vc-dir"
-
-  (defun vc-dir-toggle ()
-    "Toggle the mark on a file in `vc-dir-mode'."
-    (interactive)
-    (let (line col)
-      (setq line (line-number-at-pos))
-      ;; This automatically moves to the next line, but that isn't
-      ;; as useful for toggling (I think), so we work around it.
-      (vc-dir-mark-unmark 'vc-dir-toggle-mark-file)
-      (setq col (current-column))
-      (goto-char (point-min))
-      (forward-line (1- line))
-      (move-to-column col)))
-
-  (define-key vc-dir-mode-map (kbd "SPC") #'vc-dir-toggle)
-
-  )
-
-(defun jpk/suppress-messages (orig &rest args)
-  "Suppress any messages using `with-temp-message'."
-  (with-temp-message ""
-    (apply orig args)))
-
-;; toggle-read-only prints an annoying message
-(advice-add 'toggle-read-only :around #'jpk/suppress-messages)
 
 (use-package magit
   :if (executable-find "git")
