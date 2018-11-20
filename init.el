@@ -3166,6 +3166,9 @@ If region is inactive, use the entire current line."
 (use-package rst
   :ensure nil
   :config
+  (defun jpk/rst-mode-hook ()
+    (setq fill-column 80))
+  (add-hook 'rst-mode-hook #'jpk/rst-mode-hook)
   (add-hook 'rst-mode-hook #'flyspell-mode)
   )
 
@@ -3508,7 +3511,12 @@ Lisp function does not specify a special indentation."
 (add-hook 'text-mode-hook #'jpk/text-mode-hook)
 (add-hook 'text-mode-hook #'text-mode-hook-identify)
 
-(use-package markdown-mode)
+(use-package markdown-mode
+  :init
+  (defun jpk/markdown-mode-hook ()
+    (setq fill-column 80))
+  (add-hook 'markdown-mode-hook #'jpk/markdowm-mode-hook)
+  )
 
 (use-package auctex
   :if (executable-find "pdflatex")
@@ -4281,6 +4289,8 @@ Positive arg means right; negative means left"
   :ensure nil
   :init
   ;; see also fill-individual-paragraphs
+
+  (setq-default fill-column 72)
 
   ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
   (defun unfill-paragraph ()
