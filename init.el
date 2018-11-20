@@ -387,8 +387,6 @@ files (e.g. directories, fifos, etc.)."
 ;; cancel everything, including active minibuffers and recursive edits
 (global-set-key (kbd "C-M-g") #'top-level)
 
-;;(delete-selection-mode 1)
-
 ;; Disable highlighting clickable stuff when the mouse moves over it.
 ;; Turning it off speeds up remote X.
 (setq mouse-highlight nil)
@@ -604,10 +602,12 @@ which is really sub optimal."
         projectile-tags-backend 'xref
         ;;projectile-tags-command "gtags"
         projectile-tags-command ""
+        projectile-current-project-on-switch 'move-to-end
         projectile-switch-project-action #'projectile-dired)
-  (projectile-global-mode 1)
+  (projectile-mode 1)
 
-  :bind (:map projectile-command-map
+  :bind (("C-c p" . projectile-command-map)
+         :map projectile-command-map
          ("R" . gxref-create-db-projectile))
   )
 
@@ -633,6 +633,7 @@ which is really sub optimal."
   (add-hook 'org-mode-hook #'jpk/org-mode-hook)
 
   (setq org-ellipsis "…"
+        org-startup-indented t
         org-hide-leading-stars t
         org-hide-emphasis-markers t
         org-fontify-emphasized-text nil
@@ -1224,10 +1225,9 @@ With prefix arg, insert a large ASCII art version.
         company-search-regexp-function #'company-search-flex-regexp
         company-tooltip-align-annotations t)
 
-  ;;(setq company-frontends (standard-value 'company-frontends))
   (setq company-transformers '(company-sort-by-occurrence))
   (setq company-backends (standard-value 'company-backends))
-  ;;(setq company-backends '(company-dabbrev-code company-dabbrev))
+  (setq company-backends (delete 'company-clang company-backends))
 
   (setq company-dabbrev-code-everywhere t
         company-dabbrev-code-other-buffers t ;; same major-mode
@@ -1235,23 +1235,14 @@ With prefix arg, insert a large ASCII art version.
         company-dabbrev-ignore-case nil)
 
   :bind (:map company-active-map
-         ;;("M-i" . company-select-previous)
-         ;;("M-k" . company-select-next)
-         ("S-TAB" . company-select-previous-or-abort)
-         ("<backtab>" . company-select-previous-or-abort)
-         ("<tab>" . company-complete-common-or-cycle)
-         ("TAB" . company-complete-common-or-cycle)
          ("C-s" . company-filter-candidates)
          ("SPC" . nil)
          :map company-search-map
-         ;;("M-i" . company-select-previous)
-         ;;("M-k" . company-select-next)
-         ("S-<iso-lefttab>" . company-select-previous-or-abort)
-         ("S-TAB" . company-select-previous-or-abort)
-         ("<backtab>" . company-select-previous-or-abort)
-         ("<tab>" . company-select-next-or-abort)
-         ("TAB" . company-select-next-or-abort)
-         ("SPC" . nil)
+         ("S-<iso-lefttab>" . company-select-previous)
+         ("S-TAB" . company-select-previous)
+         ("<backtab>" . company-select-previous)
+         ("<tab>" . company-select-next)
+         ("TAB" . company-select-next)
          )
   )
 
@@ -1380,6 +1371,7 @@ it's probably better to explicitly request a merge."
   :after ido
   :defer 1
   :config
+  (setq ido-cr+-max-items (expt 2 16))
   (ido-ubiquitous-mode 1))
 
 (use-package crm-custom
@@ -2857,6 +2849,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
     )
 
   (add-hook 'c-mode-common-hook #'jpk/c-mode-common-hook)
+
+  :mode (("\\.asl\\'" . c-mode))
 )
 
 (use-package hideif
@@ -3047,7 +3041,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   :init
   (defun jpk/protobuf-mode-hook ()
     (c-add-style "jpk/protobuf-style"
-                 '((c-basic-offset . 3)
+                 '((c-basic-offset . 2)
                    (indent-tabs-mode . nil))
                  'set-p)
     (smart-tabs-mode 0))
@@ -3064,13 +3058,13 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (use-package js2-mode
   :config
   (setq js2-strict-trailing-comma-warning nil
-        js-switch-indent-offset 2)
+        js-switch-indent-offset 2
+        js2-basic-offset 2)
 
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
 
   (defun jpk/js2-mode-hook ()
-    (setq tab-width 2
-          js2-basic-offset 2))
+    (setq tab-width js2-basic-offset))
   (add-hook 'js2-mode-hook #'jpk/js2-mode-hook)
 
   (require 'compile-eslint)
@@ -3144,8 +3138,7 @@ If region is inactive, use the entire current line."
   ;; N.B. you probably want to set shell-file-name to something like
   ;; "C:/cygwin/bin/bash.exe" on Windows, because the default shell
   ;; will fuck up the command line.
-  (setq pylint-options '("--rcfile=./.pylintrc"
-                         "--jobs=4"
+  (setq pylint-options '("--jobs=4"
                          "--reports=n"
                          "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}]\n  {msg}'"
                          "--disable=C,R,locally-disabled"
