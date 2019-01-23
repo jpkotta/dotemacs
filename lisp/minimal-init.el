@@ -30,6 +30,7 @@
 (when init-file-debug ;; --debug-init
   (setq use-package-verbose 'debug
         use-package-debug t
-        use-package-minimum-reported-time 0))
+        use-package-minimum-reported-time 0
+        debug-on-error t))
 
 (use-package no-littering)

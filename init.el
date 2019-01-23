@@ -489,7 +489,8 @@ files (e.g. directories, fifos, etc.)."
       (setenv "GTAGSLABEL" "pygments")
       (ignore-errors
         (call-interactively 'ggtags-create-tags))
-      (setenv "GTAGSLABEL" orig-label))))
+      (setenv "GTAGSLABEL" orig-label)))
+  )
 
 ;; xref is the unified cross reference subsystem.  ggtags actually
 ;; uses it for some things like tag history.  It's labeled as
@@ -500,11 +501,14 @@ files (e.g. directories, fifos, etc.)."
 ;; FIXME gxref appears to be unmaintained
 
 (use-package gxref
+  ;;:disabled
   :after xref
   :if (executable-find "global")
   :config
   ;; (remove-hook 'next-error-hook #'jpk/next-error-hook)
   ;; (setq next-error-recenter nil)
+
+  (put 'gxref-gtags-label 'safe-local-variable 'stringp)
 
   (defun gxref-create-db-pygments (project-root-dir)
     "Like `gxref-create-db', but set GTAGSLABEL to pygments.
@@ -581,8 +585,8 @@ which is really sub optimal."
 
 (use-package xref
   :ensure nil
-  :config
-  (add-hook 'xref--xref-buffer-mode-hook #'hl-line-mode)
+  :hook
+  (xref--xref-buffer-mode-hook . hl-line-mode)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1455,7 +1459,7 @@ This sets all buffers as displayed."
     (interactive)
     (save-window-excursion
       (dolist (b (buffer-list))
-        (unless (with-current-buffer b buffer-display-time)
+        (unless (buffer-local-value 'buffer-display-time b)
           (set-window-buffer (selected-window) b)))))
   (add-hook 'save-visited-files-mode-hook #'midnight-make-all-buffers-cleanable)
   )
@@ -2568,6 +2572,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; compile
 
+;; this can be dangerous
 (put 'compile-command 'safe-local-variable 'stringp)
 
 (setq compilation-scroll-output 'first-error)
@@ -2916,6 +2921,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (defun bitbake-deploy-dir-dired (&optional bb-file)
     "Open the deploy dir of BB-FILE with `dired'."
     (interactive)
+    (require 'bitbake-build-dir)
     (let ((dir (bitbake-recipe-build-dir bb-file)))
       (dired (expand-file-name "tmp/deploy/" dir))))
 
@@ -4350,11 +4356,10 @@ of text."
 ;; adaptive word wrap
 
 (use-package adaptive-wrap
-  :init
-  (add-hook 'visual-line-mode-hook #'adaptive-wrap-prefix-mode)
+  :hook
+  (visual-line-mode . adaptive-wrap-prefix-mode)
 
   :config
-  (put 'adaptive-wrap-extra-indent 'safe-local-variable 'integerp)
   (setq-default adaptive-wrap-extra-indent 2)
   )
 
