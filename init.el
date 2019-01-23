@@ -1580,11 +1580,20 @@ This sets all buffers as displayed."
 (setq vc-handled-backends '(Git Hg SVN))
 
 (use-package vc-hgcmd
+  ; FIXME overzealous diff-hl
   :if (executable-find "hg")
+  :pin melpa
   :config
+  (defun vc-hgcmd-ignore-tramp (orig &rest args)
+    "Ignore tramp files because it doesn't seem to be supported yet."
+    (unless (and (fboundp 'tramp-tramp-file-p)
+               (tramp-tramp-file-p (car args)))
+      (apply orig args)))
+  ;;(advice-add #'vc-hgcmd-registered :around #'vc-hgcmd-ignore-tramp)
+
   (let ((idx (seq-position vc-handled-backends 'Hg)))
     (when idx
-      (setf (seq-elt vc-handled-backends 1) 'Hgcmd)))
+      (setf (seq-elt vc-handled-backends idx) 'Hgcmd)))
   )
 
 (use-package magit
@@ -1596,7 +1605,11 @@ This sets all buffers as displayed."
   :config
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
-  (global-magit-file-mode 1)
+  ;;(global-magit-file-mode 1)
+
+  (setq vc-handled-backends (delete 'Git vc-handled-backends))
+  (when (featurep 'diff-hl)
+    (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
 
   (defun magit-switch-to-status-buffer (buffer)
     "Like `switch-to-buffer', but only for `magit-status-mode' buffers."
@@ -1609,9 +1622,15 @@ This sets all buffers as displayed."
     (unless (string-empty-p buffer)
       (switch-to-buffer buffer)))
 
-  :bind (("C-x g" . magit-status)
-         ("C-c g" . magit-switch-to-status-buffer)
-         ("C-x M-g" . magit-dispatch-popup))
+  (defhydra hydra/magit (:color blue)
+    "Magit"
+    ("g" magit-status "status")
+    ("b" magit-switch-to-status-buffer "switch")
+    ("d" magit-dispatch-popup "dispatch")
+    ("f" magit-file-popup "file")
+    )
+
+  :bind (("C-x g" . hydra/magit/body))
   )
 
 (defalias 'git-grep #'vc-git-grep)
@@ -1802,7 +1821,7 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
 
   :config
   (setq diff-hl-fringe-bmp-function #'diff-hl-fringe-bmp-from-type)
-  (add-hook 'dired-mode-hook #'diff-hl-dir-mode)
+  ;;(add-hook 'dired-mode-hook #'diff-hl-dired-mode) ;; pretty slow
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
