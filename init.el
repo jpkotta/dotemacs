@@ -721,18 +721,7 @@ which is really sub optimal."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
 
-(defun insert-lorem-ipsum ()
-  "Insert placeholder text."
-  (interactive "*")
-  (insert "Lorem ipsum dolor sit amet, consectetur adipisicing "
-          "elit, sed do eiusmod tempor incididunt ut labore et "
-          "dolore magna aliqua. Ut enim ad minim veniam, quis "
-          "nostrud exercitation ullamco laboris nisi ut aliquip "
-          "ex ea commodo consequat. Duis aute irure dolor in "
-          "reprehenderit in voluptate velit esse cillum dolore "
-          "eu fugiat nulla pariatur. Excepteur sint occaecat "
-          "cupidatat non proident, sunt in culpa qui officia "
-          "deserunt mollit anim id est laborum."))
+(use-package lorem-ipsum)
 
 (defun insert-look-of-disapproval (arg)
   "Insert a Look of Disapproval (ಠ_ಠ).
@@ -753,7 +742,6 @@ With prefix arg, insert a large ASCII art version.
             " \\___/         \\___/\n"
             "       ======= \n")
     ))
-(global-set-key (kbd "C-c w t f") #'insert-look-of-disapproval)
 
 (defun insert-awesome-face (arg)
   "Insert a happy face (☻).
@@ -781,6 +769,12 @@ With prefix arg, insert a large ASCII art version.
             "  '-./____-'  \n")
     ))
 
+(defun insert-shrug (&optional arg)
+  "Insert shrug emoticon (¯\\_(ツ)_/¯)"
+  ;; emoji: 🤷
+  (interactive "P*")
+  (insert "¯\\_(ツ)_/¯"))
+
 (setq calendar-latitude 46.877222
       calendar-longitude -96.789444
       calendar-location-name "Fargo, ND, USA"
@@ -799,6 +793,31 @@ With prefix arg, insert a large ASCII art version.
                                 nil t nil nil "datetime"))
          (fmt (cadr (assoc type fmt-alist))))
     (insert (format-time-string fmt (current-time)))))
+
+(defhydra hydra/inserts (:color blue)
+  "Insert Text"
+  ("l" lorem-ipsum-insert-list "lorem ipsum list" :color red)
+  ("s" lorem-ipsum-insert-sentences "lorem ipsum sentence" :color red)
+  ("p" lorem-ipsum-insert-paragraphs "lorem ipsum paragraph" :color red)
+  ("d" insert-look-of-disapproval "Look of Disapproval")
+  ("D"
+   (let ((current-prefix-arg '(4)))
+     (call-interactively #'insert-look-of-disapproval))
+   "Look of Disapproval (big)")
+  ("a" insert-awesome-face "awesome face")
+  ("A"
+   (let ((current-prefix-arg '(4)))
+     (call-interactively #'insert-awesome-face))
+   "awesome face (big)")
+  ("h" insert-shrug "shrug")
+  ("H"
+   (let ((current-prefix-arg '(4)))
+     (call-interactively #'insert-shrug))
+   "shrug (escaped)")
+  ("t" insert-current-time "current time")
+  )
+
+(global-set-key (kbd "C-c w") #'hydra/inserts/body)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ssh
