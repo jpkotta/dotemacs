@@ -48,7 +48,7 @@ Only defcustoms usually have a `standard-value'."
 ;;           ((symbol-function 'foo) (lambda () (orig-foo) (message "and new foo"))))
 ;;   (foo))
 
-;; rectangle-mark-mode
+;; https://github.com/alphapapa/unpackaged.el
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
@@ -87,18 +87,17 @@ files (e.g. directories, fifos, etc.)."
 (package-initialize)
 (setq package-archives '(("melpa-stable" . "http://stable.melpa.org/packages/")
                          ("melpa" . "http://melpa.org/packages/")
-                         ("gnu" . "http://elpa.gnu.org/packages/")))
-(add-to-list 'package-archives
-             '("onpa" . "https://olanilsson.bitbucket.io/packages/"))
+                         ("gnu" . "http://elpa.gnu.org/packages/")
+                         ("onpa" . "https://olanilsson.bitbucket.io/packages/")))
 (setq package-archive-priorities '(("melpa-stable" . 20)
-                                   ("gnu" . 10)
-                                   ("melpa" . 0)))
+                                   ("gnu" . 10)))
 
 (byte-recompile-directory extra-lisp-directory 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(unless (package-installed-p 'use-package)
+(if (package-installed-p 'use-package)
+    (require 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 
@@ -4042,7 +4041,7 @@ point."
       (isearch-yank-internal (lambda () (mark)))))
 
   :bind (("C-=" . er/expand-region)
-         :isearch-mode-map
+         :map isearch-mode-map
          ("C-S-y" . isearch-yank-selection))
   )
 
