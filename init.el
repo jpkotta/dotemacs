@@ -1060,6 +1060,8 @@ With prefix arg, insert a large ASCII art version.
 
 ;; tip - use insert-char to insert unicode characters by name
 
+(use-package list-unicode-display)
+
 (prefer-coding-system 'utf-8)
 
 ;; "coding" seems to be the standard spelling
