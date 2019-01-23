@@ -2045,6 +2045,18 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; proced
+
+(use-package proced
+  :ensure nil
+  :config
+  (setq-default proced-auto-update-flag t
+                proced-filter 'all
+                proced-format 'short
+                proced-sort 'pcpu)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; man pages
 
 (setenv "MANWIDTH" "72")
@@ -2763,6 +2775,24 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (define-key isearch-mode-map (kbd "M-n") #'isearch-forward-symbol-dwim)
 (define-key isearch-mode-map (kbd "M-p") #'isearch-backward-symbol-dwim)
 
+(use-package symbol-overlay
+  :config
+  (defhydra hydra/symbol-overlay (:color red)
+    "Symbol Overlay"
+    ("i" symbol-overlay-put "Toggle")
+    ("n" symbol-overlay-jump-next "Next")
+    ("p" symbol-overlay-jump-prev "Previous")
+    ("w" symbol-overlay-save-symbol "Copy")
+    ("t" symbol-overlay-toggle-in-scope "Toggle Scope")
+    ("e" symbol-overlay-echo-mark "Jump to Mark")
+    ("d" symbol-overlay-jump-to-definition "Jump to Definition")
+    ("s" symbol-overlay-isearch-literally "Search")
+    ("q" symbol-overlay-query-replace "Query Replace")
+    ("r" symbol-overlay-rename "Rename")
+    )
+  :bind (("C-c a" . hydra/symbol-overlay/body))
+  )
+
 (use-package iedit
   :commands (iedit-mode)
   )
@@ -3092,6 +3122,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package json-mode)
+
+(use-package jq-mode
+  :disabled)
 
 (use-package xref-js2
   :after js2-mode
@@ -3594,6 +3627,12 @@ Lisp function does not specify a special indentation."
   )
 
 (use-package mediawiki)
+
+(use-package sdcv
+  :if (and (executable-find "sdcv")
+         (file-exists-p "~/.stardict/dic/dictd_www.dict.org_web1913.dict.dz"))
+  ;; TODO hydra
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; SQL
@@ -4389,6 +4428,9 @@ of text."
           (align-regexp (point-min) (point-max)
                         ",\\(\\s-*\\)" 1 1 t)))))
   )
+
+(use-package ialign
+  :disabled)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; adaptive word wrap
