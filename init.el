@@ -580,7 +580,19 @@ which is really sub optimal."
   (when gxref-enable-completion-table
     (gxref--global-to-list '("-c"))))
 
-  :bind (("M-/" . xref-find-references))
+  (defhydra hydra/gxref (:color blue)
+    "gxref"
+    ("c" gxref-create-db "create db")
+    ("u" gxref-update-db "update db")
+    ("p" gxref-create-db-pygments "create pygments db")
+    ("j" gxref-create-db-projectile "create db (projectile)")
+    ("k" gxref-create-db-pygments-projectile "create pygments db (projectile)")
+    )
+
+  :bind (("M-/" . xref-find-references)
+         ("C-c /" . hydra/gxref/body))
+  )
+
   )
 
 (use-package xref
@@ -605,9 +617,7 @@ which is really sub optimal."
         projectile-switch-project-action #'projectile-dired)
   (projectile-mode 1)
 
-  :bind (("C-c p" . projectile-command-map)
-         :map projectile-command-map
-         ("R" . gxref-create-db-projectile))
+  :bind (("C-c p" . projectile-command-map))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1791,26 +1801,45 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
 (use-package smerge-mode
   :ensure nil
   :init
-  (setq smerge-command-prefix (read-kbd-macro "C-c c"))
+  (setq smerge-command-prefix "")
 
   :config
-  (defhydra hydra/smerge (:color pink)
-    "SMerge"
-    ("RET" smerge-keep-current "keep current")
-    ("C" smerge-combine-with-next "combine with next")
-    ("E" smerge-ediff "ediff" :color blue)
-    ("R" smerge-refine "refine")
-    ("a" smerge-keep-all "keep all")
-    ("b" smerge-keep-base "keep base")
-    ("l" smerge-keep-lower "keep lower")
-    ("u" smerge-keep-upper "keep upper")
-    ("n" smerge-next "next")
-    ("p" smerge-prev "prev")
-    ("r" smerge-resolve "resolve")
-    ("<" smerge-diff-base-upper "diff base upper")
-    ("=" smerge-diff-upper-lower "diff upper lower")
-    (">" smerge-diff-base-lower "diff base lower")
-    )
+  ;; https://github.com/alphapapa/unpackaged.el#smerge-mode
+  (defhydra hydra/smerge
+    (:color pink :hint nil :post (smerge-auto-leave))
+    "
+^Move^       ^Keep^               ^Diff^                 ^Other^
+^^-----------^^-------------------^^---------------------^^-------
+_n_ext       _b_ase               _<_: upper/base        _C_ombine
+_p_rev       _u_pper              _=_: upper/lower       _r_esolve
+^^           _l_ower              _>_: base/lower        _k_ill current
+^^           _a_ll                _R_efine
+^^           _RET_: current       _E_diff
+"
+    ("n" smerge-next)
+    ("p" smerge-prev)
+    ("b" smerge-keep-base)
+    ("u" smerge-keep-upper)
+    ("l" smerge-keep-lower)
+    ("a" smerge-keep-all)
+    ("RET" smerge-keep-current)
+    ("\C-m" smerge-keep-current)
+    ("<" smerge-diff-base-upper)
+    ("=" smerge-diff-upper-lower)
+    (">" smerge-diff-base-lower)
+    ("R" smerge-refine)
+    ("E" smerge-ediff)
+    ("C" smerge-combine-with-next)
+    ("r" smerge-resolve)
+    ("k" smerge-kill-current)
+    ("q" nil "cancel" :color blue))
+
+  (defun smerge-hydra ()
+    "Call `hydra/smerge/body' only if `smerge-mode' is active."
+    (interactive)
+    (when smerge-mode
+      (call-interactively #'hydra/smerge/body)))
+  (add-hook 'smerge-mode-hook #'hydra/smerge/body)
 
   :bind (("C-c c" . hydra/smerge/body))
   )
