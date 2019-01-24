@@ -593,8 +593,6 @@ which is really sub optimal."
          ("C-c /" . hydra/gxref/body))
   )
 
-  )
-
 (use-package xref
   :ensure nil
   :hook
