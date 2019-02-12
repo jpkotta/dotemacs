@@ -160,6 +160,10 @@ files (e.g. directories, fifos, etc.)."
                             (scroll-bar-height . 5)
                             (scroll-bar-width . 10)))
 
+;; ;; better font config for weird chars
+;; (when (find-font (font-spec :name "Symbola"))
+;;   (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
+
 (setq custom-safe-themes t)
 (use-package calmer-forest-theme
   :init
@@ -1091,7 +1095,9 @@ With prefix arg, insert a large ASCII art version.
 
 ;; tip - use insert-char to insert unicode characters by name
 
-(use-package list-unicode-display)
+(use-package list-unicode-display
+  :pin melpa
+  )
 
 (prefer-coding-system 'utf-8)
 
@@ -1567,6 +1573,7 @@ This sets all buffers as displayed."
 
 (setq help-window-select 'never)
 
+;; TODO: display-buffer-alist https://gitlab.com/jabranham/emacs/blob/master/init.el#L2564
 (use-package shackle
   :defer 2
   :config
@@ -1613,9 +1620,8 @@ This sets all buffers as displayed."
   :config
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
-  ;;(global-magit-file-mode 1)
 
-  (setq vc-handled-backends (delete 'Git vc-handled-backends))
+  ;;(setq vc-handled-backends (delete 'Git vc-handled-backends))
   (when (featurep 'diff-hl)
     (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
 
@@ -1831,13 +1837,6 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
     ("r" smerge-resolve)
     ("k" smerge-kill-current)
     ("q" nil "cancel" :color blue))
-
-  (defun smerge-hydra ()
-    "Call `hydra/smerge/body' only if `smerge-mode' is active."
-    (interactive)
-    (when smerge-mode
-      (call-interactively #'hydra/smerge/body)))
-  (add-hook 'smerge-mode-hook #'hydra/smerge/body)
 
   :bind (("C-c c" . hydra/smerge/body))
   )
@@ -3482,6 +3481,8 @@ Lisp function does not specify a special indentation."
                 )))
     (add-to-list 'prettify-symbols-alist x))
   (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)
+
+  (add-hook 'before-save-hook #'check-parens nil 'local)
   )
 
 ;; http://milkbox.net/note/single-file-master-emacs-configuration/
@@ -3622,7 +3623,7 @@ Lisp function does not specify a special indentation."
   :init
   (defun jpk/markdown-mode-hook ()
     (setq fill-column 80))
-  (add-hook 'markdown-mode-hook #'jpk/markdowm-mode-hook)
+  (add-hook 'markdown-mode-hook #'jpk/markdown-mode-hook)
   )
 
 (use-package auctex

@@ -20,7 +20,8 @@
                                    ("gnu" . 10)
                                    ("melpa" . 0)))
 
-(unless (package-installed-p 'use-package)
+(if (package-installed-p 'use-package)
+    (require 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 
