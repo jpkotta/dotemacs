@@ -3944,34 +3944,22 @@ be specified with a numeric prefix."
       (call-interactively 'rgrep)))
   )
 
-(use-package wgrep
-  :bind (:map grep-mode-map
-         ("C-x C-q" . wgrep-change-to-wgrep-mode))
-  )
+(use-package wgrep)
 
 (use-package ripgrep
   :if (executable-find "rg")
+  :pin melpa
   :init
   (defalias 'rg 'ripgrep-regexp)
 
   :config
-  (setq ripgrep-arguments '("--smart-case"))
+  (setq ripgrep-arguments '("--no-ignore" "--smart-case"
+                            "--max-columns" "1024"))
 
   (defun jpk/ripgrep-search-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
   (add-hook 'ripgrep-search-mode-hook #'jpk/ripgrep-search-mode-hook)
-  (add-hook 'ripgrep-search-mode-hook #'wgrep-setup)
-
-  (defun rg-all ()
-    "Like `ripgrep-regexp', but add --no-ignore."
-    (interactive)
-    (let ((ripgrep-arguments ripgrep-arguments))
-      (push "--no-ignore" ripgrep-arguments)
-      (call-interactively #'ripgrep-regexp)))
-
-  :bind (:map ripgrep-search-mode-map
-         ("C-x C-q" . wgrep-change-to-wgrep-mode))
   )
 
 (use-package projectile-ripgrep
