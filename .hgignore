@@ -2,7 +2,7 @@ syntax: glob
 
 elpa*
 repos
-etc
+etc/custom.el
 var
 url
 test
