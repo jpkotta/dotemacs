@@ -2693,6 +2693,14 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                     buffer)))
 (add-hook 'compilation-finish-functions #'bury-compile-buffer-if-successful)
 
+(defun jpk/compilation-finish (buffer string)
+  (call-process "notify-send" nil nil nil
+        "-t" "3000"
+        "-i" "emacs"
+        "Compilation finished in Emacs"
+        string))
+(add-hook 'compilation-finish-functions #'jpk/compilation-finish)
+
 (setq compilation-read-command nil) ;; only prompt when compile is run with prefix
 
 (global-set-key (kbd "C-c b") #'compile)
@@ -3987,18 +3995,14 @@ be specified with a numeric prefix."
 
   :config
   (setq ripgrep-arguments '("--no-ignore" "--smart-case"
-                            "--max-columns" "1024"))
+                            "--max-columns" "1024"
+                            "--search-zip"
+                            "--sort path"))
 
   (defun jpk/ripgrep-search-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
   (add-hook 'ripgrep-search-mode-hook #'jpk/ripgrep-search-mode-hook)
-  )
-
-(use-package projectile-ripgrep
-  :after projectile
-  :bind (:map projectile-command-map
-         ("s r" . projectile-ripgrep))
   )
 
 (use-package rg
