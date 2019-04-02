@@ -116,13 +116,6 @@ files (e.g. directories, fifos, etc.)."
   :pin melpa
   )
 
-(use-package async
-  :commands (async-bytecomp-package-mode)
-  :config
-  (async-bytecomp-package-mode 1)
-  (setq async-bytecomp-allowed-packages '(all))
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Custom
 
@@ -438,6 +431,31 @@ files (e.g. directories, fifos, etc.)."
   (deactivate-mark nil))
 (global-set-key [remap exchange-point-and-mark]
                 #'exchange-point-and-mark-no-activate)
+
+(defvar important-messages-regexp "recover-this-file"
+  "Regexp for `important-messages'.")
+
+(defun important-messages ()
+  "Create a buffer full of important messages.
+
+Creates a buffer called \"*Important Messages*\" and fills it
+with any lines from the \"*Messages*\" buffer that match
+`important-messages-regexp'.  If the buffer contains any matches,
+switch to it.  Recommended to add to `emacs-startup-hook'."
+  (interactive)
+  (let ((out (get-buffer-create "*Important Messages*"))
+        (case-fold-search t))
+    (with-current-buffer out
+      (erase-buffer))
+    (with-current-buffer "*Messages*"
+      (goto-char (point-min))
+      (while (re-search-forward important-messages-regexp (point-max) 'noerror)
+        (append-to-buffer out (line-beginning-position) (1+ (line-end-position)))))
+    (if (> 0 (buffer-size (get-buffer "*Important Messages*")))
+        (switch-to-buffer out)
+      (kill-buffer out))))
+
+(add-hook 'emacs-startup-hook #'important-messages)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Printing
@@ -3508,6 +3526,30 @@ Lisp function does not specify a special indentation."
 (use-package bug-hunter
   :commands (bug-hunter-init-file)
   )
+
+;; http://wikemacs.org/wiki/User's_Initialization_File#Debugging_the_Init_file
+(defun test-init.el ()
+  "Start emacs and try loading init.el."
+  (interactive)
+  (require 'async)
+  (async-start
+   (lambda () (shell-command-to-string
+          "emacs --batch --eval \"
+(condition-case e
+    (progn
+      (load user-init-file)
+      (message \\\"-OK-\\\"))
+  (error
+   (message \\\"ERROR!\\\")
+   (signal (car e) (cdr e))))\""))
+   `(lambda (output)
+      (if (string-match "-OK-" output)
+          (when ,(called-interactively-p 'any)
+            (message "All is well"))
+        (switch-to-buffer-other-window "*startup error*")
+        (delete-region (point-min) (point-max))
+        (insert output)
+        (search-backward "ERROR!")))))
 
 ;; just for fun, an ielm quine:
 ;; (let ((s "(let ((s %S)) (insert (format s s)))")) (insert (format s s)))
