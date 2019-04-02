@@ -637,7 +637,9 @@ which is really sub optimal."
         projectile-switch-project-action #'projectile-dired)
   (projectile-mode 1)
 
-  :bind (("C-c p" . projectile-command-map))
+  :bind (("C-c p" . projectile-command-map)
+         ("C-<tab>" . projectile-next-project-buffer)
+         ("C-S-<iso-lefttab>" . projectile-previous-project-buffer))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1358,9 +1360,10 @@ With prefix arg, insert a large ASCII art version.
 (use-package hide-lines
   :config
   (defhydra hydra/hide-lines (:color blue)
-    ("a" hide-lines-show-all "all")
-    ("s" hide-lines-not-matching "non-matching")
-    ("d" hide-lines-matching "only-matching")
+    "Hide Lines"
+    ("a" hide-lines-show-all "show all")
+    ("s" hide-lines-not-matching "hide non-matching")
+    ("d" hide-lines-matching "hide only matching")
     ("q" nil "quit")
     )
 
@@ -1470,7 +1473,7 @@ it's probably better to explicitly request a merge."
   (setq save-visited-files-ignore-tramp-files t
         save-visited-files-ignore-directories nil
         save-visited-files-auto-restore t)
-)
+  )
 
 (use-package recentf
   :ensure nil
@@ -1642,6 +1645,8 @@ This sets all buffers as displayed."
   ;;(setq vc-handled-backends (delete 'Git vc-handled-backends))
   (when (featurep 'diff-hl)
     (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
+
+  (global-magit-file-mode 0)
 
   (defun magit-switch-to-status-buffer (buffer)
     "Like `switch-to-buffer', but only for `magit-status-mode' buffers."
@@ -2692,20 +2697,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (global-set-key (kbd "C-c b") #'compile)
 (global-set-key (kbd "C-x ~") #'previous-error)
-
-(defhydra hydra/goto (:color red
-                     :hint nil)
-  "GOTO"
-  ("TAB" move-to-column "goto column" :color blue)
-  ("c" goto-char "goto char" :color blue)
-  ("g" goto-line "goto line" :color blue)
-  ("n" next-error "next error")
-  ("p" previous-error "previous error")
-  ("M-g" goto-line :color blue)
-  ("M-n" next-error)
-  ("M-p" previous-error)
-  )
-(global-set-key (kbd "M-g") #'hydra/goto/body)
 
 (use-package multi-compile
   :config
@@ -4165,7 +4156,6 @@ point."
       ;; FIXME apparently strings aren't things anymore
       (bounce-thing-boundary 'string)
     (goto-match-paren)))
-(global-set-key (kbd "C-S-<iso-lefttab>") #'bounce-string-or-list)
 (global-set-key (kbd "C-%") #'bounce-string-or-list)
 
 (use-package transpose-params
