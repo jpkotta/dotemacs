@@ -3960,11 +3960,12 @@ match.  It should be idempotent."
   :config
   ;; FIXME: see new option grep-find-hide
   (defun jpk/grep/compilation-filter-hook ()
-    (when (eq major-mode 'grep-mode)
-      (setq adaptive-wrap-extra-indent 4)
-      (visual-line-mode 1)
-      (hide-lines-matching "^find")))
-  (add-hook 'compilation-filter-hook #'jpk/grep/compilation-filter-hook)
+    (hide-lines-matching "^find"))
+  (defun jpk/grep-mode-hook ()
+    (setq adaptive-wrap-extra-indent 4)
+    (visual-line-mode 1)
+    (add-hook 'compilation-filter-hook #'jpk/grep/compilation-filter-hook nil 'local))
+  (add-hook 'grep-mode-hook #'jpk/grep-mode-hook)
 
   (defvar grep-context-lines 2
     "Default number of context lines (non-matching lines before and
@@ -3999,6 +4000,7 @@ be specified with a numeric prefix."
                             "--search-zip"
                             "--sort path"))
 
+  (setq ripgrep--match-regexp "\e\\[31m\\(.*?\\)\e\\[[0-9]*m")
   (defun jpk/ripgrep-search-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
