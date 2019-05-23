@@ -933,20 +933,17 @@ With prefix arg, insert a large ASCII art version.
   ;; mode map
   ;; hexl-bits configuration
   ;; bytes not decoded °
-  :disabled
   :config
-  (defun nhexl-goto-addr (addr)
-    "Move vertically down ARG blocks of 256 bytes (16 lines)."
-    (interactive "nAddress (use `#x' prefix for hex): ")
-    (let ((pos (byte-to-position (1+ addr))))
-      (cond
-       (pos (goto-char pos))
-       ((> 0 addr) (goto-char (point-min)))
-       (t (goto-char (point-max))))))
+  (defun jpk/nhexl-mode-hook ()
+    (nhexl-overwrite-only-mode 1)
+    (nhexl-nibble-edit-mode 1)
+    (hl-line-mode 0)
+    (face-remap-add-relative 'highlight :inverse-video t))
+  (add-hook 'nhexl-mode-hook #'jpk/nhexl-mode-hook)
 
-  (defun nhexl-current-addr ()
-    (interactive)
-    (position-bytes (point)))
+  (defun nhexl-goto-addr (n)
+    "Move to the Nth byte, 0-indexed."
+    (goto-char n))
 
   (defun nhexl-forward-256 (&optional arg)
     "Move vertically down ARG blocks of 256 bytes (16 lines)."
@@ -981,7 +978,17 @@ With prefix arg, insert a large ASCII art version.
     (interactive "p")
     (nhexl-forward-4k (- arg)))
 
-  (setq nhexl-mode-map (make-sparse-keymap))
+  (define-derived-mode bin-mode fundamental-mode "Binary"
+    "Major mode for binary files.
+
+Uses `nhexl-mode'."
+    :group 'nhexl
+    (set-buffer-multibyte nil)
+    (nhexl-mode 1))
+
+  (add-to-list 'auto-mode-alist
+               (cons (concat (regexp-opt '(".bin" ".imx")) "\\'") 'bin-mode))
+
   :bind (:map nhexl-mode-map
          ("<next>" . nhexl-forward-256)
          ("<prior>" . nhexl-backward-256)
@@ -989,61 +996,6 @@ With prefix arg, insert a large ASCII art version.
          ("C-<prior>" . nhexl-backward-1k)
          ("C-S-<next>" . nhexl-forward-4k)
          ("C-S-<next>" . nhexl-backward-4k))
-  )
-
-(use-package hexl
-  :config
-  (setq hexl-bits 8)
-
-  (defun hexl-forward-256 (&optional arg)
-    "Move vertically down ARG blocks of 256 bytes (16 lines)."
-    (interactive "p")
-    (setq arg (if (= 0 arg) 1 arg))
-    (ignore-errors
-      (hexl-goto-address (+ (* 256 arg) (hexl-current-address))))
-    (recenter))
-
-  (defun hexl-backward-256 (&optional arg)
-    "Move vertically up ARG blocks of 256 bytes (16 lines)."
-    (interactive "p")
-    (setq arg (if (= 0 arg) 1 arg))
-    (hexl-forward-256 (- arg)))
-
-  (defun hexl-forward-1k (&optional arg)
-    "Move vertically down ARG blocks of 1024 bytes (64 lines)."
-    (interactive "p")
-    (setq arg (if (= 0 arg) 1 arg))
-    (ignore-errors
-      (hexl-goto-address (+ (* 1024 arg) (hexl-current-address))))
-    (recenter))
-
-  (defun hexl-backward-1k (&optional arg)
-    "Move vertically up ARG blocks of 1024 bytes (64 lines)."
-    (interactive "p")
-    (setq arg (if (= 0 arg) 1 arg))
-    (hexl-forward-1k (- arg)))
-
-  (defun hexl-forward-4k (&optional arg)
-    "Move vertically down ARG blocks of 4096 bytes (256 lines)."
-    (interactive "p")
-    (setq arg (if (= 0 arg) 1 arg))
-    (ignore-errors
-      (hexl-goto-address (+ (* 4096 arg) (hexl-current-address))))
-    (recenter))
-
-  (defun hexl-backward-4k (&optional arg)
-    "Move vertically up ARG blocks of 4096 bytes (256 lines)."
-    (interactive "p")
-    (setq arg (if (= 0 arg) 1 arg))
-    (hexl-forward-4k (- arg)))
-
-  :bind (:map hexl-mode-map
-         ("<next>" . hexl-forward-256)
-         ("<prior>" . hexl-backward-256)
-         ("C-<next>" . hexl-forward-1k)
-         ("C-<prior>" . hexl-backward-1k)
-         ("C-S-<next>" . hexl-forward-4k)
-         ("C-S-<prior>" . hexl-backward-4k))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
