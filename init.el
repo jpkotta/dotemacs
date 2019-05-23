@@ -2357,6 +2357,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("p" . dired-view-prev))
   )
 
+(use-package disk-usage)
+
 (use-package openwith
   :disabled
   :init
