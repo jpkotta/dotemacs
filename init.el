@@ -2666,6 +2666,19 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (global-set-key (kbd "C-c b") #'compile)
 (global-set-key (kbd "C-x ~") #'previous-error)
 
+(use-package defrepeater
+  :defer 2
+  :config
+  (global-set-key [remap next-error] (defrepeater #'next-error))
+  (global-set-key [remap previous-error] (defrepeater #'previous-error))
+
+  ;; (defrepeater #'next-error)
+  ;; (defrepeater #'previous-error)
+
+  ;; :bind (([remap next-error] . next-error-repeat)
+  ;;        ([remap previous-error] . previous-error-repeat))
+  )
+
 (use-package multi-compile
   :config
 
