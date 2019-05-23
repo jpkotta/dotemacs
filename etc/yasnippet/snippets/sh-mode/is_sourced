@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: is_sourced
+# key: is_sourced
+# --
+is_sourced() {
+    [[ "\${BASH_SOURCE[0]}" != "\${0}" ]]
+}
