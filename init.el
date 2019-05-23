@@ -286,7 +286,10 @@ files (e.g. directories, fifos, etc.)."
 ;;; Ergomovement
 
 (use-package hydra
+  ;; unlike most packages, there are no featurep tests for this, it's
+  ;; assumed to be installed
   :config
+  ;; blue exits immediately, red keeps the hydra active
   ;; teal and amaranth are like magit popups
   ;; pink is like a minor mode
   (setq lv-use-separator t)
@@ -524,7 +527,7 @@ switch to it.  Recommended to add to `emacs-startup-hook'."
 
 (use-package gxref
   ;;:disabled
-  :after xref
+  :after (xref projectile)
   :if (executable-find "global")
   :config
   ;; (remove-hook 'next-error-hook #'jpk/next-error-hook)
@@ -612,7 +615,10 @@ which is really sub optimal."
     )
 
   :bind (("M-/" . xref-find-references)
-         ("C-c /" . hydra/gxref/body))
+         ("C-c /" . hydra/gxref/body)
+         ;; :map projectile-mode-map
+         ;; ("R" . gxref-update-db)
+         )
   )
 
 (use-package xref
@@ -1874,7 +1880,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   ;; t is usually better for shell terminals, but nil is better for
   ;; serial terminals
   (setq term-suppress-hard-newline nil)
-  (setq term-buffer-maximum-size 32768)
+  (setq term-buffer-maximum-size 8192)
 
   (setq serial-speed-history '("115200"))
 
@@ -2668,7 +2674,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                          file-or-dir
                        (file-name-directory file-or-dir)))
            (backend (or (vc-deduce-backend) (vc-responsible-backend file-dir)))
-           (root-dir (vc-call-backend backend 'root file-dir)))
+           (root-dir (or (vc-call-backend backend 'root file-dir)
+                        default-directory)))
       (expand-file-name root-dir)))
 
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
@@ -2683,7 +2690,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
                     "make -k --no-print-directory -C '%repo-dir'")
                    ("make-top" .
                     "make -k --no-print-directory -C '%make-dir'")
-                   ("build.sh" "bash build.sh" (locate-repo-dir))))
+                   ("build.sh" .
+                    "cd '%repo-dir' && bash build.sh")))
           (c-mode . (("c-simple" .
                       "gcc -o '%file-sans' %cflags '%file-name'")
                      ("c-simple32" .
