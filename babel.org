@@ -65,3 +65,14 @@ FOO: bar
 #+BEGIN_SRC ipython :session the-session
 print("hello")
 #+END_SRC
+
+#+BEGIN_SRC ipython :session the-session :results raw drawer
+%matplotlib inline
+import matplotlib.pyplot as plt
+import numpy as np
+plt.rcParams['figure.figsize'] = [12, 8]
+#+END_SRC
+
+#+BEGIN_SRC ipython :session the-session :exports both :results raw drawer
+plt.hist(np.random.randn(20000), bins=200)
+#+END_SRC
