@@ -616,9 +616,8 @@ which is really sub optimal."
 
   :bind (("M-/" . xref-find-references)
          ("C-c /" . hydra/gxref/body)
-         ;; :map projectile-mode-map
-         ;; ("R" . gxref-update-db)
-         )
+         :map projectile-command-map
+         ("R" . gxref-update-db))
   )
 
 (use-package xref
@@ -724,6 +723,11 @@ which is really sub optimal."
          (= 0 (shell-command "python -c 'import jupyter_client ; import jupyter_console'")))
   :after org
   :config
+  (setq org-display-inline-images t
+        org-redisplay-inline-images t
+        org-startup-with-inline-images "inlineimages")
+  (setq python-shell-interpreter "python")
+  (setq ob-ipython-command "ipython")
   (add-to-list 'org-babel-load-languages '(ipython . t))
   (org-babel-reload-languages)
   )
@@ -755,6 +759,7 @@ which is really sub optimal."
   )
 
 ;; TODO: check out ob-shstream.el
+;; TODO: check out https://github.com/dfeich/org-babel-examples
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
@@ -1436,6 +1441,9 @@ it's probably better to explicitly request a merge."
 (use-package recentf
   :ensure nil
   :defer 2
+  :init
+  (setq-default recentf-auto-cleanup "04:00") ;; must be before loading
+
   :config
   (setq recentf-max-saved-items 1024)
 
@@ -2669,14 +2677,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 (use-package defrepeater
   :defer 2
   :config
+  ;; defrepeater complains if the repeater is already defined
+  ;; :bind defines its bindings as autoloads
   (global-set-key [remap next-error] (defrepeater #'next-error))
   (global-set-key [remap previous-error] (defrepeater #'previous-error))
-
-  ;; (defrepeater #'next-error)
-  ;; (defrepeater #'previous-error)
-
-  ;; :bind (([remap next-error] . next-error-repeat)
-  ;;        ([remap previous-error] . previous-error-repeat))
   )
 
 (use-package multi-compile
@@ -2961,6 +2965,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("M-p" . isearch-backward-symbol-dwim))
   )
 
+(use-package cmake-font-lock)
+
 (use-package bitbake
   :disabled
   :config
@@ -3118,6 +3124,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; javascript
+
+;; TODO: check out edit-indirect
 
 (use-package js2-mode
   :config
@@ -3500,6 +3508,9 @@ Lisp function does not specify a special indentation."
 (use-package bug-hunter
   :commands (bug-hunter-init-file)
   )
+
+(use-package with-emacs
+  :disabled)
 
 ;; http://wikemacs.org/wiki/User's_Initialization_File#Debugging_the_Init_file
 (defun test-init.el ()
