@@ -3964,6 +3964,7 @@ be specified with a numeric prefix."
 (use-package wgrep)
 
 (use-package ripgrep
+  :disabled
   :if (executable-find "rg")
   :pin melpa
   :init
@@ -3983,11 +3984,28 @@ be specified with a numeric prefix."
   )
 
 (use-package rg
-  :disabled ;; ripgrep is better
   :if (executable-find "rg")
+  :after projectile
   :config
-  (add-hook 'rg-mode-hook #'wgrep-ag-setup)
   (add-to-list 'rg-custom-type-aliases '("dts" . "*.dts *.dtsi"))
+
+  (setq rg-group-result t)
+  (add-to-list 'rg-command-line-flags "--search-zip")
+
+  (rg-define-search rg-dwim-project-all
+    "Search for thing at point in all files under project root."
+    :query point
+    :format literal
+    :files "all"
+    :dir project)
+
+  (defun jpk/rg-mode-hook ()
+    (setq adaptive-wrap-extra-indent 4)
+    (visual-line-mode 1))
+  (add-hook 'rg-mode-hook #'jpk/rg-mode-hook)
+
+  :bind (:map projectile-command-map
+         ("s r" . rg-dwim-project-all))
   )
 
 (use-package ag
