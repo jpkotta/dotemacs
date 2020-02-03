@@ -2458,6 +2458,54 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; music modes
+
+(defun jpk/mpd-next-album ()
+  (interactive)
+  (let ((inhibit-message t))
+    (shell-command "next_album")))
+
+(use-package mingus
+  :disabled
+  :if (executable-find "mpd")
+  )
+
+(use-package simple-mpc
+  :if (executable-find "mpc")
+  :config
+  (setq simple-mpc-table-separator "\t"
+        simple-mpc-volume-step-size 1
+        simple-mpc-playlist-auto-refresh 5)
+  (setq simple-mpc-playlist-format
+        (string-join
+         '("%time%" "[%disc%.]%track%" "%title%" "%album%" "%artist%")
+         simple-mpc-table-separator))
+
+  (defun simple-mpc-delete ()
+    "Deletes the song on the current line from the playlist. When a
+region is active, it deletes all the tracks in the region."
+    (interactive)
+    (if (use-region-p)
+        (let ((first-line-region (line-number-at-pos (region-beginning)))
+	          (last-line-region (1- (line-number-at-pos (region-end))))) ; usually point is on the next line so 1-
+	      (simple-mpc-call-mpc nil (cons "del" (mapcar 'number-to-string (number-sequence first-line-region
+                                                                                        last-line-region)))))
+      (simple-mpc-call-mpc nil (list "del" (number-to-string (line-number-at-pos (point))))))
+    (simple-mpc-view-current-playlist nil nil 'keep-point))
+
+  (defhydra hydra/simple-mpc (:color blue)
+    "Simple MPC"
+    ("t" simple-mpc-toggle "Toggle")
+    ("x" simple-mpc-toggle "Toggle")
+    ("N" jpk/mpd-next-album "Next Album")
+    ("c" simple-mpc-view-current-playlist "Current Playlist")
+    )
+  :bind (("C-c M" . hydra/simple-mpc/body)
+         :map simple-mpc-mode-map
+         ("N" . jpk/mpd-next-album))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; image-mode
 
 (with-eval-after-load "image-mode"
