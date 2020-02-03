@@ -3251,8 +3251,8 @@ If region is inactive, use the entire current line."
   :ensure nil
   :config
   (setq python-indent-offset 4)
-  (when (executable-find "ipython2")
-    (setq python-shell-interpreter "ipython2"
+  (when (executable-find "ipython")
+    (setq python-shell-interpreter "ipython"
           python-shell-interpreter-args "--simple-prompt -i"))
   :bind (:map python-mode-map
          ("<backtab>" . delete-indentation)
