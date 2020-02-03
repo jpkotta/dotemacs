@@ -261,10 +261,17 @@ files (e.g. directories, fifos, etc.)."
 (blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
 
-(setq eol-mnemonic-dos "(CRLF)"
-      eol-mnemonic-mac "(CR)"
-      eol-mnemonic-undecided "(EOL?)"
-      eol-mnemonic-unix "(LF)")
+(let* ((name "xos4 Terminus")
+       (spec (font-spec :name name)))
+  (if (find-font spec)
+      (setq eol-mnemonic-dos "␍␊"
+            eol-mnemonic-mac "␍"
+            eol-mnemonic-undecided "?"
+            eol-mnemonic-unix "␊")
+    (setq eol-mnemonic-dos "\\r\\n"
+          eol-mnemonic-mac "\\r"
+          eol-mnemonic-undecided "?"
+          eol-mnemonic-unix "\\n")))
 
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 (put 'visual-line-mode 'safe-local-variable 'booleanp)
