@@ -4046,11 +4046,10 @@ be specified with a numeric prefix."
   (setq rg-group-result t)
   (add-to-list 'rg-command-line-flags "--search-zip")
 
-  (rg-define-search rg-dwim-project-all
+  (rg-define-search rg-dwim-project
     "Search for thing at point in all files under project root."
-    :query point
     :format literal
-    :files "all"
+    :files "*"
     :dir project)
 
   (defun jpk/rg-mode-hook ()
@@ -4059,7 +4058,7 @@ be specified with a numeric prefix."
   (add-hook 'rg-mode-hook #'jpk/rg-mode-hook)
 
   :bind (:map projectile-command-map
-         ("s r" . rg-dwim-project-all))
+         ("s r" . rg-dwim-project))
   )
 
 (use-package ag
