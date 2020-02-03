@@ -126,6 +126,8 @@ files (e.g. directories, fifos, etc.)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Appearance
 
+(use-package diminish)
+
 (setq inhibit-startup-screen t
       initial-scratch-message "")
 
@@ -223,6 +225,11 @@ files (e.g. directories, fifos, etc.)."
    '(term ((t (:foreground "lavender blush"))))
 
    '(Info-quoted ((t (:family "Luxi Mono")))))
+  )
+
+(use-package dimmer
+  :config
+  (dimmer-mode)
   )
 
 (setq mode-line-percent-position '(6 . "%q"))
@@ -1462,7 +1469,15 @@ it's probably better to explicitly request a merge."
   )
 
 (setq history-delete-duplicates t)
-(savehist-mode 1)
+
+(use-package savehist
+  :ensure nil
+  :init
+  (setq savehist-additional-variables '(shell-command-history)
+        savehist-save-minibuffer-history t)
+  :config
+  (savehist-mode 1)
+  )
 
 (use-package midnight
   :ensure nil
@@ -2964,6 +2979,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("M-n" . isearch-forward-symbol-dwim)
          ("M-p" . isearch-backward-symbol-dwim))
   )
+
+(use-package kconfig-mode)
 
 (use-package cmake-font-lock)
 
