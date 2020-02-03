@@ -2735,33 +2735,23 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package multi-compile
+  :after projectile
   :config
-
-  (defun locate-repo-dir (&optional file-or-dir)
-    "Find the root of the version control repository."
-    (let* ((file-or-dir (or file-or-dir (buffer-file-name) default-directory))
-           (file-dir (if (file-directory-p file-or-dir)
-                         file-or-dir
-                       (file-name-directory file-or-dir)))
-           (backend (or (vc-deduce-backend) (vc-responsible-backend file-dir)))
-           (root-dir (or (vc-call-backend backend 'root file-dir)
-                        default-directory)))
-      (expand-file-name root-dir)))
 
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-Wall -g3"))
-               ("%repo-dir" . (locate-repo-dir))))
+               ("%proj-dir" . (projectile-project-root))))
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
         `((".*" . (("make-simple" .
                     "make -k")
-                   ("make-repo" .
-                    "make -k --no-print-directory -C '%repo-dir'")
-                   ("make-top" .
+                   ("make-proj" .
+                    "make -k --no-print-directory -C '%proj-dir'")
+                   ("make-make-dir" .
                     "make -k --no-print-directory -C '%make-dir'")
                    ("build.sh" .
-                    "cd '%repo-dir' && bash build.sh")))
+                    "cd '%proj-dir' && bash build.sh")))
           (c-mode . (("c-simple" .
                       "gcc -o '%file-sans' %cflags '%file-name'")
                      ("c-simple32" .
