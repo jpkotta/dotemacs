@@ -3181,6 +3181,8 @@ region is active, it deletes all the tracks in the region."
   )
 
 (use-package lsp-go
+  :disabled ;; FIXME
+  :ensure nil ;; part of lsp-mode
   :after lsp-mode
   :if (executable-find "go-langserver")
   :config
