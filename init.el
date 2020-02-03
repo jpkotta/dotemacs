@@ -540,7 +540,6 @@ switch to it.  Recommended to add to `emacs-startup-hook'."
 ;; FIXME gxref appears to be unmaintained
 
 (use-package gxref
-  ;;:disabled
   :after (xref projectile)
   :if (executable-find "global")
   :config
@@ -592,7 +591,7 @@ default label."
       (unless bfn (error "Buffer has no file associated with it"))
       (gxref--global-to-list-async bfn (list "--single-update" bfn))))
 
-  (add-hook 'xref-backend-functions #'gxref-xref-backend)
+  (add-to-list 'xref-backend-functions #'gxref-xref-backend)
 
   ;; see projectile-command-map
   (defun gxref-create-db-projectile ()
@@ -3180,7 +3179,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   :after js2-mode
   :init
   (defun jpk/xref-js2/js2-mode-hook ()
-    (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil 'local))
+    (add-to-list 'xref-backend-functions #'xref-js2-xref-backend nil 'local))
   (add-hook 'js2-mode-hook #'jpk/xref-js2/js2-mode-hook)
   )
 
