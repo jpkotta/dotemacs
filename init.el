@@ -1719,6 +1719,17 @@ This sets all buffers as displayed."
 ;; show fine differences
 (setq-default ediff-auto-refine 'on)
 
+(defun diff-last-two-kills ()
+  (interactive)
+  (let (old-buffer new-buffer)
+  (with-temp-buffer
+    (setq old-buffer (current-buffer))
+    (insert (current-kill 1 t))
+    (with-temp-buffer
+      (setq new-buffer (current-buffer))
+      (insert (current-kill 0 t))
+      (diff old-buffer new-buffer "-u" t)))))
+
 (use-package commit-patch-buffer
   :ensure nil
   :commands (commit-patch-buffer)
