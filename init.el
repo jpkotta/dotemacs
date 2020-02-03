@@ -1467,17 +1467,28 @@ it's probably better to explicitly request a merge."
 
   :config
   (setq recentf-max-saved-items 1024)
+  ;;(customize-set-variable 'recentf-auto-cleanup "04:00")
 
   (defun jpk/recentf-keep-predicate (file)
-    "Faster than `recentf-keep-default-predicate'."
+    "Faster than `recentf-keep-default-predicate'.
+     Returns non-nil if FILE should remain in the recentf list."
     (cond
-     ((file-remote-p file nil t) (file-readable-p file))
-     ((file-remote-p file))
+     ;; file is remote, we're connected already, and the file is readable
+     ((file-remote-p file nil 'connected) (file-readable-p file))
+     ;; the file is remote, do not keep
+     ((file-remote-p file) nil)
      ;; file-readable-p can be slow for network filesystems, hopefully
      ;; file-exists-p mitigates that
      ((file-exists-p file) (file-readable-p file))))
 
   (setq recentf-keep (list #'jpk/recentf-keep-predicate))
+
+  ;; expand-file-name tries to connect if it's a relative name
+  (defun jpk/recentf-exclude (file)
+    (when (file-remote-p file)
+      (let ((vec (tramp-dissect-file-name file)))
+        (not (file-name-absolute-p (tramp-file-name-localname vec))))))
+  (setq recentf-exclude (list #'jpk/recentf-exclude))
 
   (recentf-mode 1)
   )
