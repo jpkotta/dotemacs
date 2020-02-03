@@ -1288,6 +1288,14 @@ Uses `nhexl-mode'."
   :diminish flyspell-mode
   :init
   (setq ispell-program-name "aspell")
+  ;; http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
+  (setq-default ispell-extra-args '("--sug-mode=ultra"
+                                    "--lang=en_US"))
+
+  (when (string-match-p "--camel-case"
+                        (shell-command-to-string
+                         (format "%s --help" ispell-program-name)))
+    (push "--camel-case" ispell-extra-args))
 
   :config
   (setq flyspell-use-meta-tab nil)
