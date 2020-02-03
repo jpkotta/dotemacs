@@ -773,6 +773,7 @@ which is really sub optimal."
 
 ;; TODO: check out ob-shstream.el
 ;; TODO: check out https://github.com/dfeich/org-babel-examples
+;; TODO: check out https://gitlab.com/howardabrams/emacs-piper
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; misc insertions
@@ -2065,6 +2066,11 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq shell-command-dont-erase-buffer 'beg-last-out)
 
+(use-package bang
+  :bind ("M-!" . bang))
+
+;; TODO: https://github.com/CeleritasCelery/emacs-native-shell-complete
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; eshell
 
@@ -3169,6 +3175,7 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 ;; javascript
 
 ;; TODO: check out edit-indirect
+;; TODO: check out verb
 
 (use-package js2-mode
   :config
@@ -3191,6 +3198,9 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   )
 
 (use-package json-mode)
+
+(use-package json-navigator
+  :disabled)
 
 (use-package jq-mode
   :disabled)
