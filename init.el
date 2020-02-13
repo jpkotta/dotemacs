@@ -1135,7 +1135,9 @@ Uses `nhexl-mode'."
       browse-url-new-window-flag t
       eww-search-prefix "https://google.com/search?q="
       shr-color-visible-luminance-min 70
-      shr-external-browser #'browse-url-chrome)
+      ;; shr-external-browser #'browse-url-chrome
+      shr-external-browser #'browse-url-firefox
+      )
 
 (use-package eww
   :ensure nil
