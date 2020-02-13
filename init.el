@@ -1466,11 +1466,10 @@ it's probably better to explicitly request a merge."
   :ensure nil
   :defer 2
   :init
-  (setq-default recentf-auto-cleanup "04:00") ;; must be before loading
+  (setq-default recentf-auto-cleanup (* 10 60)) ;; must be before loading
 
   :config
   (setq recentf-max-saved-items 1024)
-  ;;(customize-set-variable 'recentf-auto-cleanup "04:00")
 
   (defun jpk/recentf-keep-predicate (file)
     "Faster than `recentf-keep-default-predicate'.
