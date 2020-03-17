@@ -3665,7 +3665,10 @@ Lisp function does not specify a special indentation."
 (use-package conf-mode
   :ensure nil
   :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'"
-         "\\.env\\.sample\\'" "mkosi\\.default\\'")
+         "\\.env\\.sample\\'" "mkosi\\.default\\'"
+         "/usr/share/libalpm/hooks/.*\\.hook\\'"
+         "/etc/pacman.d/hooks/.*\\.hook\\'"
+         )
   )
 
 (use-package systemd)
