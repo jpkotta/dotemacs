@@ -159,6 +159,7 @@ files (e.g. directories, fifos, etc.)."
 ;; (when (find-font (font-spec :name "Symbola"))
 ;;   (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
 
+;; try out modus-vivendi-theme
 (setq custom-safe-themes t)
 (use-package calmer-forest-theme
   :init
@@ -2017,6 +2018,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
       (let ((inhibit-read-only t))
         (setq term-terminal-state 0)
         (term-reset-terminal)
+        (term-reset-size (window-height) (window-width))
         (term-send-raw-string "\C-l"))))
 
   (defun jpk/term-mode-hook ()
