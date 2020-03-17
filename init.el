@@ -1895,24 +1895,23 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
 
-(setq-default comint-input-ignoredups t
-              comint-prompt-read-only t
-              comint-scroll-to-bottom-on-input 'all)
+(use-package comint
+  :ensure nil
+  :init
+  (setq-default comint-input-ignoredups t
+                comint-prompt-read-only t
+                comint-scroll-to-bottom-on-input 'all)
 
-(defun jpk/eob (&rest args)
-  "Move to end of buffer."
-  (goto-char (point-max)))
-(advice-add 'comint-send-input :before #'jpk/eob)
+  :config
+  ;; (defun jpk/eob (&rest args)
+  ;;   "Move to end of buffer."
+  ;;   (goto-char (point-max)))
+  ;; (advice-add 'comint-send-input :before #'jpk/eob)
 
-;; used for interactive terminals
-(with-eval-after-load "comint"
-  (define-key comint-mode-map
-    (kbd "<up>") #'comint-previous-matching-input-from-input)
-  (define-key comint-mode-map
-    (kbd "<down>") #'comint-next-matching-input-from-input)
+  :bind (:map comint-mode-map
+         ("<up>" . comint-previous-matching-input-from-input)
+         ("<down>" . comint-next-matching-input-from-input))
   )
-
-(autoload 'ansi-color-for-comint-mode-on "ansi-color")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
