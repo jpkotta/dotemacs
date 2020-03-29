@@ -160,7 +160,41 @@ files (e.g. directories, fifos, etc.)."
 ;;   (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
 
 (setq custom-safe-themes t)
+
+(use-package modus-vivendi-theme
+  :init
+  (load-theme 'modus-vivendi 'noconfirm)
+
+  :config
+  (set-face-attribute 'default nil
+                      :family (if (string= system-type "windows-nt")
+                                  "Consolas"
+                                "DejaVu Sans Mono")
+                      :height 90)
+
+  (set-face-attribute 'mode-line nil :height 1.0)
+
+  (custom-theme-set-faces
+   'modus-vivendi
+
+   '(fixed-pitch ((t (:family "Luxi Mono"))))
+
+   '(term ((t (:foreground "lavender blush"))))
+
+   '(flyspell-duplicate ((t (:foreground nil))))
+   '(flyspell-incorrect ((t (:foreground nil))))
+
+   '(Info-quoted ((t (:family "Luxi Mono"))))
+
+   ;; set fg from bg of modus-theme-intense-*
+   '(diff-hl-insert ((t (:inherit nil :foreground "#006800"))))
+   '(diff-hl-delete ((t (:inherit nil :foreground "#a4202a"))))
+   '(diff-hl-change ((t (:inherit nil :foreground "#874900"))))
+   )
+  )
+
 (use-package calmer-forest-theme
+  :disabled
   :init
   (load-theme 'calmer-forest 'noconfirm)
 
@@ -261,17 +295,18 @@ files (e.g. directories, fifos, etc.)."
 (blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
 
-(let* ((name "xos4 Terminus")
-       (spec (font-spec :name name)))
-  (if (find-font spec)
-      (setq eol-mnemonic-dos "␍␊"
-            eol-mnemonic-mac "␍"
+(defun jpk/window-setup-hook ()
+  (let ((spec (font-spec :name "xos4 Terminus")))
+    (if (find-font spec)
+        (setq eol-mnemonic-dos "␍␊"
+              eol-mnemonic-mac "␍"
+              eol-mnemonic-undecided "?"
+              eol-mnemonic-unix "␊")
+      (setq eol-mnemonic-dos "\\r\\n"
+            eol-mnemonic-mac "\\r"
             eol-mnemonic-undecided "?"
-            eol-mnemonic-unix "␊")
-    (setq eol-mnemonic-dos "\\r\\n"
-          eol-mnemonic-mac "\\r"
-          eol-mnemonic-undecided "?"
-          eol-mnemonic-unix "\\n")))
+            eol-mnemonic-unix "\\n"))))
+(add-hook 'window-setup-hook #'jpk/window-setup-hook)
 
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 (put 'visual-line-mode 'safe-local-variable 'booleanp)
