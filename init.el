@@ -159,6 +159,7 @@ files (e.g. directories, fifos, etc.)."
 ;; (when (find-font (font-spec :name "Symbola"))
 ;;   (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
 
+;; try out modus-vivendi-theme
 (setq custom-safe-themes t)
 
 (use-package modus-vivendi-theme
@@ -1930,24 +1931,23 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Comint - command interpreter
 
-(setq-default comint-input-ignoredups t
-              comint-prompt-read-only t
-              comint-scroll-to-bottom-on-input 'all)
+(use-package comint
+  :ensure nil
+  :init
+  (setq-default comint-input-ignoredups t
+                comint-prompt-read-only t
+                comint-scroll-to-bottom-on-input 'all)
 
-(defun jpk/eob (&rest args)
-  "Move to end of buffer."
-  (goto-char (point-max)))
-(advice-add 'comint-send-input :before #'jpk/eob)
+  :config
+  ;; (defun jpk/eob (&rest args)
+  ;;   "Move to end of buffer."
+  ;;   (goto-char (point-max)))
+  ;; (advice-add 'comint-send-input :before #'jpk/eob)
 
-;; used for interactive terminals
-(with-eval-after-load "comint"
-  (define-key comint-mode-map
-    (kbd "<up>") #'comint-previous-matching-input-from-input)
-  (define-key comint-mode-map
-    (kbd "<down>") #'comint-next-matching-input-from-input)
+  :bind (:map comint-mode-map
+         ("<up>" . comint-previous-matching-input-from-input)
+         ("<down>" . comint-next-matching-input-from-input))
   )
-
-(autoload 'ansi-color-for-comint-mode-on "ansi-color")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
@@ -2053,6 +2053,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
       (let ((inhibit-read-only t))
         (setq term-terminal-state 0)
         (term-reset-terminal)
+        (term-reset-size (window-height) (window-width))
         (term-send-raw-string "\C-l"))))
 
   (defun jpk/term-mode-hook ()
@@ -3699,7 +3700,10 @@ Lisp function does not specify a special indentation."
 (use-package conf-mode
   :ensure nil
   :mode ("\\.list\\'" "\\.rules\\'" "\\`fstab\\'" "\\.env\\'"
-         "\\.env\\.sample\\'" "mkosi\\.default\\'")
+         "\\.env\\.sample\\'" "mkosi\\.default\\'"
+         "/usr/share/libalpm/hooks/.*\\.hook\\'"
+         "/etc/pacman.d/hooks/.*\\.hook\\'"
+         )
   )
 
 (use-package systemd)
