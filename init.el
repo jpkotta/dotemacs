@@ -3732,11 +3732,18 @@ Lisp function does not specify a special indentation."
           (setq cnt (1- cnt)))
         cnt)))
 
+  (defun jpk/dts-indent-line ()
+    (interactive)
+    (save-excursion
+      (dts-indent-line)))
+
   (defun jpk/dts-mode-hook ()
     (setq indent-tabs-mode t)
     (setq tab-width 4)
     (setq comment-start "// "
-          comment-end ""))
+          comment-end "")
+    (setq indent-line-function #'jpk/dts-indent-line))
+
   (add-hook 'dts-mode-hook #'jpk/dts-mode-hook)
 
   ;; FIXME push upstream
