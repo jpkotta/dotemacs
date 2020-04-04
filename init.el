@@ -96,10 +96,10 @@ files (e.g. directories, fifos, etc.)."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(if (package-installed-p 'use-package)
-    (require 'use-package)
+(unless (require 'use-package nil 'noerror)
   (package-refresh-contents)
-  (package-install 'use-package))
+  (package-install 'use-package)
+  (require 'use-package))
 
 (setq use-package-always-ensure t
       use-package-enable-imenu-support t)
@@ -1952,6 +1952,91 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
+(defun cycle-buffers (reversed &optional predicate)
+  "Cycle through buffers matching PREDICATE.
+
+PREDICATE is function with zero arguments than returns non-nil
+if (current-buffer) is in the set of buffers to be cycled.
+
+If REVERSED is non-nil, cycle in reverse."
+  (interactive "P")
+  (unless predicate
+    (setq predicate (lambda () t)))
+  (unless reversed
+    (when (funcall predicate)
+      (bury-buffer)))
+  (let ((buffers (buffer-list)))
+    (when reversed
+      (setq buffers (nreverse buffers)))
+    (catch 'loop
+      (dolist (buf buffers)
+        (when (with-current-buffer buf (funcall predicate))
+          (switch-to-buffer buf)
+          (throw 'loop nil))))))
+
+(defun term-cycle-buffers (reversed)
+  "Cycle 'term-mode and 'vterm-mode buffers."
+  (interactive "P")
+  (cycle-buffers
+   reversed
+   (lambda ()
+     (or (derived-mode-p 'term-mode)
+        (derived-mode-p 'vterm-mode)))))
+
+(defun term-cycle-prev ()
+  "Same as `term-cycle-buffers' in reverse."
+  (interactive)
+  (term-cycle-buffers 'reversed))
+
+(defun term-cycle-next ()
+  "Same as `term-cycle-buffers'."
+  (interactive)
+  (term-cycle-buffers nil))
+
+(use-package vterm
+  :init
+  (defun vterm-send-C-backspace ()
+    "Sends `C-<backspace>` to the libvterm."
+    (interactive)
+    (vterm-send-key "<backspace>" nil nil t))
+
+  (defun vterm-send-C-delete ()
+    "Sends `C-<delete>` to the libvterm."
+    (interactive)
+    (vterm-send-key "<delete>" nil nil t))
+
+  (defun vterm-send-escape ()
+    "Sends `ESC` to the libvterm."
+    (interactive)
+    (vterm-send-key "[" nil t nil))
+
+  (defun vterm-send-string (s)
+    "Send a string of characters to the libvterm."
+    (dolist (c (split-string s "" t))
+      (vterm-send-key c)))
+
+  (defun jpk/vterm-exit-functions (buffer event)
+    (when (and (string-match "finished" event)
+             (buffer-live-p buffer))
+      (kill-buffer buffer)
+      (term-cycle-next)))
+  (add-hook 'vterm-exit-functions #'jpk/vterm-exit-functions)
+
+  :bind (("C-c t" . vterm)
+         :map vterm-mode-map
+         ("C-c C-s" . isearch-forward)
+         ("C-c C-r" . isearch-backward)
+         ("C-<backspace>" . vterm-send-C-h)
+         ("C-<delete>" . vterm-send-C-delete)
+         ("C-c C-y" . vterm-send-C-y)
+         ("C-c C-u" . vterm-send-C-u)
+         ("C-c C-x" . vterm-send-C-x)
+         ("C-c C-v" . vterm-send-C-v)
+         ("C-<next>" . term-cycle-next)
+         ("C-<prior>" . term-cycle-prev)
+         ("C-S-t" . vterm))
+  )
+
 (use-package eterm-256color
   :init
   (add-hook 'term-mode-hook #'eterm-256color-mode)
@@ -1962,6 +2047,8 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   )
 
 (use-package sane-term
+  :init
+  (require 'term)
   :bind (("C-c t" . sane-term)
          :map term-raw-map
          ("C-S-t" . sane-term-create)
