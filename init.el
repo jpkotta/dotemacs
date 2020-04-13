@@ -988,6 +988,8 @@ With prefix arg, insert a large ASCII art version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; hexl mode
 
+(use-package ascii-table)
+
 (use-package nhexl-mode
   ;; TODO
   ;; indirect buffer (but set-buffer-multibyte doesn't work with that)
