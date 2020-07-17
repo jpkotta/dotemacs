@@ -2010,7 +2010,7 @@ If REVERSED is non-nil, cycle in reverse."
   (defun vterm-send-escape ()
     "Sends `ESC` to the libvterm."
     (interactive)
-    (vterm-send-key "[" nil t nil))
+    (vterm-send-key "<escape>"))
 
   (defun vterm-send-string (s)
     "Send a string of characters to the libvterm."
@@ -2049,6 +2049,7 @@ If REVERSED is non-nil, cycle in reverse."
   )
 
 (use-package sane-term
+  :disabled
   :init
   (require 'term)
   :bind (("C-c t" . sane-term)
