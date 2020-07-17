@@ -3806,44 +3806,15 @@ Lisp function does not specify a special indentation."
   )
 
 (use-package dts-mode
+  :pin melpa
   :config
-  (defun dts--calculate-indentation ()
-    (interactive)
-    (save-excursion
-      (let ((end (point-at-eol))
-            (cnt 0)
-            (initial-point (point)))
-        (goto-char 0)
-        (while (re-search-forward "\\([{}<>]\\)" end t)
-          (if (string-match "[{<]" (match-string-no-properties 0))
-              (setq cnt (1+ cnt))
-            (setq cnt (1- cnt))))
-        ;; subtract one if the current line has an opening brace since we
-        ;; shouldn't add the indentation level until the following line
-        (goto-char initial-point)
-        (beginning-of-line)
-        (when (re-search-forward "[{<]" (point-at-eol) t)
-          (setq cnt (1- cnt)))
-        cnt)))
-
-  (defun jpk/dts-indent-line ()
-    (interactive)
-    (save-excursion
-      (dts-indent-line)))
-
   (defun jpk/dts-mode-hook ()
     (setq indent-tabs-mode t)
     (setq tab-width 4)
     (setq comment-start "// "
           comment-end "")
-    (setq indent-line-function #'jpk/dts-indent-line))
-
+    )
   (add-hook 'dts-mode-hook #'jpk/dts-mode-hook)
-
-  ;; FIXME push upstream
-  (let ((table dts-mode-syntax-table))
-    (modify-syntax-entry ?<  "(>" table)
-    (modify-syntax-entry ?>  ")<" table))
 
   :mode "\\.its\\'"
   )
