@@ -3346,7 +3346,10 @@ region is active, it deletes all the tracks in the region."
   (add-hook 'protobuf-mode-hook #'paren-face-mode)
   )
 
-(use-package lua-mode)
+(use-package lua-mode
+  ;; rx-form bug
+  :disabled
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; javascript
@@ -3505,8 +3508,6 @@ If region is inactive, use the entire current line."
   (add-hook 'rst-mode-hook #'jpk/rst-mode-hook)
   (add-hook 'rst-mode-hook #'flyspell-mode)
   )
-
-(use-package pydoc-info)
 
 (use-package python-info)
 
@@ -4239,22 +4240,6 @@ be specified with a numeric prefix."
     (setq adaptive-wrap-extra-indent 4)
     (visual-line-mode 1))
   (add-hook 'ag-mode-hook #'jpk/ag-mode-hook)
-  )
-
-(use-package wgrep-ag
-  :disabled ;; normal wgrep works with ripgrep
-  :after (wgrep ag)
-  :bind (:map ag-mode-map
-         ("C-x C-q" . wgrep-change-to-wgrep-mode))
-  )
-
-(use-package grep-context
-  :bind (:map grep-mode-map
-         ("+" . grep-context-more-around-point)
-         ("-" . grep-context-less-around-point)
-         :map ripgrep-search-mode-map
-         ("+" . grep-context-more-around-point)
-         ("-" . grep-context-less-around-point))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
