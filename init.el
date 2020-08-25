@@ -50,6 +50,12 @@ Only defcustoms usually have a `standard-value'."
 
 ;; https://github.com/alphapapa/unpackaged.el
 
+;; Emacs 27:
+;; * early init
+;; ** package-*
+;; ** gui disables
+;; ** package-quickstart
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
 
@@ -1173,8 +1179,7 @@ Uses `nhexl-mode'."
       browse-url-new-window-flag t
       eww-search-prefix "https://google.com/search?q="
       shr-color-visible-luminance-min 70
-      ;; shr-external-browser #'browse-url-chrome
-      shr-external-browser #'browse-url-firefox
+      browse-url-secondary-browser-function #'browse-url-firefox
       )
 
 (use-package eww
@@ -1784,6 +1789,7 @@ This sets all buffers as displayed."
   (define-key diff-mode-map (kbd "C-c C-m") #'diff-add-trailing-CR-in-hunk)
   (define-key diff-mode-map (kbd "C-c C-j") #'diff-remove-trailing-CR-in-hunk)
   (define-key diff-mode-map (kbd "C-c C-o") #'diff-goto-source)
+  (setq diff-font-lock-prettify t)
   )
 
 (defun diff-delete-trailing-CR ()
@@ -2402,18 +2408,10 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   (add-hook 'dired-mode-hook #'dired-omit-mode)
 
   (setq dired-deletion-confirmer 'y-or-n-p
-        dired-dwim-target t)
+        dired-dwim-target t
+        dired-create-destination-dirs 'always)
 
   (add-hook 'dired-mode-hook #'dired-hide-details-mode)
-
-  (defun jpk/create-parent-dirs (&rest args)
-    "Create parent directories if necessary."
-    (let* ((new-name (nth 1 args))
-           (dir (file-name-directory new-name)))
-      (unless (file-directory-p dir)
-        (message "Creating dir for file %s" new-name)
-        (make-directory dir 'parents))))
-  (advice-add 'dired-rename-file :before #'jpk/create-parent-dirs)
 
   (setq wdired-allow-to-change-permissions t)
 
@@ -2431,7 +2429,8 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
          ("C-M-s" . dired-isearch-filenames-regexp)
          ("S-<return>" . dired-find-file-other-window)
          ("S-<down-mouse-2>" . dired-mouse-find-file-other-window)
-         ("C-c C-o" . dired-omit-mode))
+         ("C-c C-o" . dired-omit-mode)
+         ("E" . dired-create-empty-file))
   )
 
 (use-package dired-single
