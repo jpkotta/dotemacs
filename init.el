@@ -3903,159 +3903,50 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; SQL
 
-;; I have a feeling that there's some sort of hook that could do this
-;; more cleanly.
-(defun insert-semicolon-and-send-input (&optional no-newline artificial)
-  "Like `comint-send-input', but inserts a semicolon first."
-  (interactive "*")
-  (save-excursion
-    (let ((pmark (process-mark (get-buffer-process (current-buffer)))))
-      (when (> (point) (marker-position pmark))
-        (end-of-line)
-        (unless (save-excursion (search-backward ";" (line-beginning-position) 'noerror))
-          (insert ";")))))
-  (comint-send-input no-newline artificial))
-
 (use-package sqlup-mode
   :commands (sqlup-mode)
   :init
   (add-hook 'sql-mode-hook #'sqlup-mode)
   )
 
-(defun jpk/sql-mode-hook ()
-  (setq adaptive-wrap-extra-indent 2)
-  (visual-line-mode 1)
+(use-package sql-indent)
 
-  (when (featurep 'wrap-region)
-    (wrap-region-add-wrapper "`" "`"))
+(use-package sql
+  :config
+  (defun jpk/sql-mode-hook ()
+    (setq adaptive-wrap-extra-indent 2)
+    (visual-line-mode 1)
 
-  (sql-highlight-ansi-keywords))
+    (when (featurep 'wrap-region)
+      (wrap-region-add-wrapper "`" "`"))
 
-(with-eval-after-load "sql"
-
-  ;;(define-key sql-interactive-mode-map (kbd "RET") #'insert-semicolon-and-send-input)
-
-  ;;;;
-
-  ;; FIXME broken
-  (defun jpk/sqlite-args (orig &rest args)
-    (let (sql-user sql-server insert-default-directory)
-      (setq sql-database (if (and (stringp sql-database)
-                                (file-exists-p sql-database))
-                             sql-database
-                           default-directory))
-      (setq sql-database (read-file-name "SQLite file: "
-                                         (file-name-directory sql-database)
-                                         sql-database))
-      (apply orig args)))
-  (advice-add 'sql-sqlite :around #'jpk/sqlite-args)
-
-  (setq sql-sqlite-program "sqlite3")
-
-  ;;;;
-
-  (sql-set-product-feature 'mysql :sqli-login
-                           '(user password server database))
-  (sql-set-product-feature 'mysql :prompt-regexp
-                           "^\\(?:mysql\\|mariadb\\).*> ")
-
-  (defun sql-make-alternate-buffer-name ()
-    "Return a string that can be used to rename a SQLi buffer.
-
-This is used to set `sql-alternate-buffer-name' within
-`sql-interactive-mode'.
-
-If the session was started with `sql-connect' then the alternate
-name would be the name of the connection.
-
-Otherwise, it uses the parameters identified by the :sqlilogin
-parameter.
-
-If all else fails, the alternate name would be the user and
-server/database name."
-
-    (let ((name ""))
-
-      ;; Build a name using the :sqli-login setting
-      (setq name
-            (apply #'concat
-                   (cdr
-                    (apply #'append nil
-                           (sql-for-each-login
-                            (sql-get-product-feature sql-product :sqli-login)
-                            (lambda (token plist)
-                              (cond
-                               ((eq token 'user)
-                                (unless (string= "" sql-user)
-                                  (list " " sql-user)))
-                               ((eq token 'port)
-                                (unless (or (not (numberp sql-port))
-                                           (= 0 sql-port))
-                                  (list ":" (number-to-string sql-port))))
-                               ((eq token 'server)
-                                (unless (string= "" sql-server)
-                                  (list "@"
-                                        (if (plist-member plist :file)
-                                            (file-name-nondirectory sql-server)
-                                          sql-server))))
-                               ((eq token 'database)
-                                (unless (string= "" sql-database)
-                                  (list "/"
-                                        (if (plist-member plist :file)
-                                            (file-name-nondirectory sql-database)
-                                          sql-database))))
-
-                               ((eq token 'password) nil)
-                               (t                    nil))))))))
-
-      ;; If there's a connection, use it and the name thus far
-      (if sql-connection
-          (format "<%s>%s" sql-connection (or name ""))
-
-        ;; If there is no name, try to create something meaningful
-        (if (string= "" (or name ""))
-            (concat
-             (if (string= "" sql-user)
-                 (if (string= "" (user-login-name))
-                     ()
-                   (concat (user-login-name) "/"))
-               (concat sql-user "/"))
-             (if (string= "" sql-database)
-                 (if (string= "" sql-server)
-                     (system-name)
-                   sql-server)
-               sql-database))
-
-          ;; Use the name we've got
-          name))))
-
-  (add-hook 'sql-interactive-mode-hook #'sql-rename-buffer)
+    (sql-highlight-ansi-keywords))
   (add-hook 'sql-mode-hook #'jpk/sql-mode-hook)
+
+  (defun sql-mysql-diff-tables (user host passwd database table-a table-b)
+    (interactive "sUser: \nsHost: \nsPassword: \nsDatabase: \nsTable A: \nsTable B: ")
+    (let ((table-a-buf (get-buffer-create "*SQL-diff-table-A*"))
+          (table-b-buf (get-buffer-create "*SQL-diff-table-B*"))
+          (cmd (concat "mysqldump --skip-comments --skip-extended-insert --single-transaction"
+                       " -u " user " -h " host " -p" passwd
+                       " " database " ")))
+
+      (save-window-excursion
+        (shell-command (concat cmd table-a) table-a-buf)
+        (shell-command (concat cmd table-b) table-b-buf))
+
+      (with-current-buffer table-b-buf
+        (goto-char (point-min))
+        (re-search-forward "^INSERT INTO")
+        (while (re-search-forward (regexp-quote table-b))
+          (replace-match table-a nil nil)))
+
+      (if (and (> (buffer-size table-a-buf) 0)
+             (> (buffer-size table-b-buf) 0))
+          (ediff-buffers table-a-buf table-b-buf)
+        (kill-buffer table-a-buf)
+        (kill-buffer table-b-buf))))
   )
-
-(defun sql-mysql-diff-tables (user host passwd database table-a table-b)
-  (interactive "sUser: \nsHost: \nsPassword: \nsDatabase: \nsTable A: \nsTable B: ")
-  (let ((table-a-buf (get-buffer-create "*SQL-diff-table-A*"))
-        (table-b-buf (get-buffer-create "*SQL-diff-table-B*"))
-        (cmd (concat "mysqldump --skip-comments --skip-extended-insert --single-transaction"
-                     " -u " user " -h " host " -p" passwd
-                     " " database " ")))
-
-    (save-window-excursion
-      (shell-command (concat cmd table-a) table-a-buf)
-      (shell-command (concat cmd table-b) table-b-buf))
-
-    (with-current-buffer table-b-buf
-      (goto-char (point-min))
-      (re-search-forward "^INSERT INTO")
-      (while (re-search-forward (regexp-quote table-b))
-        (replace-match table-a nil nil)))
-
-    (if (and (> (buffer-size table-a-buf) 0)
-           (> (buffer-size table-b-buf) 0))
-        (ediff-buffers table-a-buf table-b-buf)
-      (kill-buffer table-a-buf)
-      (kill-buffer table-b-buf))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
