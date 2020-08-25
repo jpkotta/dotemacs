@@ -3776,13 +3776,14 @@ Lisp function does not specify a special indentation."
 (fset 'html-mode 'nxml-mode)
 (fset 'sgml-mode 'nxml-mode)
 
-(use-package htmlize)
-
-(use-package htmlize-view
-  :ensure nil
-  :after htmlize
-  :commands (htmlize-view-buffer)
-  )
+(defun htmlize-buffer-and-view ()
+  (interactive)
+  (let* ((file-name (concat (buffer-name) ".html"))
+         (full-file-name (expand-file-name file-name (temporary-file-directory)))
+         (browse-url-browser-function #'browse-url-firefox))
+    (htmlfontify-buffer)
+    (write-file full-file-name)
+    (browse-url-of-file full-file-name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; config files
