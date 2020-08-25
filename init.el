@@ -1721,6 +1721,15 @@ This sets all buffers as displayed."
   :bind (("C-x g" . hydra/magit/body))
   )
 
+(use-package forge
+  :disabled
+  :after magit
+  :config
+  ;; git config --global github.deere.com/api/v3.user jk72405
+  ;; git -C /path/to/repo config github.host deere.com/api/v3
+  (add-to-list 'forge-alist '("github.deere.com" "github.deere.com/api/" "github.deere.com" forge-github-repository))
+  )
+
 (defalias 'git-grep #'vc-git-grep)
 
 ;; TODO
@@ -3102,6 +3111,14 @@ region is active, it deletes all the tracks in the region."
   (setq imenu-auto-rescan t
         imenu-auto-rescan-maxout (* 1024 1024))
   :bind (("C-c i" . imenu))
+  )
+
+(use-package separedit
+  :disabled
+  :config
+  (setq separedit-default-mode 'markdown-mode)
+  :bind (:map prog-mode-map
+         ("C-c '" . separedit))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
