@@ -1087,9 +1087,9 @@ Uses `nhexl-mode'."
                              :hint nil
                              :post (deactivate-mark))
     "Rectangle"
-    ("d" kill-rectangle "kill" :color blue)
+    ("d" kill-rectangle "kill")
     ("y" yank-rectangle "yank" :color blue)
-    ("w" copy-rectangle-as-kill "copy" :color blue)
+    ("w" copy-rectangle-as-kill "copy")
     ("o" open-rectangle "open" :color blue)
     ("t" string-rectangle "string" :color blue)
     ("c" clear-rectangle "clear" :color blue)
