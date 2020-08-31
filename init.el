@@ -51,10 +51,12 @@ Only defcustoms usually have a `standard-value'."
 ;; https://github.com/alphapapa/unpackaged.el
 
 ;; Emacs 27:
+;; https://www.masteringemacs.org/article/whats-new-in-emacs-27-1
 ;; * early init
 ;; ** package-*
 ;; ** gui disables
 ;; ** package-quickstart
+;; * so-long
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Paths
@@ -1571,6 +1573,8 @@ This sets all buffers as displayed."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TRAMP
+
+(setq auth-source-save-behavior nil)
 
 (with-eval-after-load 'tramp
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
@@ -3757,7 +3761,10 @@ Lisp function does not specify a special indentation."
   (interactive)
   (let* ((file-name (concat (buffer-name) ".html"))
          (full-file-name (expand-file-name file-name (temporary-file-directory)))
-         (browse-url-browser-function #'browse-url-firefox))
+         (emacs-browsers '(browse-url-w3 eww-browse-url browse-url-text-xterm  browse-url-text-emacs))
+         (browse-url-browser-function (when (memq browse-url-browser-function
+                                                  emacs-browsers)
+                                        browse-url-secondary-browser-function)))
     (htmlfontify-buffer)
     (write-file full-file-name)
     (browse-url-of-file full-file-name)))
@@ -4006,6 +4013,8 @@ match.  It should be idempotent."
 (advice-add 'isearch-forward :before #'jpk/isearch-auto-use-region)
 (advice-add 'isearch-backward :before #'jpk/isearch-auto-use-region)
 
+(setq isearch-yank-on-move 'shift)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; grep
 
@@ -4024,13 +4033,9 @@ match.  It should be idempotent."
 (use-package grep
   :ensure nil
   :config
-  ;; FIXME: see new option grep-find-hide
-  (defun jpk/grep/compilation-filter-hook ()
-    (hide-lines-matching "^find"))
   (defun jpk/grep-mode-hook ()
     (setq adaptive-wrap-extra-indent 4)
-    (visual-line-mode 1)
-    (add-hook 'compilation-filter-hook #'jpk/grep/compilation-filter-hook nil 'local))
+    (visual-line-mode 1))
   (add-hook 'grep-mode-hook #'jpk/grep-mode-hook)
 
   (defvar grep-context-lines 2
