@@ -2704,7 +2704,7 @@ region is active, it deletes all the tracks in the region."
 (use-package ibuffer
   :ensure nil
   :init
-  (setq ibuffer-default-sorting-mode 'major-mode
+  (setq ibuffer-default-sorting-mode 'alphabetic
         ibuffer-formats '((mark modified read-only " "
                                 (name 28 28 :left :elide) " "
                                 (size 9 -1 :right) " "
@@ -2720,47 +2720,12 @@ region is active, it deletes all the tracks in the region."
   (require 'ibuf-ext)
   (require 'ibuf-macs)
 
-  ;; TODO make cycling work with count
-  (defun ibuffer-forward-filter-group (&optional count)
-    "Move point forwards by COUNT filtering groups."
-    (interactive "P")
-    (unless count
-      (setq count 1))
-    (when (> count 0)
-      (when (get-text-property (point) 'ibuffer-filter-group-name)
-        (goto-char (next-single-property-change
-                    (point) 'ibuffer-filter-group-name
-                    nil (point-max))))
-      (goto-char (next-single-property-change
-                  (point) 'ibuffer-filter-group-name
-                  nil (point-max)))
-      (ibuffer-forward-filter-group (1- count)))
-    (when (eobp)
-      (if (not ibuffer-movement-cycle)
-          (ibuffer-backward-filter-group)
-        (goto-char (point-min))
-        (ibuffer-forward-filter-group (1- count))))
-    (ibuffer-forward-line 0))
-
-  ;; TODO make cycling work with count
-  (defun ibuffer-backward-filter-group (&optional count)
-    "Move point backwards by COUNT filtering groups."
-    (interactive "P")
-    (unless count
-      (setq count 1))
-    (when (> count 0)
-      (when (get-text-property (point) 'ibuffer-filter-group-name)
-        (goto-char (previous-single-property-change
-                    (point) 'ibuffer-filter-group-name
-                    nil (point-min))))
-      (goto-char (previous-single-property-change
-                  (point) 'ibuffer-filter-group-name
-                  nil (point-min)))
-      (ibuffer-backward-filter-group (1- count)))
-    (when (and ibuffer-movement-cycle (bobp))
-      (goto-char (point-max))
-      (ibuffer-backward-filter-group 1))
-    (ibuffer-forward-line 0))
+  (defun jpk/ibuffer-forward-filter-group-fix (&rest args)
+    (unless (get-text-property (point) 'ibuffer-filter-group-name)
+      ;; stuck at the bottom, move back one
+      (ibuffer-backward-filter-group)))
+  (advice-add 'ibuffer-forward-filter-group :after
+              #'jpk/ibuffer-forward-filter-group-fix)
 
   (defun jpk/recenter (&rest args)
     "Recenter"
@@ -2791,18 +2756,13 @@ region is active, it deletes all the tracks in the region."
 
   ;; run when ibuffer command is invoked
   (defun jpk/ibuffer-hook ()
-    (ibuffer-set-filter-groups-by-mode)
-    (setq ibuffer-sorting-mode 'pathname))
+    (unless ibuffer-filter-groups
+      (ibuffer-set-filter-groups-by-mode)
+      (ibuffer-do-sort-by-alphabetic))
+    (ignore-errors
+      (ibuffer-jump-to-buffer (buffer-name (cadr (buffer-list)))))
+    (recenter))
   (add-hook 'ibuffer-hook #'jpk/ibuffer-hook)
-
-  ;; jump to most recent buffer
-  (defun jpk/jump-to-most-recent (orig &rest args)
-    "Move point to most recent."
-    (let ((recent-buffer-name (buffer-name)))
-      (apply orig args)
-      (unless (string-match-p "*Ibuffer*" recent-buffer-name)
-        (ibuffer-jump-to-buffer recent-buffer-name))))
-  (advice-add 'ibuffer :around #'jpk/jump-to-most-recent)
 
   :bind (("C-x C-b" . ibuffer)
          :map ibuffer-mode-map
