@@ -202,74 +202,6 @@ files (e.g. directories, fifos, etc.)."
    )
   )
 
-(use-package calmer-forest-theme
-  :disabled
-  :init
-  (load-theme 'calmer-forest 'noconfirm)
-
-  (set-face-attribute 'default nil
-                      :family (if (string= system-type "windows-nt")
-                                  "Consolas"
-                                "DejaVu Sans Mono")
-                      :height 100)
-  (set-face-attribute 'mode-line nil :height 1.0)
-
-  :config
-  (custom-theme-set-faces
-   'calmer-forest
-
-   '(fixed-pitch ((t (:family "Luxi Mono"))))
-
-   '(fringe ((t (:background "grey10" :foreground "dark green"))))
-   '(highlight ((t (:background "#001000"))))
-
-   '(mode-line-buffer-id ((t (:weight bold))))
-
-   '(region ((t (:background "#400060"))))
-   '(mouse ((t (:background "orange"))))
-   '(mouse-flash-position ((t (:background "grey75"))))
-   '(secondary-selection ((t (:background "DeepPink4"))))
-
-   '(ac-completion-face ((t (:foreground "green3"))))
-   '(ac-selection-face ((t (:background "grey9" :foreground "magenta"))))
-   '(ac-candidate-face ((t (:background "grey16" :foreground "lavender"))))
-   '(ac-gtags-selection-face ((t (:inherit ac-selection-face))))
-   '(ac-gtags-candidate-face ((t (:inherit ac-candidate-face))))
-   '(ac-yasnippet-selection-face ((t (:inherit ac-selection-face))))
-   '(ac-yasnippet-candidate-face ((t (:inherit ac-candidate-face))))
-
-   '(company-tooltip ((t (:background "grey16" :foreground "lavender"))))
-   '(company-tooltip-common ((t (:inherit company-tooltip :weight bold))))
-   '(company-tooltip-annotation ((t (:inherit company-tooltip))))
-   '(company-tooltip-selection ((t (:background "grey9" :foreground "magenta"))))
-   '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold))))
-   '(company-tooltip-annotation-selection ((t (:inherit company-tooltip-selection))))
-   '(company-preview ((t (:foreground "green3"))))
-   '(company-preview-common ((t (:inherit company-preview :weight bold))))
-   '(company-scrollbar-bg ((t (:background "lavender"))))
-   '(company-scrollbar-fg ((t (:background "grey9"))))
-
-   '(font-lock-preprocessor-face ((t (:inherit font-lock-builtin-face))))
-
-   '(diff-refine-changed ((t (:weight bold :background "grey24"))))
-   '(diff-refine-added ((t (:inherit diff-refine-change :foreground "green2"))))
-   '(diff-refine-removed ((t (:inherit diff-refine-change :foreground "red2"))))
-   '(diff-nonexistent ((t (:inherit diff-file-header :weight bold :foreground "plum"))))
-
-   '(ediff-even-diff-A ((t (:inherit diff-refine-changed))))
-   '(ediff-even-diff-B ((t (:inherit diff-refine-changed))))
-   '(ediff-even-diff-C ((t (:inherit diff-refine-changed))))
-   '(ediff-even-diff-Ancestor ((t (:inherit diff-refine-changed))))
-   '(ediff-odd-diff-A ((t (:inherit diff-refine-changed))))
-   '(ediff-odd-diff-B ((t (:inherit diff-refine-changed))))
-   '(ediff-odd-diff-C ((t (:inherit diff-refine-changed))))
-   '(ediff-odd-diff-Ancestor ((t (:inherit diff-refine-changed))))
-
-   '(term ((t (:foreground "lavender blush"))))
-
-   '(Info-quoted ((t (:family "Luxi Mono")))))
-  )
-
 (use-package dimmer
   :config
   (dimmer-mode)
@@ -541,39 +473,6 @@ switch to it.  Recommended to add to `emacs-startup-hook'."
     (dolist (dist-rcfile dist-rcfiles)
       (when (file-exists-p dist-rcfile)
         (copy-file dist-rcfile rcfile)))))
-
-(use-package ggtags
-  :disabled
-  :if (executable-find "global")
-  :diminish ggtags-mode
-  :config
-  (setq ggtags-global-window-height nil
-        ggtags-enable-navigation-keys nil
-        ggtags-update-on-save t)
-
-  ;; This works even if ggtags-find-tag-dwim is just marked for
-  ;; autoloading but isn't loaded yet.
-  (when (commandp (symbol-function 'ggtags-find-tag-dwim))
-    (global-set-key (kbd "M-.") #'ggtags-find-tag-dwim)
-    (global-set-key (kbd "M-?") #'ggtags-find-reference)
-
-    ;; keep default definition for emacs-lisp-mode
-    (define-key emacs-lisp-mode-map (kbd "M-.") #'xref-find-definitions)
-    (define-key emacs-lisp-mode-map (kbd "M-?") #'xref-find-references)
-    )
-
-  ;; stops ggtags-create-tags from asking
-  (setenv "GTAGSLABEL" "default")
-
-  (defun ggtags-create-tags-pygments ()
-    "Like `ggtags-create-tags', but use pygments backend."
-    (interactive)
-    (let ((orig-label (getenv "GTAGSLABEL")))
-      (setenv "GTAGSLABEL" "pygments")
-      (ignore-errors
-        (call-interactively 'ggtags-create-tags))
-      (setenv "GTAGSLABEL" orig-label)))
-  )
 
 ;; xref is the unified cross reference subsystem.  ggtags actually
 ;; uses it for some things like tag history.  It's labeled as
@@ -1217,76 +1116,6 @@ Uses `nhexl-mode'."
      (< (buffer-size other-buffer) (* 1 1024 1024))))
 (setq dabbrev-friend-buffer-function #'jpk/dabbrev-friend-buffer)
 
-(use-package auto-complete
-  :disabled
-  :diminish auto-complete-mode
-  :init
-  (ac-config-default)
-  (when (boundp 'global-company-mode)
-    (global-company-mode 0))
-
-  :config
-  (setq ac-auto-start 3
-        ac-auto-show-menu t
-        ac-use-quick-help nil
-        ac-ignore-case nil)
-
-  (add-to-list 'ac-dictionary-files "~/.ispell_american")
-  (add-to-list 'ac-dictionary-files "~/.aspell.en.pws")
-
-  (add-to-list 'ac-modes 'latex-mode)
-  (add-to-list 'ac-modes 'inferior-emacs-lisp-mode)
-
-  (add-to-list 'ac-sources 'ac-source-filename)
-  (setq-default ac-sources ac-sources)
-
-  ;; workaround for flyspell-mode
-  (ac-flyspell-workaround)
-
-  (add-to-list 'ac-modes 'text-mode)
-
-  (defun jpk/ielm-mode-hook ()
-    (dolist (x '(ac-source-functions
-                 ac-source-variables
-                 ac-source-features
-                 ac-source-symbols
-                 ac-source-words-in-same-mode-buffers))
-      (add-to-list 'ac-sources x)))
-  (add-hook 'ielm-mode-hook #'jpk/ielm-mode-hook)
-
-  :bind (("C-<tab>" . auto-complete)
-         :map ac-completing-map
-         ("C-n" . ac-next)
-         ("C-p" . ac-previous)
-         ("M-k" . ac-next)
-         ("M-i" . ac-previous)
-         ("<backtab>" . ac-expand-previous)
-         ("S-TAB" . ac-expand-previous)
-         ("C-s" . ac-isearch))
-  )
-
-(use-package fuzzy
-  :disabled
-  :requires auto-complete
-  )
-
-(use-package ac-c-headers
-  :disabled
-  :requires auto-complete
-  :after auto-complete
-  :config
-  (defun jpk/ac-c-headers ()
-    (add-to-list 'ac-sources 'ac-source-c-headers)
-    (add-to-list 'ac-sources 'ac-source-c-header-symbols 'append))
-
-  (add-hook 'c-mode-common-hook #'jpk/ac-c-headers)
-  )
-
-(use-package ac-math
-  :disabled
-  :requires auto-complete
-  :after auto-complete)
-
 (use-package company
   :pin melpa
   :diminish company-mode
@@ -1474,11 +1303,6 @@ it's probably better to explicitly request a merge."
   :config
   (amx-mode 1))
 
-(use-package smex
-  :disabled
-  :bind (("M-x" . smex)
-         ("M-X" . smex-major-mode-commands)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; backups, saving, restoring
 
@@ -1639,13 +1463,6 @@ This sets all buffers as displayed."
 
   :bind (("C-x o" . ace-window))
   )
-
-;; Save point position per-window instead of per-buffer.
-(use-package winpoint
-  :disabled
-  :defer 2
-  :config
-  (winpoint-mode 1))
 
 (setq help-window-select 'never)
 
@@ -2067,17 +1884,6 @@ If REVERSED is non-nil, cycle in reverse."
   (setq eterm-256color-disable-bold t) ;; makes "bold" mean "bright"
   )
 
-(use-package sane-term
-  :disabled
-  :init
-  (require 'term)
-  :bind (("C-c t" . sane-term)
-         :map term-raw-map
-         ("C-S-t" . sane-term-create)
-         ("<C-prior>" . sane-term-prev)
-         ("<C-next>" . sane-term-next))
-  )
-
 (use-package term
   :ensure nil
   :config
@@ -2471,20 +2277,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
   :after dired
   :init
   (add-hook 'dired-mode-hook #'diredfl-mode)
-  )
-
-(use-package dired+
-  ;; deprecated
-  ;; replaced by diredfl and dired-single
-  :disabled
-  :after dired
-  :config
-  (setq diredp-wrap-around-flag nil)
-  (toggle-diredp-find-file-reuse-dir 1)
-
-  :bind (:map dired-mode-map
-         ("<mouse-2>" . diredp-mouse-find-file-reuse-dir-buffer)
-         ("f" . diredp-up-directory-reuse-dir-buffer))
   )
 
 (use-package dired-imenu
@@ -3122,19 +2914,6 @@ region is active, it deletes all the tracks in the region."
   :mode (("\\.asl\\'" . c-mode))
 )
 
-(use-package hideif
-  :disabled
-  :ensure nil
-  :config
-  (setq hide-ifdef-initially t
-        hide-ifdef-shadow t)
-  (add-hook 'c-mode-common-hook #'hide-ifdef-mode)
-
-  (defun jpk/hide-ifdefs-on-save ()
-    (add-hook 'after-save-hook #'hide-ifdefs 'append 'local))
-  (add-hook 'c-mode-common-hook #'jpk/hide-ifdefs-on-save)
-  )
-
 (use-package ffap
   :ensure nil
   :config
@@ -3170,31 +2949,6 @@ region is active, it deletes all the tracks in the region."
 (use-package kconfig-mode)
 
 (use-package cmake-font-lock)
-
-(use-package bitbake
-  :disabled
-  :config
-  (defun jpk/bitbake-mode-hook ()
-    ;; FIXME upstream
-    (setq comment-start "#"
-          comment-stop "")
-    (setq indent-line-function #'indent-relative-dwim)
-    )
-  (add-hook 'bitbake-mode-hook #'jpk/prog-mode-hook)
-  (add-hook 'bitbake-mode-hook #'jpk/bitbake-mode-hook)
-
-  (with-eval-after-load 'company
-    (add-to-list 'company-dabbrev-code-modes 'bitbake-mode))
-
-  :mode (("\\.bb\\(append\\|class\\)?\\'" . bitbake-mode)
-         ("\\.inc\\'" . bitbake-mode)
-         ("/tmp/work/.*/temp/log\\.do_.*\\'" . compilation-mode))
-
-  :bind (:map bitbake-mode-map
-         ("C-M-;" . insert-comment-bar)
-         ("C-a" . mwim-beginning-of-line-or-code)
-         ("C-e" . mwim-end-of-line-or-code))
-  )
 
 (use-package bitbake-modes
   :init
@@ -4059,26 +3813,6 @@ be specified with a numeric prefix."
 
 (use-package wgrep)
 
-(use-package ripgrep
-  :disabled
-  :if (executable-find "rg")
-  :pin melpa
-  :init
-  (defalias 'rg 'ripgrep-regexp)
-
-  :config
-  (setq ripgrep-arguments '("--no-ignore" "--smart-case"
-                            "--max-columns" "1024"
-                            "--search-zip"
-                            "--sort path"))
-
-  (setq ripgrep--match-regexp "\e\\[31m\\(.*?\\)\e\\[[0-9]*m")
-  (defun jpk/ripgrep-search-mode-hook ()
-    (setq adaptive-wrap-extra-indent 4)
-    (visual-line-mode 1))
-  (add-hook 'ripgrep-search-mode-hook #'jpk/ripgrep-search-mode-hook)
-  )
-
 (use-package rg
   :if (executable-find "rg")
   :after projectile
@@ -4101,18 +3835,6 @@ be specified with a numeric prefix."
 
   :bind (:map projectile-command-map
          ("s r" . rg-dwim-project))
-  )
-
-(use-package ag
-  :disabled ;; ripgrep is better
-  :if (executable-find "ag")
-  :config
-  (setq ag-highlight-search t)
-
-  (defun jpk/ag-mode-hook ()
-    (setq adaptive-wrap-extra-indent 4)
-    (visual-line-mode 1))
-  (add-hook 'ag-mode-hook #'jpk/ag-mode-hook)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
