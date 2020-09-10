@@ -555,6 +555,7 @@ which is really sub optimal."
 
 (use-package org
   ;;:pin gnu
+  :defer 2
   :config
   (defun jpk/org-mode-hook ()
     (setq adaptive-wrap-extra-indent 0)
@@ -1429,6 +1430,7 @@ This sets all buffers as displayed."
 (setq vc-handled-backends '(Git Hg SVN))
 
 (use-package vc-hgcmd
+  :disabled
   ; FIXME overzealous diff-hl
   :if (executable-find "hg")
   :pin melpa
@@ -1699,6 +1701,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   )
 
 (use-package diff-hl
+  :defer 2
   :init
   (global-diff-hl-mode 1)
 
@@ -1817,6 +1820,7 @@ If REVERSED is non-nil, cycle in reverse."
   )
 
 (use-package eterm-256color
+  :defer t
   :init
   (add-hook 'term-mode-hook #'eterm-256color-mode)
 
@@ -2808,7 +2812,8 @@ region is active, it deletes all the tracks in the region."
 
 (add-hook 'prog-mode-hook #'jpk/prog-mode-hook)
 
-(use-package lsp-mode)
+(use-package lsp-mode
+  :defer t)
 
 (use-package imenu
   :ensure nil
@@ -2983,6 +2988,7 @@ region is active, it deletes all the tracks in the region."
   )
 
 (use-package go-mode
+  :defer t
   :config
   (when (executable-find "goimports")
     (setq gofmt-command "goimports"))
@@ -3018,6 +3024,7 @@ region is active, it deletes all the tracks in the region."
   )
 
 (use-package protobuf-mode
+  :defer t
   :init
   (defun jpk/protobuf-mode-hook ()
     (c-add-style "jpk/protobuf-style"
@@ -3060,7 +3067,8 @@ region is active, it deletes all the tracks in the region."
          ("M-." . nil))
   )
 
-(use-package json-mode)
+(use-package json-mode
+  :defer t)
 
 (use-package json-navigator
   :disabled)
@@ -3248,8 +3256,11 @@ If region is inactive, use the entire current line."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Lisp
 
-(use-package package-lint)
-(use-package flycheck-package)
+(use-package package-lint
+  :defer t)
+
+(use-package flycheck-package
+  :defer t)
 
 (defun describe-symbol-at-point ()
   "Get help for the symbol at point."
@@ -3361,7 +3372,7 @@ Lisp function does not specify a special indentation."
                 (funcall method indent-point state))))))))
 
 (use-package morlock
-  :defer 1
+  :defer 2
   :init
   (global-morlock-mode 1)
   )
@@ -3525,7 +3536,8 @@ Lisp function does not specify a special indentation."
   :mode ("\\`PKGBUILD\\'" "\.install\\'")
   )
 
-(use-package pacfiles-mode)
+(use-package pacfiles-mode
+  :defer t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; text and markup modes
@@ -3546,6 +3558,7 @@ Lisp function does not specify a special indentation."
 (add-hook 'text-mode-hook #'text-mode-hook-identify)
 
 (use-package markdown-mode
+  :defer t
   :init
   (defun jpk/markdown-mode-hook ()
     (setq fill-column 80))
@@ -3580,7 +3593,8 @@ Lisp function does not specify a special indentation."
          ("C-M-;" . insert-comment-bar))
   )
 
-(use-package mediawiki)
+(use-package mediawiki
+  :defer t)
 
 (use-package sdcv
   :if (and (executable-find "sdcv")
