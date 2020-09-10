@@ -3031,8 +3031,7 @@ region is active, it deletes all the tracks in the region."
   )
 
 (use-package lua-mode
-  ;; rx-form bug
-  :disabled
+  :pin melpa
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
