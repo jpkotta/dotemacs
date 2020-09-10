@@ -235,6 +235,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
 
+(use-package so-long
+  :if (>= emacs-major-version 27)
+  :ensure nil
+  :config
+  (global-so-long-mode 1)
+  )
+
 (defun jpk/startup ()
   "Set up emacs the way I like it."
   (interactive)
