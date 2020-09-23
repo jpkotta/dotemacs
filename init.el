@@ -3775,6 +3775,7 @@ be specified with a numeric prefix."
     "Search for thing at point in all files under project root."
     :format literal
     :files "*"
+    :flags ("-u")
     :dir project)
 
   (defun jpk/rg-mode-hook ()
