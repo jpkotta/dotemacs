@@ -101,7 +101,6 @@
 ;; (when (find-font (font-spec :name "Symbola"))
 ;;   (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
 
-;; try out modus-vivendi-theme
 (setq custom-safe-themes t)
 
 (use-package modus-vivendi-theme
@@ -114,8 +113,6 @@
                                   "Consolas"
                                 "DejaVu Sans Mono")
                       :height 90)
-
-  (set-face-attribute 'mode-line nil :height 1.0)
 
   (custom-theme-set-faces
    'modus-vivendi
