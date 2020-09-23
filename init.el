@@ -1773,25 +1773,45 @@ If REVERSED is non-nil, cycle in reverse."
 
 (use-package vterm
   :init
-  (defun vterm-send-C-backspace ()
-    "Sends `C-<backspace>` to the libvterm."
-    (interactive)
-    (vterm-send-key "<backspace>" nil nil t))
+  ;; TODO: push upstream
 
-  (defun vterm-send-C-delete ()
-    "Sends `C-<delete>` to the libvterm."
-    (interactive)
-    (vterm-send-key "<delete>" nil nil t))
+  (defun jpk/vterm-define-key (key)
+    "Define a command that sends KEY with modifiers C xor M to vterm."
+    (declare (indent defun)
+             (doc-string 3))
+    (let ((name (format "vterm-send-%s" key)))
+      (fset (intern name)
+            `(lambda ()
+               ,(format "Sends `%s` to the libvterm.\n\nThis was defined with `jpk/vterm-define-key'." key)
+               (interactive)
+               (vterm-send-key ,(string-remove-prefix "C-" (string-remove-prefix "M-" key))
+                               nil
+                               ,(string-prefix-p "M-" key)
+                               ,(string-prefix-p "C-" key))))
+      (intern name)))
 
-  (defun vterm-send-escape ()
-    "Sends `ESC` to the libvterm."
-    (interactive)
-    (vterm-send-key "<escape>"))
+  (dolist (k '("<escape>" "C-<left>" "C-<right>" "C-<delete>" "C-<backspace>"))
+    (jpk/vterm-define-key k))
 
-  (defun vterm-send-string (s)
-    "Send a string of characters to the libvterm."
-    (dolist (c (split-string s "" t))
-      (vterm-send-key c)))
+  ;; (let* ((k "C-<backspace>")
+  ;;        (ev (event-convert-list (listify-key-sequence (read-kbd-macro k 'need-vector)))))
+  ;;   (cons (event-modifiers ev)
+  ;;         (event-basic-type ev)))
+
+  ;; (defmacro jpk/vterm-define-key (key)
+  ;;   "Define a command that sends KEY with modifiers C xor M to vterm."
+  ;;   (declare (indent defun)
+  ;;            (doc-string 3))
+  ;;   `(defun ,(intern (format "vterm-send-%s" key))()
+  ;;      ,(format "Sends `%s` to the libvterm."  key)
+  ;;      (interactive)
+  ;;      (vterm-send-key ,(string-remove-prefix "C-" (string-remove-prefix "M-" key))
+  ;;                      nil
+  ;;                      ,(string-prefix-p "M-" key)
+  ;;                      ,(string-prefix-p "C-" key))))
+
+  ;; (dolist (k '("<escape>" "C-<left>" "C-<right>" "C-<delete>" "C-<backspace>"))
+  ;;   (eval `(jpk/vterm-define-key ,k)))
 
   (defun jpk/vterm-exit-functions (buffer event)
     (when (and (string-match "finished" event)
@@ -1805,11 +1825,15 @@ If REVERSED is non-nil, cycle in reverse."
          ("C-c C-s" . isearch-forward)
          ("C-c C-r" . isearch-backward)
          ("C-<backspace>" . vterm-send-C-h)
-         ("C-<delete>" . vterm-send-C-delete)
-         ("C-c C-y" . vterm-send-C-y)
+         ("C-<delete>" . vterm-send-M-d)
+         ("C-c C-y" . vterm-yank)
+         ("C-y" . vterm-send-C-y)
          ("C-c C-u" . vterm-send-C-u)
          ("C-c C-x" . vterm-send-C-x)
          ("C-c C-v" . vterm-send-C-v)
+         ;; C-<arrow> works with vterm--self-insert, but ergo-movement doesn't
+         ("C-<left>" . vterm-send-C-left)
+         ("C-<right>" . vterm-send-C-right)
          ("C-<next>" . term-cycle-next)
          ("C-<prior>" . term-cycle-prev)
          ("C-S-t" . vterm))
