@@ -1063,8 +1063,6 @@ Uses `nhexl-mode'."
   :diminish company-mode
   :init
   (global-company-mode 1)
-  (when (boundp 'global-auto-complete-mode)
-    (global-auto-complete-mode 0))
 
   :config
   ;; configuration similar to auto-complete
@@ -2804,10 +2802,6 @@ region is active, it deletes all the tracks in the region."
   (local-set-key (kbd "C-m") #'newline-and-indent)
   (local-set-key (kbd "C-M-a") #'previous-defun)
   (local-set-key (kbd "C-M-e") #'next-defun)
-
-  (when (featurep 'auto-complete)
-    (dolist (x '(ac-source-gtags ac-source-imenu ac-source-yasnippet))
-      (add-to-list 'ac-sources x)))
   )
 
 (add-hook 'prog-mode-hook #'jpk/prog-mode-hook)
@@ -3546,9 +3540,6 @@ Lisp function does not specify a special indentation."
   (setq indent-line-function #'indent-relative-dwim)
   (when (featurep 'flyspell)
     (flyspell-mode 1))
-  (when (featurep 'auto-complete)
-    (setq ac-sources
-          '(ac-source-dictionary ac-source-words-in-buffer ac-source-filename)))
   (setq adaptive-wrap-extra-indent 0)
   (visual-line-mode 1)
   (hl-line-mode 1)
@@ -3578,11 +3569,6 @@ Lisp function does not specify a special indentation."
       (flyspell-mode 1))
     (setq fill-column 80)
     (setq indent-line-function #'LaTeX-indent-line)
-    (when (featurep 'ac-math)
-      (dolist (x '(ac-source-math-unicode
-                   ac-source-math-latex
-                   ac-source-latex-commands))
-        (add-to-list 'ac-sources x)))
     (hl-line-mode 1)
     )
   (add-hook 'LaTeX-mode-hook #'jpk/LaTeX-mode-hook)
