@@ -168,12 +168,13 @@
 (setq-default cursor-type 'bar)
 
 (defun jpk/window-setup-hook ()
-  (let ((spec (font-spec :name "xos4 Terminus")))
-    (if (find-font spec)
-        (setq eol-mnemonic-dos "␍␊"
-              eol-mnemonic-mac "␍"
+  (let ((fontnames '("xos4 Terminus" "Freesans" "Symbola")))
+    (if (or (mapcar (lambda (f) (not (null (find-font (font-spec :name f)))))
+                   fontnames))
+        (setq eol-mnemonic-dos "⮠⭳"
+              eol-mnemonic-mac "⮠"
               eol-mnemonic-undecided "?"
-              eol-mnemonic-unix "␊")
+              eol-mnemonic-unix "⭳")
       (setq eol-mnemonic-dos "\\r\\n"
             eol-mnemonic-mac "\\r"
             eol-mnemonic-undecided "?"
