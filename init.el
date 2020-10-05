@@ -7,8 +7,7 @@
 (message "Loading jpkotta's init.el.")
 
 (when (or (boundp 'profile-dotemacs-file)
-         (< emacs-major-version 27)
-         t)
+         (< emacs-major-version 27))
   (load-file (expand-file-name "early-init.el" user-emacs-directory))
   (package-initialize))
 
