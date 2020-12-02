@@ -2918,6 +2918,11 @@ region is active, it deletes all the tracks in the region."
 
 (use-package kconfig-mode)
 
+(use-package cmake-mode
+  :config
+  (setq cmake-tab-width 4)
+  )
+
 (use-package cmake-font-lock)
 
 (use-package bitbake-modes
