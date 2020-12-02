@@ -1445,18 +1445,10 @@ This sets all buffers as displayed."
 (use-package magit
   :if (executable-find "git")
   :init
+  (setq magit-define-global-key-bindings nil)
+
   ;; show margin (author+time) in a magit log buffer with L d
   (setq magit-log-margin '(nil age-abbreviated magit-log-margin-width :author 11))
-
-  :config
-  (setq magit-diff-refine-hunk 'all)
-  (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
-
-  ;;(setq vc-handled-backends (delete 'Git vc-handled-backends))
-  (when (featurep 'diff-hl)
-    (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
-
-  (global-magit-file-mode 0)
 
   (defun magit-switch-to-status-buffer (buffer)
     "Like `switch-to-buffer', but only for `magit-status-mode' buffers."
@@ -1473,9 +1465,20 @@ This sets all buffers as displayed."
     "Magit"
     ("g" magit-status "status")
     ("b" magit-switch-to-status-buffer "switch")
-    ("d" magit-dispatch-popup "dispatch")
-    ("f" magit-file-popup "file")
+    ("d" magit-dispatch "dispatch")
+    ("f" magit-file-dispatch "file")
     )
+
+  :config
+  (setq magit-diff-refine-hunk 'all)
+  (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
+
+  ;; very slow on the kernel repo
+  (remove-hook 'magit-status-headers-hook #'magit-insert-tags-header)
+
+  ;;(setq vc-handled-backends (delete 'Git vc-handled-backends))
+  (when (featurep 'diff-hl)
+    (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
 
   :bind (("C-x g" . hydra/magit/body))
   )
