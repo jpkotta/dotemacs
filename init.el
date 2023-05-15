@@ -221,6 +221,7 @@
   :commands (ergo-movement-mode)
   :init
   (ergo-movement-mode 1)
+  (global-unset-key (kbd "C-M-S-l"))
   )
 
 (use-package mwim
@@ -513,6 +514,9 @@ which is really sub optimal."
          :map projectile-command-map
          ("R" . gxref-update-db))
   )
+
+(use-package xref-rst
+  :disabled)
 
 (use-package xref
   :ensure nil
@@ -955,7 +959,7 @@ Uses `nhexl-mode'."
   :config
   (setq auto-revert-verbose nil
         global-auto-revert-non-file-buffers t)
-  (add-hook 'dired-mode-hook #'auto-revert-mode)
+  ;;(add-hook 'dired-mode-hook #'auto-revert-mode)
   (add-to-list 'revert-without-query "\\.rom\\'")
 
   (global-auto-revert-mode 1)
@@ -1298,6 +1302,13 @@ it's probably better to explicitly request a merge."
         (not (file-name-absolute-p (tramp-file-name-localname vec))))))
   (setq recentf-exclude (list #'jpk/recentf-exclude))
 
+  ;; from recentf-ext.el
+  (defun recentf-add-dired-directory ()
+    (when (and (stringp dired-directory)
+             (equal "" (file-name-nondirectory dired-directory)))
+      (recentf-add-file dired-directory)))
+  (add-hook 'dired-mode-hook #'recentf-add-dired-directory)
+
   (recentf-mode 1)
   )
 
@@ -1472,6 +1483,9 @@ This sets all buffers as displayed."
   :config
   (setq magit-diff-refine-hunk 'all)
   (add-hook 'magit-diff-mode-hook #'jpk/diff-mode-hook)
+
+  (setq magit-module-sections-nested nil)
+  (add-hook 'magit-status-sections-hook #'magit-insert-modules 'append)
 
   ;; very slow on the kernel repo
   (remove-hook 'magit-status-headers-hook #'magit-insert-tags-header)
@@ -1985,9 +1999,6 @@ HOSTSPEC is a tramp host specification, e.g. \"/ssh:HOSTSPEC:/remote/path\"."
 
 (setq shell-command-dont-erase-buffer 'beg-last-out)
 
-(use-package bang
-  :bind ("M-!" . bang))
-
 ;; TODO: https://github.com/CeleritasCelery/emacs-native-shell-complete
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2204,7 +2215,8 @@ files (e.g. directories, fifos, etc.)."
 
   (setq dired-deletion-confirmer 'y-or-n-p
         dired-dwim-target t
-        dired-create-destination-dirs 'always)
+        dired-create-destination-dirs 'always
+        dired-kill-when-opening-new-dired-buffer t)
 
   (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 
@@ -2225,25 +2237,26 @@ files (e.g. directories, fifos, etc.)."
          ("S-<return>" . dired-find-file-other-window)
          ("S-<down-mouse-2>" . dired-mouse-find-file-other-window)
          ("C-c C-o" . dired-omit-mode)
-         ("E" . dired-create-empty-file))
+         ("E" . dired-create-empty-file)
+         ("f" . dired-up-directory))
   )
 
 (use-package dired-single
+  :disabled
   :after dired
   :config
-  ;; stolen from diredp-up-directory
-  (defun dired-single-up-directory ()
-    "Like `dired-up-directory' but with `dired-single-buffer'."
-    (interactive)
-    (let* ((dir (dired-current-directory))
-           (up (file-name-directory (directory-file-name dir))))
-      (or (dired-goto-file (directory-file-name dir))
-         (and (cdr dired-subdir-alist) (dired-goto-subdir up))
-         (progn (dired-single-buffer up)
-                (dired-goto-file dir)))))
+  ;; ;; stolen from diredp-up-directory
+  ;; (defun dired-single-up-directory ()
+  ;;   "Like `dired-up-directory' but with `dired-single-buffer'."
+  ;;   (interactive)
+  ;;   (let* ((dir (dired-current-directory))
+  ;;          (up (file-name-directory (directory-file-name dir))))
+  ;;     (or (dired-goto-file (directory-file-name dir))
+  ;;        (and (cdr dired-subdir-alist) (dired-goto-subdir up))
+  ;;        (progn (dired-single-buffer up)
+  ;;               (dired-goto-file dir)))))
 
   :bind (:map dired-mode-map
-         ("f" . dired-single-up-directory)
          ([remap dired-up-directory] . dired-single-up-directory)
          ([remap dired-find-file] . dired-single-buffer)
          ([remap dired-mouse-find-file-other-window] . dired-single-buffer-mouse))
@@ -2519,6 +2532,22 @@ region is active, it deletes all the tracks in the region."
                      (ibuffer-mark-interactive arg ?\s 0)
                    (ibuffer-mark-interactive arg ibuffer-marked-char 0))))
 
+  (defun ibuffer-set-filter-groups-by-directory ()
+    "Set the current filter groups to filter by directory."
+    (interactive)
+    (setq ibuffer-filter-groups
+          (mapcar (lambda (dir)
+                    (cons (format "%s" dir) `((directory . ,dir))))
+                  (delq nil (mapcar (lambda (b)
+                                    (with-current-buffer b
+                                      (or
+                                       (and buffer-file-name
+                                          (file-name-directory buffer-file-name))
+                                       default-directory
+                                       "")))
+                                  (buffer-list)))))
+    (ibuffer-update nil t))
+
   ;; run when ibuffer buffer is created
   (defun jpk/ibuffer-mode-hook ()
     (ibuffer-auto-mode 1)
@@ -2540,6 +2569,7 @@ region is active, it deletes all the tracks in the region."
          :map ibuffer-mode-map
          ("/ M" . ibuffer-set-filter-groups-by-mode)
          ("/ m" . ibuffer-filter-by-used-mode)
+         ("/ D" . ibuffer-set-filter-groups-by-directory)
          ("<down>" . ibuffer-forward-line)
          ("<up>" . ibuffer-backward-line)
          ("C-<down>" . ibuffer-forward-filter-group)
@@ -2913,7 +2943,8 @@ region is active, it deletes all the tracks in the region."
 
 (use-package make-mode
   :ensure nil
-  :mode (("Makefile" . makefile-gmake-mode))
+  :mode (("Makefile" . makefile-gmake-mode)
+         ("\\.mak\\'" . makefile-gmake-mode))
   :bind (:map makefile-gmake-mode-map
          ("M-n" . isearch-forward-symbol-dwim)
          ("M-p" . isearch-backward-symbol-dwim))
@@ -3180,6 +3211,7 @@ If region is inactive, use the entire current line."
   )
 
 (defun jpk/python-mode-hook ()
+  (message "prettify-symbols-alist %S" prettify-symbols-alist)
   (dolist (x '(("!=" . ?≠)
                ("None" . ?∅)
                ("and" . ?⋀)
@@ -3518,7 +3550,8 @@ Lisp function does not specify a special indentation."
          )
   )
 
-(use-package systemd)
+(use-package systemd
+  :defer t)
 
 (use-package yaml-mode
   :config
@@ -3586,6 +3619,7 @@ Lisp function does not specify a special indentation."
   )
 
 (use-package auctex
+  :disabled
   :if (executable-find "pdflatex")
 
   :config
