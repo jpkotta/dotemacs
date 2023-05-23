@@ -64,7 +64,8 @@
 (add-hook 'package-menu-mode-hook #'hl-line-mode)
 
 (use-package no-littering
-  :pin melpa
+  :config
+  (no-littering-theme-backups)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -102,7 +103,7 @@
 
 (setq custom-safe-themes t)
 
-(use-package modus-vivendi-theme
+(use-package modus-themes
   :init
   (load-theme 'modus-vivendi 'noconfirm)
 
@@ -2634,6 +2635,7 @@ region is active, it deletes all the tracks in the region."
    ("phi" . ?φ)
    ("sigma" . ?σ)
    ("sqrt" . ?√)
+   ("" . ?§)
    ))
 
 (global-prettify-symbols-mode 1)
@@ -2894,6 +2896,7 @@ region is active, it deletes all the tracks in the region."
     (font-lock-add-keywords m `((,c-types-regexp . 'font-lock-type-face))))
 
   (defun jpk/c-mode-common-hook ()
+    (setq indent-tabs-mode t)
     (setq tab-width 4)
     (setq c-basic-offset 4
           c-default-style '((java-mode . "java") (awk-mode . "awk") (other . "bsd")))
