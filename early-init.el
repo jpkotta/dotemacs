@@ -69,6 +69,8 @@ Only defcustoms usually have a `standard-value'."
 (setq default-frame-alist '((vertical-scroll-bars . right)
                             (menu-bar-lines . 0)
                             (background-mode . dark)
+                            (foreground-color . "white")
+                            (background-color . "black")
                             (tool-bar-lines . 0)
                             (width . 81)
                             (scroll-bar-height . 5)
