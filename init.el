@@ -532,11 +532,12 @@ which is really sub optimal."
   :defer 2
   :diminish projectile-mode
   :config
-  (setq projectile-indexing-method 'alien ;; FIXME 'turbo-alien
+  (setq projectile-indexing-method 'alien
         projectile-enable-caching t
         projectile-tags-backend 'xref
         ;;projectile-tags-command "gtags"
         projectile-tags-command ""
+        projectile-git-use-fd nil ;; breaks with ubuntu 20.04 fd
         projectile-current-project-on-switch 'move-to-end
         projectile-switch-project-action #'projectile-dired)
   (projectile-mode 1)
@@ -2672,7 +2673,8 @@ region is active, it deletes all the tracks in the region."
 
   (dolist (e '(("%cflags" . (or (getenv "CFLAGS") "-Wall -g3 -std=c11"))
                ("%cxxflags" . (or (getenv "CXXFLAGS") "-Wall -g3"))
-               ("%proj-dir" . (projectile-project-root))))
+               ("%proj-dir" . (or (projectile-project-root)
+                                 (file-name-directory (buffer-file-name))))))
     (add-to-list 'multi-compile-template e))
 
   (setq multi-compile-alist
@@ -2693,9 +2695,8 @@ region is active, it deletes all the tracks in the region."
 
   (require 'ansi-color)
   (defun colorize-compilation-buffer ()
-    (toggle-read-only)
-    (ansi-color-apply-on-region compilation-filter-start (point))
-    (toggle-read-only))
+    (let ((buffer-read-only nil))
+      (ansi-color-apply-on-region compilation-filter-start (point))))
   (add-hook 'compilation-filter-hook #'colorize-compilation-buffer)
 
   :bind (("C-c b" . multi-compile-run))
@@ -2863,6 +2864,12 @@ region is active, it deletes all the tracks in the region."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C programming language
+
+;; TODO:
+;; new C style with
+;; based on bsd
+;; (arglist-intro . +)
+;; (whatever-controls-multiline-expressions . +)
 
 (use-package cc-mode
   :ensure nil
