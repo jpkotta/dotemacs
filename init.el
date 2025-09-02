@@ -1675,6 +1675,7 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
   (diff-add-or-remove-trailing-CR-in-hunk nil))
 
 (use-package smerge-mode
+  :disabled
   :ensure nil
   :init
   (setq smerge-command-prefix "")
@@ -2242,27 +2243,6 @@ files (e.g. directories, fifos, etc.)."
          ("f" . dired-up-directory))
   )
 
-(use-package dired-single
-  :disabled
-  :after dired
-  :config
-  ;; ;; stolen from diredp-up-directory
-  ;; (defun dired-single-up-directory ()
-  ;;   "Like `dired-up-directory' but with `dired-single-buffer'."
-  ;;   (interactive)
-  ;;   (let* ((dir (dired-current-directory))
-  ;;          (up (file-name-directory (directory-file-name dir))))
-  ;;     (or (dired-goto-file (directory-file-name dir))
-  ;;        (and (cdr dired-subdir-alist) (dired-goto-subdir up))
-  ;;        (progn (dired-single-buffer up)
-  ;;               (dired-goto-file dir)))))
-
-  :bind (:map dired-mode-map
-         ([remap dired-up-directory] . dired-single-up-directory)
-         ([remap dired-find-file] . dired-single-buffer)
-         ([remap dired-mouse-find-file-other-window] . dired-single-buffer-mouse))
-  )
-
 (use-package diredfl
   :after dired
   :init
@@ -2304,8 +2284,7 @@ files (e.g. directories, fifos, etc.)."
               . ("pdf" "ps" "ps.gz" "dvi"))))
     (dolist (ext (cdr prog-exts))
       (add-to-list 'dired-open-extensions (cons ext (car prog-exts)))))
-  (setq dired-open-functions '(dired-open-by-extension)
-        dired-open-find-file-function #'dired-single-buffer)
+  (setq dired-open-functions '(dired-open-by-extension))
   )
 
 (use-package dired-avfs
@@ -3258,12 +3237,6 @@ If region is inactive, use the entire current line."
   (add-hook 'rst-mode-hook #'flyspell-mode)
   )
 
-(use-package python-info)
-
-(use-package pynt
-  :disabled
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Octave/Matlab
 
@@ -3705,8 +3678,6 @@ Lisp function does not specify a special indentation."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package dockerfile-mode)
-
-(use-package docker-tramp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; assembly
@@ -4165,6 +4136,7 @@ If called repeatedly, cycle the indent as follows:
               indent-tabs-mode nil)
 
 (use-package smart-tabs-mode
+  :disabled
   :commands (smart-tabs-mode)
   :init
   (add-hook 'c-mode-common-hook #'smart-tabs-mode)
