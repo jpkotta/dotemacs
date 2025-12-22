@@ -1835,6 +1835,15 @@ If REVERSED is non-nil, cycle in reverse."
          ("C-S-t" . vterm))
   )
 
+(use-package multi-vterm
+  :if (package-installed-p 'vterm)
+  :bind (("C-c t" . multi-vterm-next)
+         :map vterm-mode-map
+         ("C-c t" . multi-vterm)
+         ("C-<next>" . multi-vterm-next)
+         ("C-<prior>" . multi-vterm-prev))
+  )
+
 (use-package eterm-256color
   :defer t
   :init
