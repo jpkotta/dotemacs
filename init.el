@@ -408,7 +408,8 @@ switch to it.  Recommended to add to `emacs-startup-hook'."
 (let ((rcfile "~/.globalrc")
       (dist-rcfiles '("/usr/share/gtags/gtags.conf"
                       "/usr/local/share/gtags/gtags.conf"
-                      "/usr/share/doc/global/examples/gtags.conf")))
+                      "/usr/share/doc/global/examples/gtags.conf"
+                      "/etc/gtags/gtags.conf")))
   (unless (file-exists-p rcfile)
     (dolist (dist-rcfile dist-rcfiles)
       (when (file-exists-p dist-rcfile)
@@ -1793,7 +1794,6 @@ If REVERSED is non-nil, cycle in reverse."
 (use-package vterm
   :init
   ;; TODO: push upstream
-
   (defun jpk/vterm-define-key (key)
     "Define a command that sends KEY with modifiers C xor M to vterm."
     (declare (indent defun)
@@ -3389,7 +3389,7 @@ Lisp function does not specify a special indentation."
 (use-package morlock
   :defer 2
   :init
-  (global-morlock-mode 1)
+  (morlock-mode 1)
   )
 
 (use-package edit-list)
@@ -4120,6 +4120,7 @@ If called repeatedly, cycle the indent as follows:
               indent-tabs-mode nil)
 
 (use-package smart-tabs-mode
+  ;; FIXME gives advice error, needs to be updated to use new API
   :disabled
   :commands (smart-tabs-mode)
   :init
