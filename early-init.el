@@ -53,12 +53,10 @@ Only defcustoms usually have a `standard-value'."
                         (format "elpa-%d" emacs-major-version)
                         user-emacs-directory))
 
-(setq package-archives '(("melpa-stable" . "http://stable.melpa.org/packages/")
-                         ("melpa" . "http://melpa.org/packages/")
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")
                          ("onpa" . "https://olanilsson.bitbucket.io/packages/")))
-(setq package-archive-priorities '(;;("melpa-stable" . 20)
-                                   ("gnu" . 10)))
+(setq package-archive-priorities '(("gnu" . 10)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GUI
