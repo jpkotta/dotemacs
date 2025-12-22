@@ -978,6 +978,16 @@ Uses `nhexl-mode'."
       select-active-regions t)
 (setq save-interprogram-paste-before-kill t)
 
+;; for WSL
+(when (executable-find "clip.exe")
+  (defun jpk-select-text (text)
+    (gui-select-text text) ;; default interprogram-cut-function
+    (with-temp-buffer
+      (insert text)
+      (call-process-region (point-min) (point-max) "clip.exe")))
+  (setq select-active-regions nil
+        interprogram-cut-function #'jpk-select-text))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Unicode
 
