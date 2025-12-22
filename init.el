@@ -1405,6 +1405,19 @@ This sets all buffers as displayed."
       (next-buffer))
     (other-window 1)))
 
+(defun split-windows-in-eight (&optional arg)
+  "Configure a frame to have 8 similarly sized windows.  Splits
+  the selected window with prefix arg."
+  (interactive "P")
+  (when (not arg)
+    (delete-other-windows))
+  (let ((this-window (selected-window)))
+    (split-window-horizontally)
+    (split-windows-in-quarters t)
+    (select-window this-window)
+    (other-window 4)
+    (split-windows-in-quarters t)))
+
 (use-package ace-window
   :commands (ace-window)
   :config
