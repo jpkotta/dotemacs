@@ -2859,7 +2859,7 @@ region is active, it deletes all the tracks in the region."
     (font-lock-add-keywords m `((,c-types-regexp . 'font-lock-type-face))))
 
   (defun jpk/c-mode-common-hook ()
-    (setq indent-tabs-mode t)
+    (setq indent-tabs-mode nil)
     (setq tab-width 4)
     (setq c-basic-offset 4
           c-default-style '((java-mode . "java") (awk-mode . "awk") (other . "bsd")))
@@ -2890,6 +2890,13 @@ region is active, it deletes all the tracks in the region."
   (let ((avr-include-dir "/usr/avr/include"))
     (when (file-directory-p avr-include-dir)
       (add-to-list 'ffap-c-path avr-include-dir)))
+  )
+
+(use-package clang-format
+  :if (executable-find "clang-format")
+  :config
+  (add-hook 'c-mode-common-hook #'clang-format-on-save-mode)
+  :bind (("C-c f" . clang-format-buffer))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
