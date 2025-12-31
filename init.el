@@ -978,15 +978,28 @@ Uses `nhexl-mode'."
       select-active-regions t)
 (setq save-interprogram-paste-before-kill t)
 
-;; for WSL
-(when (executable-find "clip.exe")
-  (defun jpk-select-text (text)
-    (gui-select-text text) ;; default interprogram-cut-function
-    (with-temp-buffer
-      (insert text)
-      (call-process-region (point-min) (point-max) "clip.exe")))
-  (setq select-active-regions nil
-        interprogram-cut-function #'jpk-select-text))
+;; (when (executable-find "clip.exe")
+
+;;   (defun jpk-select-text (text)
+;;     (gui-select-text text) ;; default interprogram-cut-function
+;;     (with-temp-buffer
+;;       (insert text)
+;;       (call-process-region (point-min) (point-max) "clip.exe")))
+
+;;   (defun jpk-paste-text ()
+;;     (interactive)
+;;     (call-process "powershell.exe" nil t t "-command" "Get-Clipboard"))
+
+;;   (defun jpk-paste-text ()
+;;     (interactive)
+;;     (let ((shell-file-name "powershell.exe"))
+;;       (call-process-shell-command "Get-Clipboard -Raw" nil (current-buffer) t)))
+
+;;   (setq ;;interprogram-paste-function #'jpk-paste-text
+;;         ;;interprogram-cut-function #'jpk-select-text
+;;         interprogram-paste-function #'gui-selection-value
+;;         interprogram-cut-function #'gui-select-text)
+;;   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Unicode
@@ -1036,8 +1049,17 @@ Uses `nhexl-mode'."
       browse-url-new-window-flag t
       eww-search-prefix "https://google.com/search?q="
       shr-color-visible-luminance-min 70
-      browse-url-secondary-browser-function #'browse-url-firefox
+      browse-url-secondary-browser-function #'browse-url-firefox ;; keybinding '&'
       )
+
+(when (executable-find "wslview")
+  (defun browse-url-wslview (url &optional new-window)
+    (interactive (browse-url-interactive-arg "URL: "))
+    (setq url (browse-url-encode-url url))
+    (let* ((process-environment (browse-url-process-environment)))
+      (start-process (concat "wslview " url) nil "wslview" url)))
+  (setq browse-url-secondary-browser-function
+        #'browse-url-wslview))
 
 (use-package eww
   :ensure nil
