@@ -1420,35 +1420,43 @@ This sets all buffers as displayed."
 
 (setq-default cursor-in-non-selected-windows nil)
 
-(defun split-windows-in-quarters (&optional arg)
-  "Configure a frame to have 4 similarly sized windows.  Splits
-  the selected window with prefix arg."
+(defun split-windows-h-by-v (&optional arg horiz-count vert-count)
+  "Configure a frame to have HxV similarly sized windows.  Minimum for both
+H and V is 2 (so 4 total).  Splits the selected window with prefix arg."
   (interactive "P")
+  (when (<= horiz-count 1)
+    (setq horiz-count 2))
+  (when (<= vert-count 1)
+    (setq vert-count 2))
   (when (not arg)
     (delete-other-windows))
-  (let ((this-window (selected-window)))
-    (split-window-horizontally)
-    (other-window 1)
-    (split-window-vertically)
-    (select-window this-window)
-    (split-window-vertically))
-  (dotimes (i 4)
-    (unless (= i 0)
-      (next-buffer))
-    (other-window 1)))
+  (let* ((first-window (selected-window))
+         (window-list (list first-window)))
+    (dotimes (i (1- horiz-count))
+      (split-window-horizontally)
+      (other-window 1)
+      (setq window-list (cons (selected-window) window-list)))
+    (dotimes (i horiz-count)
+      (select-window (nth i window-list))
+      (dotimes (j (1- vert-count))
+        (split-window-vertically)))
+    (select-window first-window)
+    (dotimes (i (* horiz-count vert-count))
+      (next-buffer i)
+      (other-window 1))
+    (when (not arg)
+      (balance-windows))
+    (select-window first-window)))
+
+(defun split-windows-in-quarters (&optional arg)
+  "Configure a frame to have 2x2 similarly sized windows.  With prefix arg, splits the selected window."
+  (interactive "P")
+  (split-windows-h-by-v arg 2 2))
 
 (defun split-windows-in-eight (&optional arg)
-  "Configure a frame to have 8 similarly sized windows.  Splits
-  the selected window with prefix arg."
+  "Configure a frame to have 4x2 similarly sized windows.  With prefix arg, splits the selected window."
   (interactive "P")
-  (when (not arg)
-    (delete-other-windows))
-  (let ((this-window (selected-window)))
-    (split-window-horizontally)
-    (split-windows-in-quarters t)
-    (select-window this-window)
-    (other-window 4)
-    (split-windows-in-quarters t)))
+  (split-windows-h-by-v arg 4 2))
 
 (use-package ace-window
   :commands (ace-window)
