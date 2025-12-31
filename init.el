@@ -1730,10 +1730,9 @@ If ADD-NOT-REMOVE is non-nil, add CRs, otherwise remove any CRs (leaving only LF
   (diff-add-or-remove-trailing-CR-in-hunk nil))
 
 (use-package smerge-mode
-  :disabled
   :ensure nil
   :init
-  (setq smerge-command-prefix "")
+  ;;(setq smerge-command-prefix "")
 
   :config
   ;; https://github.com/alphapapa/unpackaged.el#smerge-mode
