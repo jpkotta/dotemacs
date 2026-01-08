@@ -404,6 +404,14 @@ switch to it.  Recommended to add to `emacs-startup-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; tags
 
+(use-package dumb-jump
+  :init
+  (setq dumb-jump-prefer-searcher 'rg)
+
+  :config
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+  )
+
 ;; GTAGSLABEL has no effect unless there's a ~/.globalrc
 (let ((rcfile "~/.globalrc")
       (dist-rcfiles '("/usr/share/gtags/gtags.conf"
@@ -3815,6 +3823,8 @@ be specified with a numeric prefix."
 (use-package wgrep)
 
 (use-package rg
+  ;; NOTE: add a .ignore file to selectively unignore dirs
+
   :if (executable-find "rg")
   :after projectile
   :config
