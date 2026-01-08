@@ -13,12 +13,9 @@
   (delete-directory package-user-dir 'recursive))
 
 (package-initialize)
-(setq package-archives '(("melpa-stable" . "http://stable.melpa.org/packages/")
-                         ("melpa" . "http://melpa.org/packages/")
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
-(setq package-archive-priorities '(("melpa-stable" . 20)
-                                   ("gnu" . 10)
-                                   ("melpa" . 0)))
+(setq package-archive-priorities '(("gnu" . 10)))
 
 (if (package-installed-p 'use-package)
     (require 'use-package)
