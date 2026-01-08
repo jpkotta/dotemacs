@@ -1802,68 +1802,8 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Terminals
 
-(defun cycle-buffers (reversed &optional predicate)
-  "Cycle through buffers matching PREDICATE.
-
-PREDICATE is function with zero arguments than returns non-nil
-if (current-buffer) is in the set of buffers to be cycled.
-
-If REVERSED is non-nil, cycle in reverse."
-  (interactive "P")
-  (unless predicate
-    (setq predicate (lambda () t)))
-  (unless reversed
-    (when (funcall predicate)
-      (bury-buffer)))
-  (let ((buffers (buffer-list)))
-    (when reversed
-      (setq buffers (nreverse buffers)))
-    (catch 'loop
-      (dolist (buf buffers)
-        (when (with-current-buffer buf (funcall predicate))
-          (switch-to-buffer buf)
-          (throw 'loop nil))))))
-
-(defun term-cycle-buffers (reversed)
-  "Cycle 'term-mode and 'vterm-mode buffers."
-  (interactive "P")
-  (cycle-buffers
-   reversed
-   (lambda ()
-     (or (derived-mode-p 'term-mode)
-        (derived-mode-p 'vterm-mode)))))
-
-(defun term-cycle-prev ()
-  "Same as `term-cycle-buffers' in reverse."
-  (interactive)
-  (term-cycle-buffers 'reversed))
-
-(defun term-cycle-next ()
-  "Same as `term-cycle-buffers'."
-  (interactive)
-  (term-cycle-buffers nil))
-
 (use-package vterm
   :init
-  ;; TODO: push upstream
-  (defun jpk/vterm-define-key (key)
-    "Define a command that sends KEY with modifiers C xor M to vterm."
-    (declare (indent defun)
-             (doc-string 3))
-    (let ((name (format "vterm-send-%s" key)))
-      (fset (intern name)
-            `(lambda ()
-               ,(format "Sends `%s` to the libvterm.\n\nThis was defined with `jpk/vterm-define-key'." key)
-               (interactive)
-               (vterm-send-key ,(string-remove-prefix "C-" (string-remove-prefix "M-" key))
-                               nil
-                               ,(string-prefix-p "M-" key)
-                               ,(string-prefix-p "C-" key))))
-      (intern name)))
-
-  (dolist (k '("C-<delete>"))
-    (jpk/vterm-define-key k))
-
   (defun jpk/vterm-exit-functions (buffer event)
     (when (and (string-match "finished" event)
              (buffer-live-p buffer))
@@ -1871,29 +1811,52 @@ If REVERSED is non-nil, cycle in reverse."
       (term-cycle-next)))
   (add-hook 'vterm-exit-functions #'jpk/vterm-exit-functions)
 
+  (defun jpk/vterm-send-C-u ()
+    (interactive)
+    (vterm-send "C-u"))
+
+  (defun jpk/vterm-send-C-x ()
+    (interactive)
+    (vterm-send "C-x"))
+
+  (defun jpk/vterm-send-C-g ()
+    (interactive)
+    (vterm-send "C-g"))
+
+  (defun jpk/vterm-send-M-x ()
+    (interactive)
+    (vterm-send "M-x"))
+
+  (defun jpk/vterm-send-M-: ()
+    (interactive)
+    (vterm-send "M-:"))
+
   :bind (("C-c t" . vterm) ;; use prefix to start a new one
          :map vterm-mode-map
          ("C-c C-s" . isearch-forward)
          ("C-c C-r" . isearch-backward)
-         ("C-<delete>" . vterm-send-M-d)
+         ("C-<delete>" . vterm--self-insert)
+         ("C-y" . vterm--self-insert)
          ("C-c C-y" . vterm-yank)
-         ("C-y" . vterm-send-C-y)
-         ;; ("C-c C-u" . vterm-send-C-u)
-         ("C-c C-x" . vterm-send-C-x)
-         ;; ("C-c C-v" . vterm-send-C-v)
-         ;; C-<arrow> works with vterm--self-insert, but ergo-movement doesn't
-         ("C-<next>" . term-cycle-next)
-         ("C-<prior>" . term-cycle-prev)
-         ("C-S-t" . vterm))
+         ("C-c C-u" . jpk/vterm-send-C-u)
+         ("C-c C-x" . jpk/vterm-send-C-x)
+         ("C-c C-g" . jpk/vterm-send-C-g)
+         ("C-c M-x" . jpk/vterm-send-M-x)
+         ("M-:" . nil)
+         ("C-c M-:" . jpk/vterm-send-M-:)
+         )
   )
 
 (use-package multi-vterm
-  :if (package-installed-p 'vterm)
+  :after (vterm)
   :bind (("C-c t" . multi-vterm-next)
          :map vterm-mode-map
          ("C-c t" . multi-vterm)
          ("C-<next>" . multi-vterm-next)
-         ("C-<prior>" . multi-vterm-prev))
+         ("C-<prior>" . multi-vterm-prev)
+         ("S-<down>" . multi-vterm)
+         ("S-<left>" . multi-vterm-prev)
+         ("S-<right>" . multi-vterm-next))
   )
 
 (use-package eterm-256color
