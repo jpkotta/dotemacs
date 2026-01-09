@@ -1856,7 +1856,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   )
 
 (use-package multi-vterm
-  :after (vterm)
+  :if (package-installed-p 'vterm)
   :bind (("C-c t" . multi-vterm-next)
          :map vterm-mode-map
          ("C-c t" . multi-vterm)
