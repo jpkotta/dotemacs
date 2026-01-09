@@ -3,9 +3,9 @@ repos
 etc/custom.el
 var
 url
-test
 
 lisp/local-init.el
 lisp/*.elc
 .hg
 /eln-cache/
+/test/

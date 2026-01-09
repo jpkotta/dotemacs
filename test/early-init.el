@@ -1,17 +1,5 @@
 ;; -*- lexical-binding: t; no-byte-compile: t -*-
 
-(setq package-user-dir (expand-file-name
-                        (format "elpa-test")
-                        user-emacs-directory))
-
-(setq jpk/delete-elpa 'ask) ; t, ask, nil
-(when (and (file-directory-p package-user-dir)
-         jpk/delete-elpa
-         (if (eq jpk/delete-elpa 'ask)
-             (yes-or-no-p (format "Delete %s? " package-user-dir))
-           t))
-  (delete-directory package-user-dir 'recursive))
-
 (package-initialize)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
@@ -31,4 +19,10 @@
         use-package-minimum-reported-time 0
         debug-on-error t))
 
-(use-package no-littering)
+(use-package no-littering
+  :config
+  (no-littering-theme-backups)
+  (setq custom-file (expand-file-name "custom.el" temporary-file-directory))
+  (add-to-list 'auto-save-file-name-transforms
+               `(".*" ,temporary-file-directory t) 'append)
+  )
