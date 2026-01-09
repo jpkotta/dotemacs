@@ -97,15 +97,9 @@
 
 (setq frame-resize-pixelwise t)
 
-;; ;; better font config for weird chars
-;; (when (find-font (font-spec :name "Symbola"))
-;;   (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
-
-(setq custom-safe-themes t)
-
-(use-package modus-themes
+(use-package emacs
   :init
-  (load-theme 'modus-vivendi 'noconfirm)
+  (require-theme 'modus-themes)
 
   :config
   (set-face-attribute 'default nil
@@ -113,25 +107,35 @@
                                   "Consolas"
                                 "DejaVu Sans Mono")
                       :height 90)
+  (set-face-attribute 'fixed-pitch nil
+                      :family "Luxi Mono")
 
-  (custom-theme-set-faces
-   'modus-vivendi
+  ;; TODO make this more targeted, so it doesn't affect company
+  ;;(setq modus-themes-mixed-fonts t)
 
-   '(fixed-pitch ((t (:family "Luxi Mono"))))
+  (defun jpk/modus-themes-post-load-hook (&rest _)
+    (modus-themes-with-colors
+      (custom-set-faces
+       `(cursor ((,c :background ,red-faint)))
+       `(parenthesis ((,c :foreground ,cyan-warmer)))
+       ;;`(term ((,c :foreground "lavender blush")))
+       `(flyspell-duplicate ((,c :foreground nil)))
+       `(flyspell-incorrect ((,c :foreground nil)))
+       ;; `(diff-hl-insert ((,c :foreground "#006800" :background nil)))
+       ;; `(diff-hl-delete ((,c :foreground "#a4202a" :background nil)))
+       ;; `(diff-hl-change ((,c :foreground "#874900" :background nil)))
+       `(diff-hl-insert ((,c :foreground ,bg-added-fringe :background nil)))
+       `(diff-hl-delete ((,c :foreground ,bg-removed-fringe :background nil)))
+       `(diff-hl-change ((,c :foreground ,bg-changed-fringe :background nil)))
+       )))
+  (add-hook 'modus-themes-post-load-hook #'jpk/modus-themes-post-load-hook)
 
-   '(term ((t (:foreground "lavender blush"))))
-
-   '(flyspell-duplicate ((t (:foreground nil))))
-   '(flyspell-incorrect ((t (:foreground nil))))
-
-   '(Info-quoted ((t (:family "Luxi Mono"))))
-
-   ;; set fg from bg of modus-theme-intense-*
-   '(diff-hl-insert ((t (:inherit nil :foreground "#006800"))))
-   '(diff-hl-delete ((t (:inherit nil :foreground "#a4202a"))))
-   '(diff-hl-change ((t (:inherit nil :foreground "#874900"))))
-   )
+  (modus-themes-load-theme 'modus-vivendi)
   )
+
+;; better font config for weird chars
+(when (find-font (font-spec :name "Symbola"))
+  (set-fontset-font t '(#x10000 . #x1ffff) "Symbola"))
 
 (use-package dimmer
   :config
