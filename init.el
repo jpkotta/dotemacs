@@ -248,11 +248,16 @@
 (defun jpk/startup ()
   "Set up emacs the way I like it."
   (interactive)
-  (let ((svfm (and (boundp 'save-visited-files-mode)
+  (let ((num-horiz-windows 1)
+        (svfm (and (boundp 'save-visited-files-mode)
                  (not save-visited-files-mode)
                  (y-or-n-p "Restore session? "))))
-    (split-windows-in-quarters)
     (modify-frame-parameters nil '((fullscreen . maximized)))
+    ;; not sure how to know when the frame is finished resizing
+    ;; takes about 8ms on windows, but is pretty inconsistent
+    (sit-for 50e-3)
+    (setq num-horiz-windows (/ (frame-width) 84))
+    (split-windows-h-by-v nil num-horiz-windows 2)
     (when svfm
       (let ((save-visited-files-ignore-tramp-files
              save-visited-files-ignore-tramp-files))
@@ -1440,35 +1445,51 @@ H and V is 2 (so 4 total).  Splits the selected window with prefix arg."
     (setq horiz-count 2))
   (when (<= vert-count 1)
     (setq vert-count 2))
-  (when (not arg)
-    (delete-other-windows))
-  (let* ((first-window (selected-window))
-         (window-list (list first-window)))
-    (dotimes (i (1- horiz-count))
-      (split-window-horizontally)
-      (other-window 1)
-      (setq window-list (cons (selected-window) window-list)))
-    (dotimes (i horiz-count)
-      (select-window (nth i window-list))
-      (dotimes (j (1- vert-count))
-        (split-window-vertically)))
-    (select-window first-window)
-    (dotimes (i (* horiz-count vert-count))
-      (next-buffer i)
-      (other-window 1))
-    (when (not arg)
-      (balance-windows))
-    (select-window first-window)))
+  (let (window-config)
+    (condition-case err
+        (save-window-excursion
+          (when (not arg)
+            (delete-other-windows))
+          (let* ((first-window (selected-window))
+                 (window-list (list first-window)))
+            (dotimes (i (1- horiz-count))
+              (split-window-horizontally)
+              (other-window 1)
+              (setq window-list (cons (selected-window) window-list)))
+            (dotimes (i horiz-count)
+              (select-window (nth i window-list))
+              (dotimes (j (1- vert-count))
+                (split-window-vertically)))
+            (select-window first-window)
+            (dotimes (i (* horiz-count vert-count))
+              (next-buffer i)
+              (other-window 1))
+            (when (not arg)
+              (balance-windows))
+            (select-window first-window))
+          (setq window-config (current-window-configuration)))
+      (error (message "Reverting window config: %s" (error-message-string err)))
+      (:success (set-window-configuration window-config)))))
 
-(defun split-windows-in-quarters (&optional arg)
+(defun split-windows-2x2 (&optional arg)
   "Configure a frame to have 2x2 similarly sized windows.  With prefix arg, splits the selected window."
   (interactive "P")
   (split-windows-h-by-v arg 2 2))
 
-(defun split-windows-in-eight (&optional arg)
+(defun split-windows-3x2 (&optional arg)
+  "Configure a frame to have 2x2 similarly sized windows.  With prefix arg, splits the selected window."
+  (interactive "P")
+  (split-windows-h-by-v arg 3 2))
+
+(defun split-windows-4x2 (&optional arg)
   "Configure a frame to have 4x2 similarly sized windows.  With prefix arg, splits the selected window."
   (interactive "P")
   (split-windows-h-by-v arg 4 2))
+
+(defun split-windows-5x2 (&optional arg)
+"Configure a frame to have 5x2 similarly sized windows.  With prefix arg, splits the selected window."
+  (interactive "P")
+  (split-windows-h-by-v arg 5 2))
 
 (use-package ace-window
   :commands (ace-window)
